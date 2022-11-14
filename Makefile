@@ -10,15 +10,16 @@ clean:
 	rm -rf ./build.log-*
 
 .PHONY: test-unit
-test-unit: clean
-	mvn test -Dskip.integration.tests=true
+test-unit:
+	echo "make test-unit does nothing, use build target instead"
 
 .PHONY: test-integration
 test-integration: clean
 	mvn test -Dskip.unit.tests=true
 
 .PHONY: verify
-verify: test-unit test-integration
+verify: clean
+	mvn verify
 
 .PHONY: package
 package:
@@ -36,17 +37,19 @@ endif
 	rm -rf $(tmpdir)
 
 .PHONY: build
-build:
+build: clean
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
-	mvn package -Dmaven.test.skip=true
+	mvn package
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
 .PHONY: dist
-dist: clean build package coverage
+dist: clean coverage package
 
 .PHONY: coverage
 coverage:
+	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	mvn verify
+	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
 .PHONY: sonar
 sonar:
