@@ -9,6 +9,10 @@ clean:
 	rm -rf ./build-*
 	rm -rf ./build.log-*
 
+.PHONY: security-check
+security-check:
+	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=0
+
 .PHONY: test-unit
 test-unit:
 	echo "make test-unit does nothing, use build target instead"
@@ -37,7 +41,10 @@ endif
 	rm -rf $(tmpdir)
 
 .PHONY: build
-build: clean coverage
+build: clean
+	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
+	mvn package
+	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
 .PHONY: dist
 dist: clean coverage package
