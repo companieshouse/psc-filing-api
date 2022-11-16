@@ -1,0 +1,760 @@
+{
+	"info": {
+		"_postman_id": "6a4b532b-6285-44e8-8c72-e289f0a3fa07",
+		"name": "PSC Filing API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5589485"
+	},
+	"item": [
+		{
+			"name": "Healthcheck",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody)",
+							"var status = jsonData.status;",
+							"if(jsonData.status = \"UP\") {",
+							"    console.log(\"Healthcheck ran successfully\");",
+							"} else {",
+							"    console.log(\"Healthcheck failed\")",
+							"}",
+							"",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/persons-with-significant-control/healthcheck",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"persons-with-significant-control",
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Transaction",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"var transaction_id = jsonData.id;",
+							"pm.environment.set(\"transaction_id\", jsonData.id);",
+							"console.log(\"A new transaction has been created \" + transaction_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"company_number\":\"00006400\",\n    \"reference\":\"Snoopy\",\n    \"description\":\"Mandatory transaction description\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PSC07 - cease a individual psc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(\"Create the initial PSC07 Individual\");",
+							"",
+							"//Get the Location from the response header",
+							"var location = pm.response.headers.get('Location');",
+							"",
+							"//extract the filing_resource_id from the Location",
+							"const locationArray = location.split(\"/\");",
+							"var filing_resource_id = locationArray[4];",
+							"",
+							"//create an environment variable called filing_resource_id for use in future requests",
+							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/individual",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"individual"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PSC07 - cease a rle psc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(\"Create the initial PSC07 RLE\");",
+							"",
+							"//Get the Location from the response header",
+							"var location = pm.response.headers.get('Location');",
+							"",
+							"//extract the filing_resource_id from the Location",
+							"const locationArray = location.split(\"/\");",
+							"var filing_resource_id = locationArray[4];",
+							"",
+							"//create an environment variable called filing_resource_id for use in future requests",
+							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/corporate-entity",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"corporate-entity"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PSC07 - cease a legal person psc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(\"Create the initial PSC07 legal person\");",
+							"",
+							"//Get the Location from the response header",
+							"var location = pm.response.headers.get('Location');",
+							"",
+							"//extract the filing_resource_id from the Location",
+							"const locationArray = location.split(\"/\");",
+							"var filing_resource_id = locationArray[4];",
+							"",
+							"//create an environment variable called filing_resource_id for use in future requests",
+							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/legal-person",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"legal-person"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PSC07 - PATCH cease a legal person psc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(\"Patch the PSC07 RLE\");",
+							"",
+							"//Get the Location from the response header",
+							"var location = pm.response.headers.get('Location');",
+							"",
+							"//extract the filing_resource_id from the Location",
+							"const locationArray = location.split(\"/\");",
+							"var filing_resource_id = locationArray[4];",
+							"",
+							"//create an environment variable called filing_resource_id for use in future requests",
+							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/legal-person/{{filing_resource_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"legal-person",
+						"{{filing_resource_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PSC07 - PATCH cease a individual psc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(\"Patch the initial PSC07 Individual\");",
+							"",
+							"//Get the Location from the response header",
+							"var location = pm.response.headers.get('Location');",
+							"",
+							"//extract the filing_resource_id from the Location",
+							"const locationArray = location.split(\"/\");",
+							"var filing_resource_id = locationArray[4];",
+							"",
+							"//create an environment variable called filing_resource_id for use in future requests",
+							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/individual/{{filing_resource_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"individual",
+						"{{filing_resource_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PSC07 - PATCH cease a rle psc",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"console.log(\"Patch the initial PSC07 RLE\");",
+							"",
+							"//Get the Location from the response header",
+							"var location = pm.response.headers.get('Location');",
+							"",
+							"//extract the filing_resource_id from the Location",
+							"const locationArray = location.split(\"/\");",
+							"var filing_resource_id = locationArray[4];",
+							"",
+							"//create an environment variable called filing_resource_id for use in future requests",
+							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/corporate-entity/{{filing_resource_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"corporate-entity",
+						"{{filing_resource_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Individual PSC Filing Resource",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var httpStatus = pm.response.status;",
+							"if(httpStatus == \"OK\") {",
+							"    console.log(\"The filing resource was successfully returned\");",
+							"} else {",
+							"    console.log(\"The filing resource call failed\");",
+							"}",
+							"",
+							"console.log(\"...........................\");",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/individual/{{filing_resource_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"individual",
+						"{{filing_resource_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get RLE PSC Filing Resource",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var httpStatus = pm.response.status;",
+							"if(httpStatus == \"OK\") {",
+							"    console.log(\"The filing resource was successfully returned\");",
+							"} else {",
+							"    console.log(\"The filing resource call failed\");",
+							"}",
+							"",
+							"console.log(\"...........................\");",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/corporate-entity/{{filing_resource_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"corporate-entity",
+						"{{filing_resource_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Legal Person PSC Filing Resource",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var httpStatus = pm.response.status;",
+							"if(httpStatus == \"OK\") {",
+							"    console.log(\"The filing resource was successfully returned\");",
+							"} else {",
+							"    console.log(\"The filing resource call failed\");",
+							"}",
+							"",
+							"console.log(\"...........................\");",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/legal-person/{{filing_resource_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"legal-person",
+						"{{filing_resource_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get PSC Filing",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var httpStatus = pm.response.status;",
+							"if(httpStatus == \"OK\") {",
+							"    console.log(\"The private filing resource call was successful\");",
+							"} else {",
+							"    console.log(\"The private filing resource call failed\");",
+							"}",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/private/transactions/{{transaction_id}}/persons-with-significant-control/{{filing_resource_id}}/filings",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"private",
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"{{filing_resource_id}}",
+						"filings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Validation Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var httpStatus = pm.response.status;",
+							"if(httpStatus == \"OK\") {",
+							"    console.log(\"The validation status was successful\");",
+							"} else {",
+							"    console.log(\"The validation status failed\");",
+							"}",
+							"",
+							"console.log(\"...........................\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/private/transactions/{{transaction_id}}/persons-with-significant-control/{{filing_resource_id}}/validation_status",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"private",
+						"transactions",
+						"{{transaction_id}}",
+						"persons-with-significant-control",
+						"{{filing_resource_id}}",
+						"validation_status"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "scope",
+				"value": "{{scope}}",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{client_secret}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{client_id}}",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "{{access_token_url}}",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "{{auth_url}}",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "{{callback_url}}",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "Bearer",
+				"type": "string"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "authorization_code",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
