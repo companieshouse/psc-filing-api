@@ -37,10 +37,7 @@ endif
 	rm -rf $(tmpdir)
 
 .PHONY: build
-build: clean
-	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
-	mvn package
-	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
+build: clean coverage
 
 .PHONY: dist
 dist: clean coverage package
