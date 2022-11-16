@@ -1,0 +1,252 @@
+package uk.gov.companieshouse.pscfiling.api.model.mapper;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+
+import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
+import uk.gov.companieshouse.pscfiling.api.model.dto.AddressDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.Date3TupleDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.NamesElementDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualFilingDto;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Address;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Identification;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.NamesElement;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+
+class PscIndividualFilingMapperTest {
+
+    public static final String SELF_URI =
+            "/transactions/197315-203316-322377/persons-with-significant-control/individual/3AftpfAa8RAq7EC3jKC6l7YDJ88=";
+    private Address address;
+    private AddressDto addressDto;
+    private LocalDate localDate1;
+    private Date3Tuple dob1;
+    private Instant instant1;
+    private Identification identification;
+    private Links links;
+    private NamesElement nameElement;
+    private NamesElementDto nameElementDto;
+    private PscIndividualFilingMapper testMapper;
+
+    @BeforeEach
+    void setUp() {
+        testMapper = Mappers.getMapper(PscIndividualFilingMapper.class);
+        address = Address.builder()
+                .addressLine1("line1")
+                .addressLine2("line2")
+                .careOf("careOf")
+                .country("country")
+                .locality("locality")
+                .poBox("poBox")
+                .postalCode("postalCode")
+                .premises("premises")
+                .region("region")
+                .build();
+        addressDto = AddressDto.builder()
+                .addressLine1("line1")
+                .addressLine2("line2")
+                .careOf("careOf")
+                .country("country")
+                .locality("locality")
+                .poBox("poBox")
+                .postalCode("postalCode")
+                .premises("premises")
+                .region("region")
+                .build();
+        localDate1 = LocalDate.of(2019, 11, 5);
+        dob1 = new Date3Tuple(12, 9, 1970);
+        instant1 = Instant.parse("2019-11-05T00:00:00Z");
+        identification = new Identification("type", "auth", "legal", "place", "number");
+        links = new Links(URI.create(SELF_URI), URI.create(SELF_URI + "validation_status"));
+        nameElement = new NamesElement("John", "Bill", "Jones", "Mr");
+        nameElementDto = new NamesElementDto(nameElement.getForename(), nameElement.getOtherForenames(),
+                nameElement.getSurname(), nameElement.getTitle());
+    }
+
+    @Test
+    void dtoToPscIndividualFiling(){
+        final var dto = PscIndividualFilingDto.builder()
+                .address(addressDto)
+                .addressSameAsRegisteredOfficeAddress(true)
+                .name("John Jones")
+                .namesElement(nameElementDto)
+                .dateOfBirth(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear()))
+                .countryOfResidence("countryOfResidence")
+                .name("name")
+                .naturesOfControl(List.of("a", "b", "c"))
+                .referenceEtag("referenceEtag")
+                .referencePscId("referencePscId")
+                .nationality("nation")
+                .referencePscListEtag("list")
+                .residentialAddress(addressDto)
+                .residentialAddressSameAsCorrespondenceAddress(true)
+                .ceasedOn(localDate1)
+                .notifiedOn(localDate1)
+                .build();
+
+        final var filing = testMapper.map(dto);
+
+        assertThat(filing.getAddress(), is(equalTo(address)));
+        assertThat(filing.getAddressSameAsRegisteredOfficeAddress(), is(true));
+        assertThat(filing.getNotifiedOn(),
+                is(localDate1.atStartOfDay().toLocalDate()));
+        assertThat(filing.getCountryOfResidence(), is("countryOfResidence"));
+        assertThat(filing.getCreatedAt(), is(nullValue()));
+        assertThat(filing.getDateOfBirth(), is(dob1));
+        assertThat(filing.getKind(), is(nullValue()));
+        assertThat(filing.getLinks(), is(nullValue()));
+        assertThat(filing.getName(), is("name"));
+        assertThat(filing.getNaturesOfControl(), contains("a", "b", "c"));
+        assertThat(filing.getReferenceEtag(), is("referenceEtag"));
+        assertThat(filing.getReferencePscId(), is("referencePscId"));
+        assertThat(filing.getNationality(), is("nation"));
+        assertThat(filing.getReferenceEtag(), is("referenceEtag"));
+        assertThat(filing.getReferencePscId(), is("referencePscId"));
+        assertThat(filing.getReferencePscListEtag(), is("list"));
+        assertThat(filing.getCeasedOn(), is(localDate1.atStartOfDay().toLocalDate()));
+        assertThat(filing.getResidentialAddress(), is(equalTo(address)));
+        assertThat(filing.getResidentialAddressSameAsCorrespondenceAddress(), is(true));
+        assertThat(filing.getUpdatedAt(), is(nullValue()));
+    }
+
+    @Test
+    void nullDtoToPscIndividualFiling() {
+        final var filing = testMapper.map((PscIndividualFilingDto) null);
+
+        assertThat(filing, is(nullValue()));
+    }
+
+    @Test
+    void emptyDtoToPscIndividualFiling() {
+        final var dto = PscIndividualFilingDto.builder().naturesOfControl(Arrays.asList(null, null))
+                .build();
+        final var emptyFiling = PscIndividualFiling.builder().naturesOfControl(Collections.singleton(null))
+                .build();
+
+        final var filing = testMapper.map(dto);
+
+        assertThat(filing, is(equalTo(emptyFiling)));
+        assertThat(filing.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
+        assertThat(filing.getResidentialAddressSameAsCorrespondenceAddress(), is(nullValue()));
+    }
+
+    @Test
+    void emptyPscNullNaturesOfControlDtoToPscFiling() {
+        final var dto = PscIndividualFilingDto.builder().naturesOfControl(null)
+                .build();
+        final var emptyFiling = PscIndividualFiling.builder().naturesOfControl(null)
+                .build();
+
+        final var filing = testMapper.map(dto);
+
+        assertThat(filing, is(equalTo(emptyFiling)));
+        assertThat(filing.getNaturesOfControl(), is(nullValue()));
+    }
+
+    @Test
+    void pscIndividualFilingToDto() {
+        final var filing = PscIndividualFiling.builder()
+                .address(address)
+                .addressSameAsRegisteredOfficeAddress(true)
+                .notifiedOn(localDate1)
+                .countryOfResidence("countryOfResidence")
+                .createdAt(instant1)
+                .dateOfBirth(dob1)
+                .naturesOfControl(Set.of("a", "b", "c"))
+                .identification(identification)
+                .kind("kind")
+                .links(links)
+                .name("name")
+                .namesElement(nameElement)
+                .nationality("nation")
+                .referenceEtag("referenceEtag")
+                .referencePscId("referencePscId")
+                .referencePscListEtag("list")
+                .residentialAddress(address)
+                .residentialAddressSameAsCorrespondenceAddress(true)
+                .ceasedOn(localDate1)
+                .updatedAt(instant1)
+                .statementActionDate(localDate1)
+                .statementType("type1")
+                .build();
+
+        final var dto = testMapper.map(filing);
+
+        assertThat(dto.getAddress(), is(equalTo(addressDto)));
+        assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(true));
+        assertThat(dto.getNotifiedOn(), is(localDate1));
+        assertThat(dto.getCountryOfResidence(), is("countryOfResidence"));
+        assertThat(dto.getDateOfBirth(),
+                is(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear())));
+        assertThat(dto.getNamesElement(), is(nameElementDto));
+        assertThat(dto.getName(), is("name"));
+        assertThat(dto.getNaturesOfControl(), contains("a", "b", "c"));
+        assertThat(dto.getReferenceEtag(), is("referenceEtag"));
+        assertThat(dto.getReferencePscId(), is("referencePscId"));
+        assertThat(dto.getNationality(), is("nation"));
+        assertThat(dto.getReferencePscListEtag(), is("list"));
+        assertThat(dto.getResidentialAddress(), is(equalTo(addressDto)));
+        assertThat(dto.getResidentialAddressSameAsCorrespondenceAddress(), is(true));
+        assertThat(dto.getCeasedOn(), is(localDate1));
+    }
+
+    @Test
+    void nullPscIndividualFilingNaturesOfControlToDto() {
+        final var dto = testMapper.map((PscIndividualFiling) null);
+
+        assertThat(dto, is(nullValue()));
+    }
+
+    @Test
+    void emptyPscIndividualFilingNullNaturesOfControlToDto() {
+        final var filing = PscIndividualFiling.builder()
+                .build();
+        final var emptyDto = PscIndividualFilingDto.builder()
+                .build();
+
+        final var dto = testMapper.map(filing);
+
+        assertThat(dto, is(equalTo(emptyDto)));
+    }
+
+    @Test
+    void emptyPscIndividualFilingNullNatureOfControlToDto() {
+        final var filing = PscIndividualFiling.builder().naturesOfControl(Collections.singleton(null))
+                .build();
+        final var emptyDto = PscIndividualFilingDto.builder().naturesOfControl(Collections.singletonList(null))
+                .build();
+
+        final var dto = testMapper.map(filing);
+
+        assertThat(dto, is(equalTo(emptyDto)));
+    }
+
+    @Test
+    void emptyPscIndividualFilingToDto() {
+        final var filing = PscIndividualFiling.builder().naturesOfControl(Collections.emptySet())
+                .build();
+        final var emptyDto = PscIndividualFilingDto.builder().naturesOfControl(Collections.emptyList())
+                .build();
+
+        final var dto = testMapper.map(filing);
+
+        assertThat(dto, is(equalTo(emptyDto)));
+        assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
+        assertThat(dto.getResidentialAddressSameAsCorrespondenceAddress(), is(nullValue()));
+    }
+}
+
