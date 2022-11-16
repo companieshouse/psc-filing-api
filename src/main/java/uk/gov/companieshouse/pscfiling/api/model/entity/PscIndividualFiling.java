@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -342,7 +343,7 @@ public class PscIndividualFiling {
         public Builder naturesOfControl(final Set<String> value) {
 
             buildSteps.add(data -> data.naturesOfControl =
-                    Optional.ofNullable(value).map(s -> s.stream().collect(Collectors.toSet())).orElse(null));
+                    Optional.ofNullable(value).map(s -> new HashSet<>(s)).orElse(null));
             return this;
         }
 
