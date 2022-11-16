@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -343,7 +342,7 @@ public class PscIndividualFiling {
         public Builder naturesOfControl(final Set<String> value) {
 
             buildSteps.add(data -> data.naturesOfControl =
-                    Optional.ofNullable(value).map(s -> new HashSet<>(s)).orElse(null));
+                    Optional.ofNullable(value).map(HashSet::new).orElse(null));
             return this;
         }
 
@@ -419,10 +418,10 @@ public class PscIndividualFiling {
         }
 
         public PscIndividualFiling build() {
-            final var PscIndividualFiling = new PscIndividualFiling();
-            buildSteps.forEach(s -> s.accept(PscIndividualFiling));
+            final var pscIndividualFiling = new PscIndividualFiling();
+            buildSteps.forEach(s -> s.accept(pscIndividualFiling));
 
-            return PscIndividualFiling;
+            return pscIndividualFiling;
         }
     }
 }
