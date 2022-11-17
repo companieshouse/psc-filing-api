@@ -9,9 +9,15 @@ clean:
 	rm -rf ./build-*
 	rm -rf ./build.log-*
 
+FAIL_BUILD_CVSS_LIMIT ?= 0
+
 .PHONY: security-check
 security-check:
-	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=0
+	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false -DfailBuildOnCVSS=$(FAIL_BUILD_CVSS_LIMIT)
+	mvn sonar:sonar
+
+.PHONY: security-report
+security-report: verify sonar
 
 .PHONY: test-unit
 test-unit:
