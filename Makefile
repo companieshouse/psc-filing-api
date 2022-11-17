@@ -20,9 +20,6 @@ security-report:
 	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false
 	mvn sonar:sonar
 
-.PHONY: security-report
-security-report: verify sonar
-
 .PHONY: test-unit
 test-unit:
 	echo "make test-unit does nothing, use build target instead"
