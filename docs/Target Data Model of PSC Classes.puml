@@ -2,7 +2,7 @@
 'https://plantuml.com/class-diagram
 'ortho
 skinparam linetype poly
-skinparam nodesep 60 /' horizontal separator '/
+skinparam nodesep 50 /' horizontal separator '/
 skinparam ranksep 50 /' vertical separator '/
 skinparam titleBorderRoundCorner 15
 skinparam titleBorderThickness 1
@@ -43,20 +43,36 @@ title PSC Filing API: Target Data Model Class Structure
 
             class IdentificationDto {
                 -countryRegistered
-                -legalAuthority
-                -legalForm
                 -placeRegistered
                 -registrationNumber
+                -legalAuthority
+               -legalForm
             }
 
-            class NamesElementDto {
+            class NameElementsDto {
                 -forename
                 -otherForenames
                 -surname
                 -title
             }
+            
+            class PscStatementDto {
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statementActionDate: LocalDate
+                -statementType []
+            }
 
-            abstract class PscFilingDto {
+          note left of PscStatementDto::referenceStatementId
+                Required for PSC09
+           end note
+
+          note left of PscStatementDto::statementType
+                See public spec for full list
+           end note            
+
+            abstract class PscDto {
                 -address: AddressDto
                 -addressSameAsRegisteredOfficeAddress: Boolean
                 -ceasedOn: LocalDate
@@ -69,73 +85,47 @@ title PSC Filing API: Target Data Model Class Structure
                 -registerEntryDate: LocalDate
             }
 
-            class PscFilingIndividualDto {
+           note left of PscDto::naturesOfControl
+                See public spec for full list
+            end note
+
+/'            together {
+                class PscIndividualDto
+                class PscFilingCorporateDto
+                class PscFilingRleDto
+            }'/
+
+            class PscIndividualDto {
                 -countryOfResidence
                 -dateOfBirth: Date3TupleDto
-                -nameElements: NamesElementDto
+                -nameElements: NameElementsDto
                 -nationality
                 -residentialAddress: AddressDto
                 -residentialAddressSameAsCorrespondenceAddress: Boolean
             }
 
-            class PscFilingOrpDto {
-                -identification: IdentificationDto
+           note "This models an individual PSC" as Note2
+             Note2 ... PscIndividualDto
+
+            class PscIdentifiedDto {
+                -identification:IdentificationDto
             }
-
-            class PscFilingRleDto {
-                -identification: IdentificationDto
-            }
-
-            class LegalIdentificationDto {
-                legalAuthority
-                legalForm
-            }
-
-/'           note right of PscFilingRleDto::identification
-                legalAuthority
-                and/or legalForm
-            end note'/
-
-            class StatementDto {
-                -referenceEtag
-                -referenceStatementId
-                -restrictionsNoticeWithdrawlReason
-                -statementActionDate: LocalDate
-                -statementType []
-            }
-
-          note left of StatementDto::referenceStatementId
-                required for PSC09
-           end note
-
-          note left of StatementDto::statementType
-                see public spec for full list
-           end note
-
-            together {
-                class PscFilingIndividualDto
-                class PscFilingOrpDto
-                class PscFilingRleDto
-            }
-
-            together {
+           note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
+                Note1 ... PscIdentifiedDto
+/'            together {
                 class AddressDto
                 class Date3TupleDto
                 class IdentificationDto
-                class NamesElementDto
-            }
+                class NameElementsDto
+            }'/            
 
-            PscFilingIndividualDto - Date3TupleDto
-
-            PscFilingDto::address o-l- AddressDto
-            PscFilingIndividualDto::residential_address o-- AddressDto
-            PscFilingIndividualDto o-u- Date3TupleDto
-            PscFilingRleDto o-u- LegalIdentificationDto
-            PscFilingOrpDto o-u- IdentificationDto
-            PscFilingIndividualDto o-u- NamesElementDto
-            PscFilingDto <|-- PscFilingIndividualDto
-            PscFilingDto <|-- PscFilingOrpDto
-            PscFilingDto <|-- PscFilingRleDto
+            PscIndividualDto::dateOfBirth o-- Date3TupleDto
+            PscDto::address o-- AddressDto
+            PscIndividualDto::residentialAddress o-- AddressDto
+            PscDto <|-- PscIdentifiedDto
+            PscIdentifiedDto::identification o-- IdentificationDto
+            PscDto <|-- PscIndividualDto
+            PscIndividualDto::nameElements o-- NameElementsDto
         }
     }
 
