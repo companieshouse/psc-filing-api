@@ -1,0 +1,142 @@
+@startuml
+'https://plantuml.com/class-diagram
+'ortho
+skinparam linetype poly
+skinparam nodesep 60 /' horizontal separator '/
+skinparam ranksep 50 /' vertical separator '/
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 1
+skinparam titleBorderColor black
+skinparam titleBackgroundColor PaleTurquoise
+skinparam groupInheritance 1
+scale 1
+hide empty members
+'hide circle'
+skinparam titleFontSize 16
+
+title PSC Filing API: Target Data Model Class Structure
+
+    package "model" {
+
+        package "dto" {
+
+            class AddressDto {
+                -addressLine1
+                -addressLine2
+                -careOf
+                -country
+                -poBox
+                -postalCode
+                -premises
+                -region
+            }
+
+            class Date3TupleDto {
+                -day:int
+                -month:int
+                -year:int
+            }
+            note right of Date3TupleDto
+               day is null
+               for partial DOB
+            end note
+
+            class IdentificationDto {
+                -countryRegistered
+                -legalAuthority
+                -legalForm
+                -placeRegistered
+                -registrationNumber
+            }
+
+            class NamesElementDto {
+                -forename
+                -otherForenames
+                -surname
+                -title
+            }
+
+            abstract class PscFilingDto {
+                -address: AddressDto
+                -addressSameAsRegisteredOfficeAddress: Boolean
+                -ceasedOn: LocalDate
+                -name
+                -naturesOfControl[1..*]
+                -notifiedOn: LocalDate
+                -referenceEtag
+                -referencePscId
+                -referencePscListEtag
+                -registerEntryDate: LocalDate
+            }
+
+            class PscFilingIndividualDto {
+                -countryOfResidence
+                -dateOfBirth: Date3TupleDto
+                -nameElements: NamesElementDto
+                -nationality
+                -residentialAddress: AddressDto
+                -residentialAddressSameAsCorrespondenceAddress: Boolean
+            }
+
+            class PscFilingOrpDto {
+                -identification: IdentificationDto
+            }
+
+            class PscFilingRleDto {
+                -identification: IdentificationDto
+            }
+
+            class LegalIdentificationDto {
+                legalAuthority
+                legalForm
+            }
+
+/'           note right of PscFilingRleDto::identification
+                legalAuthority
+                and/or legalForm
+            end note'/
+
+            class StatementDto {
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statementActionDate: LocalDate
+                -statementType []
+            }
+
+          note left of StatementDto::referenceStatementId
+                required for PSC09
+           end note
+
+          note left of StatementDto::statementType
+                see public spec for full list
+           end note
+
+            together {
+                class PscFilingIndividualDto
+                class PscFilingOrpDto
+                class PscFilingRleDto
+            }
+
+            together {
+                class AddressDto
+                class Date3TupleDto
+                class IdentificationDto
+                class NamesElementDto
+            }
+
+            PscFilingIndividualDto - Date3TupleDto
+
+            PscFilingDto::address o-l- AddressDto
+            PscFilingIndividualDto::residential_address o-- AddressDto
+            PscFilingIndividualDto o-u- Date3TupleDto
+            PscFilingRleDto o-u- LegalIdentificationDto
+            PscFilingOrpDto o-u- IdentificationDto
+            PscFilingIndividualDto o-u- NamesElementDto
+            PscFilingDto <|-- PscFilingIndividualDto
+            PscFilingDto <|-- PscFilingOrpDto
+            PscFilingDto <|-- PscFilingRleDto
+        }
+    }
+
+@enduml

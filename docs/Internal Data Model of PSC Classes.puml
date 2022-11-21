@@ -1,0 +1,138 @@
+@startuml
+skinparam linetype poly
+skinparam nodesep 60 /' horizontal separator '/
+skinparam ranksep 50 /' vertical separator '/
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 1
+skinparam titleBorderColor black
+skinparam titleBackgroundColor PaleTurquoise
+skinparam groupInheritance 1
+scale 1
+hide empty members
+'hide circle'
+skinparam titleFontSize 16
+
+title PSC Filing API: Internal Data Model Class Structure
+
+    package "model" {
+
+        package "entity" {
+
+            class Address {
+                -addressLine1
+                -addressLine2
+                -careOf
+                -country
+                -poBox
+                -postalCode
+                -premises
+                -region
+            }
+
+            class Date3Tuple {
+                -day:int
+                -month:int
+                -year:int
+            }
+            note right of Date3Tuple
+               day is null
+               for partial DOB
+            end note
+
+            class Identification {
+                -countryRegistered
+                -legalAuthority
+                -legalForm
+                -placeRegistered
+                -registrationNumber
+            }
+
+            class NamesElement {
+                -forename
+                -otherForenames
+                -surname
+                -title
+            }
+
+            class Links {
+                -URI: self
+                -URI: validationStatus?
+            }
+
+            abstract class PscFiling {
+                -address: Address
+                -addressSameAsRegisteredOfficeAddress: Boolean
+                -ceasedOn: LocalDate
+                -createdAt: Instant
+                -etag
+                -identification
+                -kind
+                -links: Links
+                -name
+                -naturesOfControl[1..*]
+                -notifiedOn: LocalDate
+                -referenceEtag
+                -referencePscId
+                -referencePscListEtag
+                -registerEntryDate: LocalDate
+                -updatedAt: Instant
+            }
+
+            class PscFilingIndividual {
+                -countryOfResidence
+                -dateOfBirth: Date3Tuple
+                -nameElements: NamesElement
+                -nationality
+                -residentialAddress: Address
+                -residentialAddressSameAsCorrespondenceAddress: Boolean
+                -statementActionDate: LocalDate
+                -statementType
+            }
+
+            class PscFilingRle {
+            }
+
+            class LegalIdentification {
+                legalAuthority
+                legalForm
+            }
+
+            class PscFilingOrp {
+            }
+
+            class Statement {
+                -actionDate: LocalDate
+                -createdAt: Instant
+                -kind
+                -links: Links
+            }
+
+            together {
+                class PscFilingIndividual
+                class PscFilingOrp
+                class PscFilingRle
+            }
+
+            together {
+                class Address
+                class Date3Tuple
+                class Identification
+                class NamesElement
+            }
+
+            PscFiling::address o-l- Address
+            PscFilingIndividual::residential_address o-- Address
+            PscFilingIndividual o-u- Date3Tuple
+            PscFilingIndividual o-u- Identification
+            PscFilingOrp o-u- Identification
+            PscFiling o-u- Links
+            PscFilingIndividual o-u- NamesElement
+            PscFiling <|-- PscFilingIndividual
+            PscFiling <|-- PscFilingOrp
+            PscFiling <|-- PscFilingRle
+            PscFilingRle::legalIdentification o-l- LegalIdentification
+        }
+    }
+
+
+@enduml
