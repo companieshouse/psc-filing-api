@@ -1,18 +1,23 @@
 @startuml
 skinparam linetype poly
-skinparam nodesep 60 /' horizontal separator '/
+skinparam nodesep 100 /' horizontal separator '/
 skinparam ranksep 50 /' vertical separator '/
 skinparam titleBorderRoundCorner 15
 skinparam titleBorderThickness 1
 skinparam titleBorderColor black
-skinparam titleBackgroundColor PaleTurquoise
+skinparam titleBackgroundColor AliceBlue
 skinparam groupInheritance 1
 scale 1
 hide empty members
 'hide circle'
 skinparam titleFontSize 16
+skinparam legendBackgroundColor AliceBlue
 
 title PSC Filing API: Internal Data Model Class Structure
+legend right
+|=Revision |=Date |
+|    0.1    |     22/11/2022    |
+end legend
 
     package "model" {
 
@@ -47,7 +52,7 @@ title PSC Filing API: Internal Data Model Class Structure
                 -registrationNumber
             }
 
-            class NamesElement {
+            class NameElements {
                 -forename
                 -otherForenames
                 -surname
@@ -55,11 +60,10 @@ title PSC Filing API: Internal Data Model Class Structure
             }
 
             class Links {
-                -URI: self
-                -URI: validationStatus?
+                -self: URI
             }
 
-            abstract class PscFiling {
+            abstract class Psc {
                 -address: Address
                 -addressSameAsRegisteredOfficeAddress: Boolean
                 -ceasedOn: LocalDate
@@ -78,10 +82,14 @@ title PSC Filing API: Internal Data Model Class Structure
                 -updatedAt: Instant
             }
 
-            class PscFilingIndividual {
+           note left of Psc::naturesOfControl
+                See public spec for full list
+            end note
+
+            class PscIndividual {
                 -countryOfResidence
                 -dateOfBirth: Date3Tuple
-                -nameElements: NamesElement
+                -nameElements: NameElements
                 -nationality
                 -residentialAddress: Address
                 -residentialAddressSameAsCorrespondenceAddress: Boolean
@@ -89,48 +97,59 @@ title PSC Filing API: Internal Data Model Class Structure
                 -statementType
             }
 
-            class PscFilingRle {
+            class PscIdentified {
             }
-
-            class LegalIdentification {
-                legalAuthority
-                legalForm
-            }
-
-            class PscFilingOrp {
-            }
+           note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
+           Note1 ... PscIdentified
 
             class Statement {
                 -actionDate: LocalDate
                 -createdAt: Instant
                 -kind
                 -links: Links
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statement
+                -updatedAt: Instant
             }
 
+
+          note left of Statement::referenceStatementId
+                Required for PSC09
+           end note
+
+          note left of Statement::statement
+                See public spec for full list
+           end note
+
+           Identification -[hidden] PscIdentified
+
+/'            Date3Tuple -[hidden] Address
+           Links -[hidden] Statement
+            PscIndividual -[hidden] PscIdentified
+
             together {
-                class PscFilingIndividual
-                class PscFilingOrp
-                class PscFilingRle
+                class PscIndividual
+                class PscIdentified
             }
 
             together {
                 class Address
                 class Date3Tuple
                 class Identification
-                class NamesElement
-            }
+                class NameElements
+            }'/
 
-            PscFiling::address o-l- Address
-            PscFilingIndividual::residential_address o-- Address
-            PscFilingIndividual o-u- Date3Tuple
-            PscFilingIndividual o-u- Identification
-            PscFilingOrp o-u- Identification
-            PscFiling o-u- Links
-            PscFilingIndividual o-u- NamesElement
-            PscFiling <|-- PscFilingIndividual
-            PscFiling <|-- PscFilingOrp
-            PscFiling <|-- PscFilingRle
-            PscFilingRle::legalIdentification o-l- LegalIdentification
+            Psc::address o-l- Address
+            PscIndividual::residential_address o-- Address
+            PscIndividual::dateOfBirth o-u- Date3Tuple
+            PscIdentified o-u- Identification
+            Psc::links o-u- Links
+            Statement::links o-u- Links
+            PscIndividual::nameElements o-u- NameElements
+            Psc <|-- PscIndividual
+            Psc <|-- PscIdentified
         }
     }
 
