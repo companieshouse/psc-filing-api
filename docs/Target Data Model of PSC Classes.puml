@@ -1,0 +1,128 @@
+@startuml
+'https://plantuml.com/class-diagram
+'ortho/polyline
+'skinparam linetype polyline
+skinparam nodesep 50 /' horizontal separator '/
+skinparam ranksep 100 /' vertical separator '/
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 1
+skinparam titleBorderColor black
+skinparam titleBackgroundColor AliceBlue
+skinparam groupInheritance 1
+skinparam legendBackgroundColor AliceBlue
+
+scale 800 width
+hide empty members
+'hide circle'
+skinparam titleFontSize 16
+
+title PSC Filing API: Target Data Model Class Structure
+
+legend right
+|=Revision |=Date |
+|    0.1    |     21/11/2022    |
+endlegend
+
+    package "model" {
+
+        package "dto" {
+
+            class AddressDto {
+                -addressLine1
+                -addressLine2
+                -careOf
+                -country
+                -poBox
+                -postalCode
+                -premises
+                -region
+            }
+
+            class Date3TupleDto {
+                -day:int {nullable}
+                -month:int
+                -year:int
+            }
+
+/'             note left of Date3TupleDto
+               day is null
+               for partial DOB
+            end note'/
+
+            class IdentificationDto {
+                -countryRegistered
+                -placeRegistered
+                -registrationNumber
+                -legalAuthority
+               -legalForm
+            }
+
+            class NameElementsDto {
+                -forename
+                -otherForenames
+                -surname
+                -title
+            }
+            
+            class PscStatementDto {
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statementActionDate: LocalDate
+                -statementType
+            }
+
+          note left of PscStatementDto::referenceStatementId
+                Required for PSC09
+           end note
+
+/'          note left of PscStatementDto::statementType
+                See public spec for full list
+           end note'/
+
+            abstract class PscDto {
+                -address: AddressDto
+                -addressSameAsRegisteredOfficeAddress: Boolean
+                -ceasedOn: LocalDate
+                -name
+                -naturesOfControl[1..*]
+                -notifiedOn: LocalDate
+                -referenceEtag
+                -referencePscId
+                -referencePscListEtag
+                -registerEntryDate: LocalDate
+            }
+
+/'           note left of PscDto::naturesOfControl
+                See public spec for full list
+            end note'/
+
+            class PscIndividualDto {
+                -countryOfResidence
+                -dateOfBirth: Date3TupleDto
+                -nationality
+                -residentialAddress: AddressDto
+                -residentialAddressSameAsCorrespondenceAddress: Boolean
+                -nameElements: NameElementsDto
+            }
+
+/'           note "This models an individual PSC" as Note2
+             Note2 .. PscIndividualDto'/
+
+            class PscWithIdentificationDto {
+                -identification:IdentificationDto
+            }
+           note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
+                Note1 .. PscWithIdentificationDto
+
+            PscDto <|-- PscIndividualDto
+            PscDto <|-- PscWithIdentificationDto
+            PscIndividualDto::nameElements o-- NameElementsDto
+            PscWithIdentificationDto o-- IdentificationDto
+            AddressDto -o PscDto::address
+            PscIndividualDto::residentialAddress o- AddressDto
+            Date3TupleDto -o PscIndividualDto::dateOfBirth
+        }
+    }
+
+@enduml
