@@ -7,7 +7,7 @@ skinparam titleBorderThickness 1
 skinparam titleBorderColor black
 skinparam titleBackgroundColor AliceBlue
 skinparam groupInheritance 1
-scale 1
+scale 800 width
 hide empty members
 'hide circle'
 skinparam titleFontSize 16
@@ -35,14 +35,14 @@ end legend
             }
 
             class Date3Tuple {
-                -day:int
+                -day:int {nullable}
                 -month:int
                 -year:int
             }
-            note right of Date3Tuple
+/'            note right of Date3Tuple
                day is null
                for partial DOB
-            end note
+            end note'/
 
             class Identification {
                 -countryRegistered
@@ -59,9 +59,25 @@ end legend
                 -title
             }
 
-            class Links {
-                -self: URI
+            class Statement {
+                -actionDate: LocalDate
+                -createdAt: Instant
+                -kind
+                -links: Links
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statement
+                -updatedAt: Instant
             }
+
+          note left of Statement::referenceStatementId
+                Required for PSC09
+           end note
+
+/'          note left of Statement::statement
+                See public spec for full list
+           end note'/
 
             abstract class Psc {
                 -address: Address
@@ -82,10 +98,6 @@ end legend
                 -updatedAt: Instant
             }
 
-           note left of Psc::naturesOfControl
-                See public spec for full list
-            end note
-
             class PscIndividual {
                 -countryOfResidence
                 -dateOfBirth: Date3Tuple
@@ -97,61 +109,33 @@ end legend
                 -statementType
             }
 
-            class PscIdentified {
-            }
-           note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
-           Note1 ... PscIdentified
-
-            class Statement {
-                -actionDate: LocalDate
-                -createdAt: Instant
-                -kind
-                -links: Links
-                -referenceEtag
-                -referenceStatementId
-                -restrictionsNoticeWithdrawlReason
-                -statement
-                -updatedAt: Instant
+            class PscWithIdentification {
+                -identification: Identification
             }
 
+          note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
 
-          note left of Statement::referenceStatementId
-                Required for PSC09
-           end note
+          PscWithIdentification .. Note1
 
-          note left of Statement::statement
+            class Links {
+                -self: URI
+            }
+
+/'           note left of Psc::naturesOfControl
                 See public spec for full list
-           end note
+            end note'/
 
-           Identification -[hidden] PscIdentified
-
-/'            Date3Tuple -[hidden] Address
-           Links -[hidden] Statement
-            PscIndividual -[hidden] PscIdentified
-
-            together {
-                class PscIndividual
-                class PscIdentified
-            }
-
-            together {
-                class Address
-                class Date3Tuple
-                class Identification
-                class NameElements
-            }'/
-
-            Psc::address o-l- Address
-            PscIndividual::residential_address o-- Address
-            PscIndividual::dateOfBirth o-u- Date3Tuple
-            PscIdentified o-u- Identification
-            Psc::links o-u- Links
-            Statement::links o-u- Links
-            PscIndividual::nameElements o-u- NameElements
             Psc <|-- PscIndividual
-            Psc <|-- PscIdentified
+            Psc <|-- PscWithIdentification
+            PscIndividual::nameElements o-- NameElements
+            Identification -o PscWithIdentification::identification
+            Psc::address o- Address
+            Address --o PscIndividual::residentialAddress
+            PscIndividual::dateOfBirth o- Date3Tuple
+            Links -o Psc::links
+            Statement::links o- Links
+
         }
     }
-
 
 @enduml
