@@ -1,0 +1,135 @@
+@startuml
+skinparam linetype poly
+skinparam nodesep 100 /' horizontal separator '/
+skinparam ranksep 50 /' vertical separator '/
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 1
+skinparam titleBorderColor black
+skinparam titleBackgroundColor AliceBlue
+skinparam groupInheritance 1
+scale 800 width
+hide empty members
+'hide circle'
+skinparam titleFontSize 16
+skinparam legendBackgroundColor AliceBlue
+
+title PSC Filing API: Internal Data Model Class Structure
+legend right
+|=Revision |=Date |
+|    0.1    |     22/11/2022    |
+end legend
+
+    package "model" {
+
+        package "entity" {
+
+            class Address {
+                -addressLine1
+                -addressLine2
+                -careOf
+                -country
+                -poBox
+                -postalCode
+                -premises
+                -region
+            }
+
+            class Date3Tuple {
+                -day:int {nullable}
+                -month:int
+                -year:int
+            }
+/'            note right of Date3Tuple
+               day is null
+               for partial DOB
+            end note'/
+
+            class Identification {
+                -countryRegistered
+                -legalAuthority
+                -legalForm
+                -placeRegistered
+                -registrationNumber
+            }
+
+            class NameElements {
+                -forename
+                -otherForenames
+                -surname
+                -title
+            }
+
+            class Statement {
+                -actionDate: LocalDate
+                -createdAt: Instant
+                -kind
+                -links: Links
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statement
+                -updatedAt: Instant
+            }
+
+          note left of Statement::referenceStatementId
+                Required for PSC09
+           end note
+
+/'          note left of Statement::statement
+                See public spec for full list
+           end note'/
+
+            abstract class Psc {
+                -address: Address
+                -addressSameAsRegisteredOfficeAddress: Boolean
+                -ceasedOn: LocalDate
+                -createdAt: Instant
+                -etag
+                -identification
+                -kind
+                -links: Links
+                -name
+                -naturesOfControl[1..*]
+                -notifiedOn: LocalDate
+                -referenceEtag
+                -referencePscId
+                -referencePscListEtag
+                -registerEntryDate: LocalDate
+                -updatedAt: Instant
+            }
+
+            class PscWithIdentification {
+                -identification: Identification
+            }
+          note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
+          PscWithIdentification .. Note1
+
+            class PscIndividual {
+                -countryOfResidence
+                -nameElements: NameElements
+                -nationality
+                -residentialAddress: Address
+                -residentialAddressSameAsCorrespondenceAddress: Boolean
+                -dateOfBirth: Date3Tuple
+                -statementActionDate: LocalDate
+                -statementType
+            }
+
+            class Links {
+                -self: URI
+            }
+
+            Psc <|-- PscWithIdentification
+            Psc <|-- PscIndividual
+            NameElements -o PscIndividual::nameElements
+            Identification -o PscWithIdentification::identification
+            Psc::address o- Address
+            Address --o PscIndividual::residentialAddress
+            PscIndividual::dateOfBirth o-- Date3Tuple
+            Links -o Psc::links
+            Statement::links o- Links
+
+        }
+    }
+
+@enduml
