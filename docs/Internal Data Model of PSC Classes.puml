@@ -98,40 +98,34 @@ end legend
                 -updatedAt: Instant
             }
 
+            class PscWithIdentification {
+                -identification: Identification
+            }
+          note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
+          PscWithIdentification .. Note1
+
             class PscIndividual {
                 -countryOfResidence
-                -dateOfBirth: Date3Tuple
                 -nameElements: NameElements
                 -nationality
                 -residentialAddress: Address
                 -residentialAddressSameAsCorrespondenceAddress: Boolean
+                -dateOfBirth: Date3Tuple
                 -statementActionDate: LocalDate
                 -statementType
             }
-
-            class PscWithIdentification {
-                -identification: Identification
-            }
-
-          note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
-
-          PscWithIdentification .. Note1
 
             class Links {
                 -self: URI
             }
 
-/'           note left of Psc::naturesOfControl
-                See public spec for full list
-            end note'/
-
-            Psc <|-- PscIndividual
             Psc <|-- PscWithIdentification
-            PscIndividual::nameElements o-- NameElements
+            Psc <|-- PscIndividual
+            NameElements -o PscIndividual::nameElements
             Identification -o PscWithIdentification::identification
             Psc::address o- Address
             Address --o PscIndividual::residentialAddress
-            PscIndividual::dateOfBirth o- Date3Tuple
+            PscIndividual::dateOfBirth o-- Date3Tuple
             Links -o Psc::links
             Statement::links o- Links
 

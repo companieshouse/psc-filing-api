@@ -100,10 +100,10 @@ endlegend
             class PscIndividualDto {
                 -countryOfResidence
                 -dateOfBirth: Date3TupleDto
-                -nameElements: NameElementsDto
                 -nationality
                 -residentialAddress: AddressDto
                 -residentialAddressSameAsCorrespondenceAddress: Boolean
+                -nameElements: NameElementsDto
             }
 
 /'           note "This models an individual PSC" as Note2
