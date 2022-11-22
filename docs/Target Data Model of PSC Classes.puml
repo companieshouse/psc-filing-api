@@ -1,20 +1,27 @@
 @startuml
 'https://plantuml.com/class-diagram
-'ortho
-skinparam linetype poly
+'ortho/polyline
+'skinparam linetype polyline
 skinparam nodesep 50 /' horizontal separator '/
-skinparam ranksep 50 /' vertical separator '/
+skinparam ranksep 100 /' vertical separator '/
 skinparam titleBorderRoundCorner 15
 skinparam titleBorderThickness 1
 skinparam titleBorderColor black
-skinparam titleBackgroundColor PaleTurquoise
+skinparam titleBackgroundColor AliceBlue
 skinparam groupInheritance 1
-scale 1
+skinparam legendBackgroundColor AliceBlue
+
+scale 800 width
 hide empty members
 'hide circle'
 skinparam titleFontSize 16
 
 title PSC Filing API: Target Data Model Class Structure
+
+legend right
+|=Revision |=Date |
+|    0.1    |     21/11/2022    |
+endlegend
 
     package "model" {
 
@@ -32,14 +39,15 @@ title PSC Filing API: Target Data Model Class Structure
             }
 
             class Date3TupleDto {
-                -day:int
+                -day:int {nullable}
                 -month:int
                 -year:int
             }
-            note right of Date3TupleDto
+
+/'             note left of Date3TupleDto
                day is null
                for partial DOB
-            end note
+            end note'/
 
             class IdentificationDto {
                 -countryRegistered
@@ -61,16 +69,16 @@ title PSC Filing API: Target Data Model Class Structure
                 -referenceStatementId
                 -restrictionsNoticeWithdrawlReason
                 -statementActionDate: LocalDate
-                -statementType []
+                -statementType
             }
 
           note left of PscStatementDto::referenceStatementId
                 Required for PSC09
            end note
 
-          note left of PscStatementDto::statementType
+/'          note left of PscStatementDto::statementType
                 See public spec for full list
-           end note            
+           end note'/
 
             abstract class PscDto {
                 -address: AddressDto
@@ -85,15 +93,9 @@ title PSC Filing API: Target Data Model Class Structure
                 -registerEntryDate: LocalDate
             }
 
-           note left of PscDto::naturesOfControl
+/'           note left of PscDto::naturesOfControl
                 See public spec for full list
-            end note
-
-/'            together {
-                class PscIndividualDto
-                class PscFilingCorporateDto
-                class PscFilingRleDto
-            }'/
+            end note'/
 
             class PscIndividualDto {
                 -countryOfResidence
@@ -104,28 +106,22 @@ title PSC Filing API: Target Data Model Class Structure
                 -residentialAddressSameAsCorrespondenceAddress: Boolean
             }
 
-           note "This models an individual PSC" as Note2
-             Note2 ... PscIndividualDto
+/'           note "This models an individual PSC" as Note2
+             Note2 .. PscIndividualDto'/
 
-            class PscIdentifiedDto {
+            class PscWithIdentificationDto {
                 -identification:IdentificationDto
             }
            note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
-                Note1 ... PscIdentifiedDto
-/'            together {
-                class AddressDto
-                class Date3TupleDto
-                class IdentificationDto
-                class NameElementsDto
-            }'/            
+                Note1 .. PscWithIdentificationDto
 
-            PscIndividualDto::dateOfBirth o-- Date3TupleDto
-            PscDto::address o-- AddressDto
-            PscIndividualDto::residentialAddress o-- AddressDto
-            PscDto <|-- PscIdentifiedDto
-            PscIdentifiedDto::identification o-- IdentificationDto
             PscDto <|-- PscIndividualDto
+            PscDto <|-- PscWithIdentificationDto
             PscIndividualDto::nameElements o-- NameElementsDto
+            PscWithIdentificationDto o-- IdentificationDto
+            AddressDto -o PscDto::address
+            PscIndividualDto::residentialAddress o- AddressDto
+            Date3TupleDto -o PscIndividualDto::dateOfBirth
         }
     }
 
