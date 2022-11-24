@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.model.mapper;
+package uk.gov.companieshouse.pscfiling.api.mapper;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import uk.gov.companieshouse.pscfiling.api.model.dto.AddressDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.Date3TupleDto;
-import uk.gov.companieshouse.pscfiling.api.model.dto.NamesElementDto;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualFilingDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.NameElementsDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Address;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Identification;
@@ -39,7 +39,7 @@ class PscIndividualFilingMapperTest {
     private Identification identification;
     private Links links;
     private NamesElement nameElement;
-    private NamesElementDto nameElementDto;
+    private NameElementsDto nameElementsDto;
     private PscIndividualFilingMapper testMapper;
 
     @BeforeEach
@@ -48,9 +48,9 @@ class PscIndividualFilingMapperTest {
         address = Address.builder()
                 .addressLine1("line1")
                 .addressLine2("line2")
-                .careOf("careOf")
-                .country("country")
-                .locality("locality")
+                .careOf("restrictionsNoticeWithdrawalReason")
+                .country("statementActionDate")
+                .locality("statementType")
                 .poBox("poBox")
                 .postalCode("postalCode")
                 .premises("premises")
@@ -59,9 +59,9 @@ class PscIndividualFilingMapperTest {
         addressDto = AddressDto.builder()
                 .addressLine1("line1")
                 .addressLine2("line2")
-                .careOf("careOf")
-                .country("country")
-                .locality("locality")
+                .careOf("restrictionsNoticeWithdrawalReason")
+                .country("statementActionDate")
+                .locality("statementType")
                 .poBox("poBox")
                 .postalCode("postalCode")
                 .premises("premises")
@@ -73,17 +73,17 @@ class PscIndividualFilingMapperTest {
         identification = new Identification("type", "auth", "legal", "place", "number");
         links = new Links(URI.create(SELF_URI), URI.create(SELF_URI + "validation_status"));
         nameElement = new NamesElement("John", "Bill", "Jones", "Mr");
-        nameElementDto = new NamesElementDto(nameElement.getForename(), nameElement.getOtherForenames(),
+        nameElementsDto = new NameElementsDto(nameElement.getForename(), nameElement.getOtherForenames(),
                 nameElement.getSurname(), nameElement.getTitle());
     }
 
     @Test
     void dtoToPscIndividualFiling(){
-        final var dto = PscIndividualFilingDto.builder()
+        final var dto = PscIndividualDto.builder()
                 .address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
                 .name("John Jones")
-                .namesElement(nameElementDto)
+                .nameElements(nameElementsDto)
                 .dateOfBirth(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear()))
                 .countryOfResidence("countryOfResidence")
                 .name("name")
@@ -125,14 +125,14 @@ class PscIndividualFilingMapperTest {
 
     @Test
     void nullDtoToPscIndividualFiling() {
-        final var filing = testMapper.map((PscIndividualFilingDto) null);
+        final var filing = testMapper.map((PscIndividualDto) null);
 
         assertThat(filing, is(nullValue()));
     }
 
     @Test
     void emptyDtoToPscIndividualFiling() {
-        final var dto = PscIndividualFilingDto.builder().naturesOfControl(Arrays.asList(null, null))
+        final var dto = PscIndividualDto.builder().naturesOfControl(Arrays.asList(null, null))
                 .build();
         final var emptyFiling = PscIndividualFiling.builder().naturesOfControl(Collections.singleton(null))
                 .build();
@@ -146,7 +146,7 @@ class PscIndividualFilingMapperTest {
 
     @Test
     void emptyPscNullNaturesOfControlDtoToPscFiling() {
-        final var dto = PscIndividualFilingDto.builder().naturesOfControl(null)
+        final var dto = PscIndividualDto.builder().naturesOfControl(null)
                 .build();
         final var emptyFiling = PscIndividualFiling.builder().naturesOfControl(null)
                 .build();
@@ -192,7 +192,7 @@ class PscIndividualFilingMapperTest {
         assertThat(dto.getCountryOfResidence(), is("countryOfResidence"));
         assertThat(dto.getDateOfBirth(),
                 is(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear())));
-        assertThat(dto.getNamesElement(), is(nameElementDto));
+        assertThat(dto.getNameElements(), is(nameElementsDto));
         assertThat(dto.getName(), is("name"));
         assertThat(dto.getNaturesOfControl(), contains("a", "b", "c"));
         assertThat(dto.getReferenceEtag(), is("referenceEtag"));
@@ -215,7 +215,7 @@ class PscIndividualFilingMapperTest {
     void emptyPscIndividualFilingNullNaturesOfControlToDto() {
         final var filing = PscIndividualFiling.builder()
                 .build();
-        final var emptyDto = PscIndividualFilingDto.builder()
+        final var emptyDto = PscIndividualDto.builder()
                 .build();
 
         final var dto = testMapper.map(filing);
@@ -227,7 +227,7 @@ class PscIndividualFilingMapperTest {
     void emptyPscIndividualFilingNullNatureOfControlToDto() {
         final var filing = PscIndividualFiling.builder().naturesOfControl(Collections.singleton(null))
                 .build();
-        final var emptyDto = PscIndividualFilingDto.builder().naturesOfControl(Collections.singletonList(null))
+        final var emptyDto = PscIndividualDto.builder().naturesOfControl(Collections.singletonList(null))
                 .build();
 
         final var dto = testMapper.map(filing);
@@ -239,7 +239,7 @@ class PscIndividualFilingMapperTest {
     void emptyPscIndividualFilingToDto() {
         final var filing = PscIndividualFiling.builder().naturesOfControl(Collections.emptySet())
                 .build();
-        final var emptyDto = PscIndividualFilingDto.builder().naturesOfControl(Collections.emptyList())
+        final var emptyDto = PscIndividualDto.builder().naturesOfControl(Collections.emptyList())
                 .build();
 
         final var dto = testMapper.map(filing);

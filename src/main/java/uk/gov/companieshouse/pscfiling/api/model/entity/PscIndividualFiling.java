@@ -196,7 +196,7 @@ public class PscIndividualFiling {
                 .add("ceasedOn=" + ceasedOn).add("countryOfResidence='" + countryOfResidence + "'")
                 .add("createdAt=" + createdAt).add("dateOfBirth=" + dateOfBirth).add("etag='" + etag + "'")
                 .add("identification=" + identification).add("kind='" + kind + "'").add("name='" + name + "'")
-                .add("namesElement=" + namesElement).add("naturesOfControl=" + naturesOfControl)
+                .add("nameElements=" + namesElement).add("naturesOfControl=" + naturesOfControl)
                 .add("nationality='" + nationality + "'").add("notifiedOn=" + notifiedOn)
                 .add("referenceEtag='" + referenceEtag + "'").add("referencePscId='" + referencePscId + "'")
                 .add("referencePscListEtag='" + referencePscListEtag + "'")

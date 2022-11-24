@@ -10,8 +10,8 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
-@JsonDeserialize(builder = NamesElementDto.Builder.class)
-public class NamesElementDto {
+@JsonDeserialize(builder = NameElementsDto.Builder.class)
+public class NameElementsDto {
 
     private String forename;
     @JsonProperty("other_forenames")
@@ -19,11 +19,12 @@ public class NamesElementDto {
     private String surname;
     private String title;
 
-    private NamesElementDto() {
+    private NameElementsDto() {
+        // prevent direct instantiation
     }
 
     @JsonCreator
-    public NamesElementDto(@JsonProperty("forename") final String forename,
+    public NameElementsDto(@JsonProperty("forename") final String forename,
                            @JsonProperty("other_forenames") final String otherForenames,
                            @JsonProperty("surname") final String surname,
                            @JsonProperty("title") final String title) {
@@ -55,7 +56,7 @@ public class NamesElementDto {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        NamesElementDto that = (NamesElementDto) o;
+        NameElementsDto that = (NameElementsDto) o;
         return Objects.equals(getForename(), that.getForename()) &&
                 Objects.equals(getOtherForenames(), that.getOtherForenames()) &&
                 Objects.equals(getSurname(), that.getSurname()) &&
@@ -69,7 +70,7 @@ public class NamesElementDto {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", NamesElementDto.class.getSimpleName() + "[", "]").add(
+        return new StringJoiner(", ", NameElementsDto.class.getSimpleName() + "[", "]").add(
                         "forename='" + forename + "'").add("otherForenames='" + otherForenames + "'")
                 .add("surname='" + surname + "'").add("title='" + title + "'").toString();
     }
@@ -78,20 +79,20 @@ public class NamesElementDto {
         return new Builder();
     }
 
-    public static Builder builder(final NamesElementDto other) {
+    public static Builder builder(final NameElementsDto other) {
         return new Builder(other);
     }
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<NamesElementDto>> buildSteps;
+        private final List<Consumer<NameElementsDto>> buildSteps;
 
         public Builder() {
             this.buildSteps = new ArrayList<>();
         }
 
-        public Builder(final NamesElementDto other) {
+        public Builder(final NameElementsDto other) {
             this();
             this.forename(other.getForename())
                     .otherForenames(other.getOtherForenames())
@@ -123,9 +124,9 @@ public class NamesElementDto {
             return this;
         }
 
-        public NamesElementDto build() {
+        public NameElementsDto build() {
 
-            final var data = new NamesElementDto();
+            final var data = new NameElementsDto();
             buildSteps.forEach(step -> step.accept(data));
 
             return data;

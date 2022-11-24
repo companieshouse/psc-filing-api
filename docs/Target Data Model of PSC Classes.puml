@@ -11,10 +11,11 @@ skinparam titleBackgroundColor AliceBlue
 skinparam groupInheritance 1
 skinparam legendBackgroundColor AliceBlue
 
-scale 800 width
+'scale 800 width
+scale 0.5
 hide empty members
 'hide circle'
-skinparam titleFontSize 16
+skinparam titleFontSize 18
 
 title PSC Filing API: Target Data Model Class Structure
 
@@ -72,15 +73,28 @@ endlegend
                 -statementType
             }
 
-          note left of PscStatementDto::referenceStatementId
-                Required for PSC09
-           end note
+            note "Required for PSC09" as Note2
+
+          Note2 - PscStatementDto::referenceStatementId
 
 /'          note left of PscStatementDto::statementType
                 See public spec for full list
            end note'/
 
-            abstract class PscDto {
+            interface PscCommon {
+                +getAddress():  AddressDto
+                +getAddressSameAsRegisteredOfficeAddres()s: Boolean
+                +getCeasedOn(): LocalDate
+                +getName()
+                +getNaturesOfControl(): String[]
+                +getNotifiedOn(): LocalDate
+                +getReferenceEtag()
+                +getReferencePscId()
+                +getReferencePscListEtag()
+                +getRegisterEntryDate(): LocalDate
+            }
+
+            class PscCommonDto implements PscCommon {
                 -address: AddressDto
                 -addressSameAsRegisteredOfficeAddress: Boolean
                 -ceasedOn: LocalDate
@@ -93,11 +107,12 @@ endlegend
                 -registerEntryDate: LocalDate
             }
 
-/'           note left of PscDto::naturesOfControl
+/'           note left of PscCommonDto::naturesOfControl
                 See public spec for full list
             end note'/
 
-            class PscIndividualDto {
+            class PscIndividualDto implements PscCommon {
+                -pscCommon: PscCommonDto
                 -countryOfResidence
                 -dateOfBirth: Date3TupleDto
                 -nationality
@@ -109,19 +124,23 @@ endlegend
 /'           note "This models an individual PSC" as Note2
              Note2 .. PscIndividualDto'/
 
-            class PscWithIdentificationDto {
+            class PscWithIdentificationDto implements PscCommon {
+                -pscCommon: PscCommonDto
                 -identification:IdentificationDto
             }
+            
+            
            note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1
-                Note1 .. PscWithIdentificationDto
+                Note1 -- PscWithIdentificationDto
 
-            PscDto <|-- PscIndividualDto
-            PscDto <|-- PscWithIdentificationDto
-            PscIndividualDto::nameElements o-- NameElementsDto
-            PscWithIdentificationDto o-- IdentificationDto
-            AddressDto -o PscDto::address
-            PscIndividualDto::residentialAddress o- AddressDto
-            Date3TupleDto -o PscIndividualDto::dateOfBirth
+            'PscCommonDto *-- PscIndividualDto::pscCommon
+            PscCommonDto *-- PscIndividualDto::pscCommon
+            PscCommonDto *-- PscWithIdentificationDto::pscCommon
+            PscIndividualDto::nameElements -o NameElementsDto
+            PscWithIdentificationDto::identification --o IdentificationDto
+            AddressDto o- PscCommonDto::address
+            PscIndividualDto::residentialAddress -o AddressDto
+            Date3TupleDto o- PscIndividualDto::dateOfBirth
         }
     }
 

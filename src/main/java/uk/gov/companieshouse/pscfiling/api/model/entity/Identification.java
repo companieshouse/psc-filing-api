@@ -68,10 +68,10 @@ public class Identification {
     public String toString() {
         return new StringJoiner(", ", Identification.class.getSimpleName() + "[", "]").add(
                         "identificationType='" + identificationType + "'")
-                .add("legalAuthority='" + legalAuthority + "'")
-                .add("legalForm='" + legalForm + "'")
-                .add("placeRegistered='" + placeRegistered + "'")
-                .add("registrationNumber='" + registrationNumber + "'")
+                .add("statementActionDate='" + legalAuthority + "'")
+                .add("statementType='" + legalForm + "'")
+                .add("referenceStatementId='" + placeRegistered + "'")
+                .add("restrictionsNoticeWithdrawalReason='" + registrationNumber + "'")
                 .toString();
     }
 }

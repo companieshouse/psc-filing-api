@@ -25,6 +25,7 @@ public class AddressDto {
     private String region;
 
     private AddressDto() {
+        // prevent direct instantiation
     }
 
     public String getAddressLine1() {

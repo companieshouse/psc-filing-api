@@ -1,8 +1,8 @@
-package uk.gov.companieshouse.pscfiling.api.model.mapper;
+package uk.gov.companieshouse.pscfiling.api.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualFilingDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 @Mapper(componentModel = "spring")
@@ -17,8 +17,8 @@ public interface PscIndividualFilingMapper {
     @Mapping(target = "identification", ignore = true)
     @Mapping(target = "statementActionDate", ignore = true)
     @Mapping(target = "statementType", ignore = true)
-    PscIndividualFiling map(PscIndividualFilingDto dto);
+    PscIndividualFiling map(PscIndividualDto dto);
 
-    PscIndividualFilingDto map(PscIndividualFiling pscIndividualFiling);
+    PscIndividualDto map(PscIndividualFiling pscIndividualFiling);
 
 }
