@@ -265,7 +265,7 @@ public class PscCommon implements PscCommunal {
 
         public Builder naturesOfControl(final List<String> value) {
             buildSteps.add(data -> data.naturesOfControl =
-                    Optional.of(value).map(NaturesOfControlList::new).orElse(null));
+                    Optional.ofNullable(value).map(NaturesOfControlList::new).orElse(null));
             return this;
         }
 

@@ -54,7 +54,8 @@ public class PscCommonDto implements PscDtoCommunal {
 
     @Override
     public List<String> getNaturesOfControl() {
-        return naturesOfControl.getList();
+        return Optional.ofNullable(naturesOfControl).map(NaturesOfControlListDto::getList)
+                .orElse(null);
     }
 
     @Override
@@ -143,7 +144,7 @@ public class PscCommonDto implements PscDtoCommunal {
 
         public Builder naturesOfControl(final List<String> value) {
             buildSteps.add(data -> data.naturesOfControl =
-                    Optional.of(value).map(NaturesOfControlListDto::new).orElse(null));
+                    Optional.ofNullable(value).map(NaturesOfControlListDto::new).orElse(null));
             return this;
         }
 

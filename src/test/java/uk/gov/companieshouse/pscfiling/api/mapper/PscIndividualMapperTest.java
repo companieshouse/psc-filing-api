@@ -25,7 +25,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
-class PscIndividualFilingMapperTest {
+class PscIndividualMapperTest {
 
     public static final String SELF_URI =
             "/transactions/197315-203316-322377/persons-with-significant-control/individual"
@@ -69,10 +69,10 @@ class PscIndividualFilingMapperTest {
         dob1 = new Date3Tuple(12, 9, 1970);
         instant1 = Instant.parse("2019-11-05T00:00:00Z");
         links = new Links(URI.create(SELF_URI), URI.create(SELF_URI + "validation_status"));
-        nameElements = new NameElements("John", "Bill", "Jones", "Mr");
-        nameElementsDto =
-                new NameElementsDto(nameElements.getForename(), nameElements.getOtherForenames(),
-                        nameElements.getSurname(), nameElements.getTitle());
+        nameElements = NameElements.builder().title("Mr").forename("Something")
+                .otherForenames("Other").surname("Tester").build();
+        nameElementsDto = NameElementsDto.builder().title("Mr").forename("Something")
+                .otherForenames("Other").surname("Tester").build();
     }
 
     @Test
@@ -132,7 +132,7 @@ class PscIndividualFilingMapperTest {
         final var dto = PscIndividualDto.builder().naturesOfControl(Arrays.asList(null, null))
                 .build();
         final var emptyFiling =
-                PscIndividualFiling.builder().naturesOfControl(Collections.singletonList(null))
+                PscIndividualFiling.builder().naturesOfControl(Arrays.asList(null, null))
                         .build();
 
         final var filing = testMapper.map(dto);
