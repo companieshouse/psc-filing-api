@@ -118,7 +118,7 @@ public class PscIndividualFiling implements PscCommunal {
         return dateOfBirth;
     }
 
-    public NameElements getNamesElement() {
+    public NameElements getNameElements() {
         return nameElements;
     }
 
@@ -162,7 +162,7 @@ public class PscIndividualFiling implements PscCommunal {
                 && Objects.equals(getEtag(), that.getEtag())
                 && Objects.equals(getKind(), that.getKind())
                 && Objects.equals(getName(), that.getName())
-                && Objects.equals(getNamesElement(), that.getNamesElement())
+                && Objects.equals(getNameElements(), that.getNameElements())
                 && Objects.equals(getNaturesOfControl(), that.getNaturesOfControl())
                 && Objects.equals(getNationality(), that.getNationality())
                 && Objects.equals(getNotifiedOn(), that.getNotifiedOn())
@@ -182,7 +182,7 @@ public class PscIndividualFiling implements PscCommunal {
     public int hashCode() {
         return Objects.hash(getId(), getAddress(), getAddressSameAsRegisteredOfficeAddress(),
                 getCeasedOn(), getCountryOfResidence(), getCreatedAt(), getDateOfBirth(), getEtag(),
-                getKind(), getName(), getNamesElement(), getNaturesOfControl(), getNationality(),
+                getKind(), getName(), getNameElements(), getNaturesOfControl(), getNationality(),
                 getNotifiedOn(), getReferenceEtag(), getReferencePscId(), getReferencePscListEtag(),
                 getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
                 getStatementActionDate(), getStatementType(), getUpdatedAt(), getLinks());
@@ -235,7 +235,7 @@ public class PscIndividualFiling implements PscCommunal {
                     .kind(other.getKind())
                     .links(other.getLinks())
                     .name(other.getName())
-                    .nameElements(other.getNamesElement())
+                    .nameElements(other.getNameElements())
                     .naturesOfControl(other.getNaturesOfControl())
                     .nationality(other.getNationality())
                     .notifiedOn(other.getNotifiedOn())
