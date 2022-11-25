@@ -1,6 +1,7 @@
-package uk.gov.companieshouse.pscfiling.api.model.dto;
+package uk.gov.companieshouse.pscfiling.api.model.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,18 +10,23 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
-public class PscWithIdentificationDto implements PscDtoCommunal {
+public class PscFilingWithIdentification implements PscCommunal {
 
-    private final PscDtoCommunal pscCommunal;
-    private IdentificationDto identification;
+    private final PscCommunal pscCommunal;
+    private Identification identification;
 
-    private PscWithIdentificationDto(final PscCommonDto.Builder commonBuilder) {
+    private PscFilingWithIdentification(final PscCommon.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
         pscCommunal = commonBuilder.build();
     }
 
     @Override
-    public AddressDto getAddress() {
+    public String getId() {
+        return pscCommunal.getId();
+    }
+
+    @Override
+    public Address getAddress() {
         return pscCommunal.getAddress();
     }
 
@@ -32,6 +38,26 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
     @Override
     public LocalDate getCeasedOn() {
         return pscCommunal.getCeasedOn();
+    }
+
+    @Override
+    public Instant getCreatedAt() {
+        return pscCommunal.getCreatedAt();
+    }
+
+    @Override
+    public String getEtag() {
+        return pscCommunal.getEtag();
+    }
+
+    @Override
+    public String getKind() {
+        return pscCommunal.getKind();
+    }
+
+    @Override
+    public Links getLinks() {
+        return pscCommunal.getLinks();
     }
 
     @Override
@@ -69,7 +95,12 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         return pscCommunal.getRegisterEntryDate();
     }
 
-    public IdentificationDto getIdentification() {
+    @Override
+    public Instant getUpdatedAt() {
+        return pscCommunal.getUpdatedAt();
+    }
+
+    public Identification getIdentification() {
         return identification;
     }
 
@@ -81,7 +112,7 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final PscWithIdentificationDto that = (PscWithIdentificationDto) o;
+        final PscFilingWithIdentification that = (PscFilingWithIdentification) o;
         return Objects.equals(pscCommunal, that.pscCommunal) && Objects.equals(getIdentification(),
                 that.getIdentification());
     }
@@ -93,7 +124,7 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", PscWithIdentificationDto.class.getSimpleName() + "[",
+        return new StringJoiner(", ", PscFilingWithIdentification.class.getSimpleName() + "[",
                 "]").add(pscCommunal.toString())
                 .add("identification=" + identification)
                 .toString();
@@ -106,14 +137,19 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<PscWithIdentificationDto>> buildSteps;
-        private final PscCommonDto.Builder commonBuilder = PscCommonDto.builder();
+        private final List<Consumer<PscFilingWithIdentification>> buildSteps;
+        private final PscCommon.Builder commonBuilder = PscCommon.builder();
 
         public Builder() {
             this.buildSteps = new ArrayList<>();
         }
 
-        public Builder address(final AddressDto value) {
+        public Builder id(final String value) {
+            commonBuilder.id(value);
+            return this;
+        }
+
+        public Builder address(final Address value) {
             commonBuilder.address(value);
             return this;
         }
@@ -125,6 +161,26 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
 
         public Builder ceasedOn(final LocalDate value) {
             commonBuilder.ceasedOn(value);
+            return this;
+        }
+
+        public Builder createdAt(final Instant value) {
+            commonBuilder.createdAt(value);
+            return this;
+        }
+
+        public Builder etag(final String value) {
+            commonBuilder.etag(value);
+            return this;
+        }
+
+        public Builder kind(final String value) {
+            commonBuilder.kind(value);
+            return this;
+        }
+
+        public Builder links(final Links value) {
+            commonBuilder.links(value);
             return this;
         }
 
@@ -160,21 +216,26 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         }
 
         public Builder registerEntryDate(final LocalDate value) {
-            commonBuilder.registerEntyDate(value);
+            commonBuilder.registerEntryDate(value);
             return this;
         }
 
-        public Builder identification(final IdentificationDto value) {
+        public Builder updatedAt(final Instant value) {
+            commonBuilder.updatedAt(value);
+            return this;
+        }
+
+        public Builder identification(final Identification value) {
             buildSteps.add(data -> data.identification = Optional.ofNullable(value)
-                    .map(v -> IdentificationDto.builder(v)
+                    .map(v -> Identification.builder(v)
                             .build())
                     .orElse(null));
             return this;
         }
 
-        public PscWithIdentificationDto build() {
+        public PscFilingWithIdentification build() {
 
-            final var data = new PscWithIdentificationDto(commonBuilder);
+            final var data = new PscFilingWithIdentification(commonBuilder);
             buildSteps.forEach(step -> step.accept(data));
 
             return data;

@@ -13,9 +13,9 @@ import org.springframework.validation.annotation.Validated;
 
 @JsonDeserialize(builder = PscIndividualDto.Builder.class)
 @Validated
-public class PscIndividualDto implements PscCommon {
+public class PscIndividualDto implements PscDtoCommunal {
 
-    private final PscCommon pscCommon;
+    private final PscDtoCommunal pscCommunal;
     private String countryOfResidence;
     private Date3TupleDto dateOfBirth;
     private NameElementsDto nameElements;
@@ -25,17 +25,57 @@ public class PscIndividualDto implements PscCommon {
 
     private PscIndividualDto(final PscCommonDto.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
-        pscCommon = commonBuilder.build();
+        pscCommunal = commonBuilder.build();
     }
 
     @Override
     public AddressDto getAddress() {
-        return pscCommon.getAddress();
+        return pscCommunal.getAddress();
     }
 
     @Override
     public Boolean getAddressSameAsRegisteredOfficeAddress() {
-        return pscCommon.getAddressSameAsRegisteredOfficeAddress();
+        return pscCommunal.getAddressSameAsRegisteredOfficeAddress();
+    }
+
+    @Override
+    public String getName() {
+        return pscCommunal.getName();
+    }
+
+    @Override
+    public List<String> getNaturesOfControl() {
+        return pscCommunal.getNaturesOfControl();
+    }
+
+    @Override
+    public LocalDate getNotifiedOn() {
+        return pscCommunal.getNotifiedOn();
+    }
+
+    @Override
+    public String getReferenceEtag() {
+        return pscCommunal.getReferenceEtag();
+    }
+
+    @Override
+    public String getReferencePscId() {
+        return pscCommunal.getReferencePscId();
+    }
+
+    @Override
+    public String getReferencePscListEtag() {
+        return pscCommunal.getReferencePscListEtag();
+    }
+
+    @Override
+    public LocalDate getRegisterEntryDate() {
+        return pscCommunal.getRegisterEntryDate();
+    }
+
+    @Override
+    public LocalDate getCeasedOn() {
+        return pscCommunal.getCeasedOn();
     }
 
     public String getCountryOfResidence() {
@@ -46,47 +86,12 @@ public class PscIndividualDto implements PscCommon {
         return dateOfBirth;
     }
 
-    @Override
-    public String getName() {
-        return pscCommon.getName();
-    }
-
     public NameElementsDto getNameElements() {
         return nameElements;
     }
 
-    @Override
-    public List<String> getNaturesOfControl() {
-        return pscCommon.getNaturesOfControl();
-    }
-
     public String getNationality() {
         return nationality;
-    }
-
-    @Override
-    public LocalDate getNotifiedOn() {
-        return pscCommon.getNotifiedOn();
-    }
-
-    @Override
-    public String getReferenceEtag() {
-        return pscCommon.getReferenceEtag();
-    }
-
-    @Override
-    public String getReferencePscId() {
-        return pscCommon.getReferencePscId();
-    }
-
-    @Override
-    public String getReferencePscListEtag() {
-        return pscCommon.getReferencePscListEtag();
-    }
-
-    @Override
-    public LocalDate getCeasedOn() {
-        return pscCommon.getCeasedOn();
     }
 
     public AddressDto getResidentialAddress() {
@@ -106,7 +111,7 @@ public class PscIndividualDto implements PscCommon {
             return false;
         }
         final PscIndividualDto that = (PscIndividualDto) o;
-        return Objects.equals(pscCommon, that.pscCommon)
+        return Objects.equals(pscCommunal, that.pscCommunal)
                 && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
                 && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
                 && Objects.equals(getNameElements(), that.getNameElements())
@@ -118,15 +123,15 @@ public class PscIndividualDto implements PscCommon {
 
     @Override
     public int hashCode() {
-        return Objects.hash(pscCommon, getCountryOfResidence(), getDateOfBirth(), getNameElements(),
-                getNationality(), getResidentialAddress(),
+        return Objects.hash(pscCommunal, getCountryOfResidence(), getDateOfBirth(),
+                getNameElements(), getNationality(), getResidentialAddress(),
                 getResidentialAddressSameAsCorrespondenceAddress());
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", PscIndividualDto.class.getSimpleName() + "[", "]").add(
-                        pscCommon.toString())
+                        pscCommunal.toString())
                 .add("countryOfResidence='" + countryOfResidence + "'")
                 .add("dateOfBirth=" + dateOfBirth)
                 .add("nameElements=" + nameElements)
@@ -159,6 +164,11 @@ public class PscIndividualDto implements PscCommon {
 
         public Builder addressSameAsRegisteredOfficeAddress(final Boolean value) {
             commonBuilder.addressSameAsRegisteredOfficeAddress(value);
+            return this;
+        }
+
+        public Builder ceasedOn(final LocalDate value) {
+            commonBuilder.ceasedOn(value);
             return this;
         }
 
@@ -220,8 +230,8 @@ public class PscIndividualDto implements PscCommon {
             return this;
         }
 
-        public Builder ceasedOn(final LocalDate value) {
-            commonBuilder.ceasedOn(value);
+        public Builder registerEntryDate(final LocalDate value) {
+            commonBuilder.registerEntyDate(value);
             return this;
         }
 

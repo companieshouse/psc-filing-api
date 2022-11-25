@@ -1,8 +1,7 @@
-package uk.gov.companieshouse.pscfiling.api.model.dto;
+package uk.gov.companieshouse.pscfiling.api.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,23 +9,21 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
-@JsonDeserialize(builder = NameElementsDto.Builder.class)
-public class NameElementsDto {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class NameElements {
 
-    private String forename;
-    private String otherForenames;
-    private String surname;
-    private String title;
+    String forename;
+    String otherForenames;
+    String surname;
+    String title;
 
-    private NameElementsDto() {
+    private NameElements() {
         // prevent direct instantiation
     }
-
-    @JsonCreator
-    public NameElementsDto(@JsonProperty("forename") final String forename,
-                           @JsonProperty("other_forenames") final String otherForenames,
-                           @JsonProperty("surname") final String surname,
-                           @JsonProperty("title") final String title) {
+    public NameElements(@JsonProperty("forename") final String forename,
+            @JsonProperty("other_forenames") final String otherForenames,
+            @JsonProperty("surname") final String surname,
+            @JsonProperty("title") final String title) {
         this.forename = forename;
         this.otherForenames = otherForenames;
         this.surname = surname;
@@ -55,7 +52,7 @@ public class NameElementsDto {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        NameElementsDto that = (NameElementsDto) o;
+        NameElements that = (NameElements) o;
         return Objects.equals(getForename(), that.getForename()) &&
                 Objects.equals(getOtherForenames(), that.getOtherForenames()) &&
                 Objects.equals(getSurname(), that.getSurname()) &&
@@ -69,29 +66,29 @@ public class NameElementsDto {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", NameElementsDto.class.getSimpleName() + "[", "]").add(
-                        "forename='" + forename + "'").add("otherForenames='" + otherForenames + "'")
-                .add("surname='" + surname + "'").add("title='" + title + "'").toString();
+        return new StringJoiner(", ", NameElements.class.getSimpleName() + "[", "]").add("forename='" + forename + "'")
+                .add("otherForenames='" + otherForenames + "'").add("surname='" + surname + "'")
+                .add("title='" + title + "'").toString();
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public static Builder builder(final NameElementsDto other) {
+    public static Builder builder(final NameElements other) {
         return new Builder(other);
     }
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<NameElementsDto>> buildSteps;
+        private final List<Consumer<NameElements>> buildSteps;
 
         public Builder() {
             this.buildSteps = new ArrayList<>();
         }
 
-        public Builder(final NameElementsDto other) {
+        public Builder(final NameElements other) {
             this();
             this.forename(other.getForename())
                     .otherForenames(other.getOtherForenames())
@@ -123,9 +120,9 @@ public class NameElementsDto {
             return this;
         }
 
-        public NameElementsDto build() {
+        public NameElements build() {
 
-            final var data = new NameElementsDto();
+            final var data = new NameElements();
             buildSteps.forEach(step -> step.accept(data));
 
             return data;

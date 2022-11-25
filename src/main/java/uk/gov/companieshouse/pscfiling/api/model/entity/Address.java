@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import javax.validation.constraints.NotNull;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -87,6 +88,21 @@ public class Address {
     public int hashCode() {
         return Objects.hash(getAddressLine1(), getAddressLine2(), getCareOf(), getCountry(),
                 getLocality(), getPoBox(), getPostalCode(), getPremises(), getRegion());
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", Address.class.getSimpleName() + "[", "]").add(
+                        "addressLine1='" + addressLine1 + "'")
+                .add("addressLine2='" + addressLine2 + "'")
+                .add("careOf='" + careOf + "'")
+                .add("country='" + country + "'")
+                .add("locality='" + locality + "'")
+                .add("poBox='" + poBox + "'")
+                .add("postalCode='" + postalCode + "'")
+                .add("premises='" + premises + "'")
+                .add("region='" + region + "'")
+                .toString();
     }
 
     public static Builder builder() {

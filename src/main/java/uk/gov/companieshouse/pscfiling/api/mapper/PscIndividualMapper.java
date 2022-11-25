@@ -6,7 +6,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 @Mapper(componentModel = "spring")
-public interface PscIndividualFilingMapper {
+public interface PscIndividualMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -14,7 +14,7 @@ public interface PscIndividualFilingMapper {
     @Mapping(target = "etag", ignore = true)
     @Mapping(target = "links", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "identification", ignore = true)
+    @Mapping(target = "nameElements", ignore = true)
     @Mapping(target = "statementActionDate", ignore = true)
     @Mapping(target = "statementType", ignore = true)
     PscIndividualFiling map(PscIndividualDto dto);

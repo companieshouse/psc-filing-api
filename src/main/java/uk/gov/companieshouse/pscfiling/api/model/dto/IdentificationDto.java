@@ -1,6 +1,6 @@
-package uk.gov.companieshouse.pscfiling.api.model.entity;
+package uk.gov.companieshouse.pscfiling.api.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,28 +8,21 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class Identification {
+@JsonDeserialize(builder = IdentificationDto.Builder.class)
+public class IdentificationDto {
+
     private String countryRegistered;
-    private String legalAuthority;
-    private String legalForm;
     private String placeRegistered;
     private String registrationNumber;
+    private String legalAuthority;
+    private String legalForm;
 
-    private Identification() {
+    private IdentificationDto() {
         // prevent direct instantiation
     }
 
     public String getCountryRegistered() {
         return countryRegistered;
-    }
-
-    public String getLegalAuthority() {
-        return legalAuthority;
-    }
-
-    public String getLegalForm() {
-        return legalForm;
     }
 
     public String getPlaceRegistered() {
@@ -40,24 +33,32 @@ public class Identification {
         return registrationNumber;
     }
 
+    public String getLegalAuthority() {
+        return legalAuthority;
+    }
+
+    public String getLegalForm() {
+        return legalForm;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    public static Builder builder(final Identification other) {
+    public static Builder builder(final IdentificationDto other) {
         return new Builder(other);
     }
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<Identification>> buildSteps;
+        private final List<Consumer<IdentificationDto>> buildSteps;
 
         public Builder() {
             this.buildSteps = new ArrayList<>();
         }
 
-        public Builder(final Identification other) {
+        public Builder(final IdentificationDto other) {
             this();
             this.countryRegistered(other.getCountryRegistered())
                     .placeRegistered(other.getPlaceRegistered())
@@ -96,9 +97,9 @@ public class Identification {
             return this;
         }
 
-        public Identification build() {
+        public IdentificationDto build() {
 
-            final var data = new Identification();
+            final var data = new IdentificationDto();
             buildSteps.forEach(step -> step.accept(data));
 
             return data;
@@ -113,28 +114,28 @@ public class Identification {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final Identification that = (Identification) o;
+        final IdentificationDto that = (IdentificationDto) o;
         return Objects.equals(getCountryRegistered(), that.getCountryRegistered())
-                && Objects.equals(getLegalAuthority(), that.getLegalAuthority())
-                && Objects.equals(getLegalForm(), that.getLegalForm())
                 && Objects.equals(getPlaceRegistered(), that.getPlaceRegistered())
-                && Objects.equals(getRegistrationNumber(), that.getRegistrationNumber());
+                && Objects.equals(getRegistrationNumber(), that.getRegistrationNumber())
+                && Objects.equals(getLegalAuthority(), that.getLegalAuthority())
+                && Objects.equals(getLegalForm(), that.getLegalForm());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCountryRegistered(), getLegalAuthority(), getLegalForm(),
-                getPlaceRegistered(), getRegistrationNumber());
+        return Objects.hash(getCountryRegistered(), getPlaceRegistered(), getRegistrationNumber(),
+                getLegalAuthority(), getLegalForm());
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", Identification.class.getSimpleName() + "[", "]").add(
+        return new StringJoiner(", ", IdentificationDto.class.getSimpleName() + "[", "]").add(
                         "countryRegistered='" + countryRegistered + "'")
-                .add("legalAuthority='" + legalAuthority + "'")
-                .add("legalForm='" + legalForm + "'")
                 .add("placeRegistered='" + placeRegistered + "'")
                 .add("registrationNumber='" + registrationNumber + "'")
+                .add("legalAuthority='" + legalAuthority + "'")
+                .add("legalForm='" + legalForm + "'")
                 .toString();
     }
 }
