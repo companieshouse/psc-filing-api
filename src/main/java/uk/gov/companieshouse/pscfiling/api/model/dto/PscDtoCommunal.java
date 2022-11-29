@@ -10,8 +10,6 @@ public interface PscDtoCommunal {
 
     LocalDate getCeasedOn();
 
-    String getName();
-
     List<String> getNaturesOfControl();
 
     LocalDate getNotifiedOn();

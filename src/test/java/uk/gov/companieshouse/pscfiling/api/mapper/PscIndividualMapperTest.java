@@ -80,11 +80,9 @@ class PscIndividualMapperTest {
         final var dto = PscIndividualDto.builder()
                 .address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
-                .name("John Jones")
                 .nameElements(nameElementsDto)
                 .dateOfBirth(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear()))
                 .countryOfResidence("countryOfResidence")
-                .name("name")
                 .naturesOfControl(List.of("a", "b", "c"))
                 .referenceEtag("referenceEtag")
                 .referencePscId("referencePscId")
@@ -106,7 +104,6 @@ class PscIndividualMapperTest {
         assertThat(filing.getDateOfBirth(), is(dob1));
         assertThat(filing.getKind(), is(nullValue()));
         assertThat(filing.getLinks(), is(nullValue()));
-        assertThat(filing.getName(), is("name"));
         assertThat(filing.getNaturesOfControl(), contains("a", "b", "c"));
         assertThat(filing.getReferenceEtag(), is("referenceEtag"));
         assertThat(filing.getReferencePscId(), is("referencePscId"));
@@ -167,7 +164,6 @@ class PscIndividualMapperTest {
                 .naturesOfControl(List.of("a", "b", "c"))
                 .kind("kind")
                 .links(links)
-                .name("name")
                 .nameElements(nameElements)
                 .nationality("nation")
                 .referenceEtag("referenceEtag")
@@ -190,7 +186,6 @@ class PscIndividualMapperTest {
         assertThat(dto.getDateOfBirth(),
                 is(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear())));
         assertThat(dto.getNameElements(), is(nameElementsDto));
-        assertThat(dto.getName(), is("name"));
         assertThat(dto.getNaturesOfControl(), contains("a", "b", "c"));
         assertThat(dto.getReferenceEtag(), is("referenceEtag"));
         assertThat(dto.getReferencePscId(), is("referencePscId"));

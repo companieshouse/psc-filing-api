@@ -16,7 +16,7 @@ skinparam legendBackgroundColor AliceBlue
 title PSC Filing API: Internal Data Model Class Structure
 legend right
 |=Revision |=Date |
-|    0.1    |     22/11/2022    |
+|    0.2    |     29/11/2022    |
 end legend
 
     package "model" {
@@ -28,6 +28,7 @@ end legend
                 -addressLine2
                 -careOf
                 -country
+                -locality
                 -poBox
                 -postalCode
                 -premises
@@ -75,10 +76,6 @@ end legend
                 Required for PSC09
            end note
 
-/'          note left of Statement::statement
-                See public spec for full list
-           end note'/
-
             abstract class Psc {
                 -address: Address
                 -addressSameAsRegisteredOfficeAddress: Boolean
@@ -88,7 +85,6 @@ end legend
                 -identification
                 -kind
                 -links: Links
-                -name
                 -naturesOfControl[1..*]
                 -notifiedOn: LocalDate
                 -referenceEtag
@@ -99,6 +95,7 @@ end legend
             }
 
             class PscWithIdentification {
+                -name
                 -identification: Identification
             }
           note "This models the RLE (corporate) and the \nORP (legal) types of PSC" as Note1

@@ -39,11 +39,6 @@ public class PscIndividualDto implements PscDtoCommunal {
     }
 
     @Override
-    public String getName() {
-        return pscCommunal.getName();
-    }
-
-    @Override
     public List<String> getNaturesOfControl() {
         return pscCommunal.getNaturesOfControl();
     }
@@ -184,11 +179,6 @@ public class PscIndividualDto implements PscDtoCommunal {
             return this;
         }
 
-        public Builder name(final String value) {
-            commonBuilder.name(value);
-            return this;
-        }
-
         public Builder nameElements(final NameElementsDto value) {
 
             buildSteps.add(data -> data.nameElements = Optional.ofNullable(value)
@@ -231,7 +221,7 @@ public class PscIndividualDto implements PscDtoCommunal {
         }
 
         public Builder registerEntryDate(final LocalDate value) {
-            commonBuilder.registerEntyDate(value);
+            commonBuilder.registerEntryDate(value);
             return this;
         }
 

@@ -71,11 +71,6 @@ public class PscIndividualFiling implements PscCommunal {
     }
 
     @Override
-    public String getName() {
-        return pscCommunal.getName();
-    }
-
-    @Override
     public List<String> getNaturesOfControl() {
         return pscCommunal.getNaturesOfControl();
     }
@@ -161,7 +156,6 @@ public class PscIndividualFiling implements PscCommunal {
                 && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
                 && Objects.equals(getEtag(), that.getEtag())
                 && Objects.equals(getKind(), that.getKind())
-                && Objects.equals(getName(), that.getName())
                 && Objects.equals(getNameElements(), that.getNameElements())
                 && Objects.equals(getNaturesOfControl(), that.getNaturesOfControl())
                 && Objects.equals(getNationality(), that.getNationality())
@@ -182,7 +176,7 @@ public class PscIndividualFiling implements PscCommunal {
     public int hashCode() {
         return Objects.hash(getId(), getAddress(), getAddressSameAsRegisteredOfficeAddress(),
                 getCeasedOn(), getCountryOfResidence(), getCreatedAt(), getDateOfBirth(), getEtag(),
-                getKind(), getName(), getNameElements(), getNaturesOfControl(), getNationality(),
+                getKind(), getNameElements(), getNaturesOfControl(), getNationality(),
                 getNotifiedOn(), getReferenceEtag(), getReferencePscId(), getReferencePscListEtag(),
                 getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
                 getStatementActionDate(), getStatementType(), getUpdatedAt(), getLinks());
@@ -234,7 +228,6 @@ public class PscIndividualFiling implements PscCommunal {
                     .etag(other.getEtag())
                     .kind(other.getKind())
                     .links(other.getLinks())
-                    .name(other.getName())
                     .nameElements(other.getNameElements())
                     .naturesOfControl(other.getNaturesOfControl())
                     .nationality(other.getNationality())
@@ -309,12 +302,6 @@ public class PscIndividualFiling implements PscCommunal {
         public Builder links(final Links value) {
 
             commonBuilder.links(value);
-            return this;
-        }
-
-        public Builder name(final String value) {
-
-            commonBuilder.name(value);
             return this;
         }
 

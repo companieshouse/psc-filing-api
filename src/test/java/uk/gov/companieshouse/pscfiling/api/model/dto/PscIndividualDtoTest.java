@@ -22,9 +22,11 @@ class PscIndividualDtoTest {
     private PscIndividualDto testDto;
     private PscIndividualDto.Builder testBuilder;
     private AddressDto addressDto;
-    private LocalDate localDate1;
+    private LocalDate ceasedOn;
+    private LocalDate notifiedOn;
+    private LocalDate registerEntryDate;
     private Date3TupleDto dob1;
-    private Instant instant1;
+    private Instant createdAt;
     private NameElementsDto nameElementsDto;
 
     @BeforeEach
@@ -40,34 +42,33 @@ class PscIndividualDtoTest {
                 .premises("premises")
                 .region("region")
                 .build();
-        localDate1 = LocalDate.of(2019, 11, 5);
+        ceasedOn = LocalDate.of(2022,11,21);
         dob1 = new Date3TupleDto(12, 9, 1970);
-        instant1 = Instant.parse("2019-11-05T00:00:00Z");
+        createdAt = Instant.parse("2019-11-05T00:00:00Z");
         nameElementsDto = NameElementsDto.builder()
                 .forename("forename")
                 .otherForenames("other")
                 .surname("surname")
                 .title("title")
                 .build();
-
+        notifiedOn = LocalDate.of(2022,11,10);
+        registerEntryDate = LocalDate.of(2022,11,5);
         testBuilder = PscIndividualDto.builder();
         testDto = testBuilder.address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
-                .ceasedOn(localDate1)
+                .ceasedOn(ceasedOn)
                 .countryOfResidence("Wales")
                 .dateOfBirth(dob1)
-                .name("individual")
                 .nameElements(nameElementsDto)
                 .nationality("nationality")
                 .naturesOfControl(List.of("type1", "type2"))
-                .notifiedOn(localDate1)
+                .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
                 .referencePscListEtag("list")
-                .registerEntryDate(localDate1)
+                .registerEntryDate(registerEntryDate)
                 .residentialAddress(addressDto)
                 .residentialAddressSameAsCorrespondenceAddress(true)
-                .name("name")
                 .build();
     }
 
@@ -78,72 +79,85 @@ class PscIndividualDtoTest {
 
     @Test
     void getAddressSameAsRegisteredOfficeAddress() {
+        assertThat(testDto.getAddressSameAsRegisteredOfficeAddress(), is(equalTo(true)));
     }
 
     @Test
     void getCountryOfResidence() {
+        assertThat(testDto.getCountryOfResidence(), is(equalTo("Wales")));
     }
 
     @Test
     void getDateOfBirth() {
-    }
-
-    @Test
-    void getName() {
+        assertThat(testDto.getDateOfBirth(), is(equalTo(new Date3TupleDto(12, 9, 1970))));
     }
 
     @Test
     void getNameElements() {
+        assertThat(testDto.getNameElements(), is(equalTo(nameElementsDto)));
     }
 
     @Test
     void getNaturesOfControl() {
+        assertThat(testDto.getNaturesOfControl(), is(equalTo(List.of("type1", "type2"))));
     }
 
     @Test
     void getNationality() {
+        assertThat(testDto.getNationality(), is(equalTo("nationality")));
     }
 
     @Test
     void getNotifiedOn() {
+        assertThat(testDto.getNotifiedOn(), is(equalTo(notifiedOn)));
     }
 
     @Test
     void getReferenceEtag() {
+        assertThat(testDto.getReferenceEtag(), is(equalTo("etag")));
     }
 
     @Test
     void getReferencePscId() {
+        assertThat(testDto.getReferencePscId(), is(equalTo("psc")));
     }
 
     @Test
     void getReferencePscListEtag() {
+        assertThat(testDto.getReferencePscListEtag(), is(equalTo("list")));
     }
 
     @Test
     void getCeasedOn() {
+        assertThat(testDto.getCeasedOn(), is(equalTo(ceasedOn)));
     }
 
     @Test
     void getResidentialAddress() {
+        assertThat(testDto.getResidentialAddress(), is(equalTo(addressDto)));
     }
 
     @Test
     void getResidentialAddressSameAsCorrespondenceAddress() {
+        assertThat(testDto.getResidentialAddressSameAsCorrespondenceAddress(), is(equalTo(true)));
     }
 
     @Test
     @DisplayName("toString")
     void testDtoToString() throws JsonProcessingException {
-        final String expected = "PscIndividualDto[address=AddressDto[addressLine1='line1', addressLine2='line2', careOf='careOf', country='country', locality='locality', poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
-                + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2019-11-05, name='name', "
-                + "naturesOfControl=[type1, type2], notifiedOn=2019-11-05, referenceEtag='etag', "
+        final String expected = "PscIndividualDto[address=AddressDto[addressLine1='line1', "
+                + "addressLine2='line2', careOf='careOf', country='country', locality='locality', "
+                + "poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
+                + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
+                + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, referenceEtag='etag', "
                 + "referencePscId='psc', referencePscListEtag='list', "
-                + "registerEntryDate=2019-11-05, countryOfResidence='Wales', "
+                + "registerEntryDate=2022-11-05, countryOfResidence='Wales', "
                 + "dateOfBirth=Date3TupleDto[day=12, month=9, year=1970], "
-                + "nameElements=NameElementsDto[forename='forename', otherForenames='other', surname='surname', title='title'], "
-                + "nationality='nationality', "
-                + "residentialAddress=AddressDto[addressLine1='line1', addressLine2='line2', careOf='careOf', country='country', locality='locality', poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
+                + "nameElements=NameElementsDto[forename='forename', otherForenames='other', "
+                + "surname='surname', title='title'], nationality='nationality', "
+                + "residentialAddress=AddressDto[addressLine1='line1', addressLine2='line2', "
+                + "careOf='careOf', country='country', locality='locality', poBox='poBox', "
+                + "postalCode='postalCode', premises='premises', region='region'], "
                 + "residentialAddressSameAsCorrespondenceAddress=true]";
         assertThat(testDto.toString(), is(expected));
 
@@ -169,23 +183,26 @@ class PscIndividualDtoTest {
         var dto = PscWithIdentificationDto.builder()
                 .address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
-                .ceasedOn(localDate1)
-                .name("psc with identification")
+                .ceasedOn(ceasedOn)
                 .naturesOfControl(List.of("type1", "type2"))
-                .notifiedOn(localDate1)
+                .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
                 .referencePscListEtag("list")
-                .registerEntryDate(localDate1)
-                .identification(identification).build();
-        final String expected = "PscWithIdentificationDto[address=AddressDto[addressLine1='line1', addressLine2='line2', careOf='careOf', country='country', locality='locality', poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
-                + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2019-11-05, name='psc with identification', "
-                + "naturesOfControl=[type1, type2], notifiedOn=2019-11-05, referenceEtag='etag', "
+                .registerEntryDate(registerEntryDate)
+                .identification(identification)
+                .name("name")
+                .build();
+        final String expected = "PscWithIdentificationDto[address=AddressDto[addressLine1='line1', "
+                + "addressLine2='line2', careOf='careOf', country='country', locality='locality', "
+                + "poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
+                + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
+                + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, referenceEtag='etag', "
                 + "referencePscId='psc', referencePscListEtag='list', "
-                + "registerEntryDate=2019-11-05, "
+                + "registerEntryDate=2022-11-05, "
                 + "identification=IdentificationDto[countryRegistered='theCountry',"
                 + " placeRegistered='thePlace', registrationNumber='registration',"
-                + " legalAuthority='theAuthority', legalForm='theForm']"
+                + " legalAuthority='theAuthority', legalForm='theForm'], name='name'"
                 + "]";
 
         assertThat(dto.toString(), is(expected));
@@ -199,6 +216,5 @@ class PscIndividualDtoTest {
         System.out.println(json);
 
     }
-
 
 }

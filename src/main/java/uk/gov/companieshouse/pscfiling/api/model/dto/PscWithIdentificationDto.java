@@ -13,11 +13,15 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
 
     private final PscDtoCommunal pscCommunal;
     private IdentificationDto identification;
+    private String name;
+
 
     private PscWithIdentificationDto(final PscCommonDto.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
         pscCommunal = commonBuilder.build();
     }
+
+
 
     @Override
     public AddressDto getAddress() {
@@ -32,11 +36,6 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
     @Override
     public LocalDate getCeasedOn() {
         return pscCommunal.getCeasedOn();
-    }
-
-    @Override
-    public String getName() {
-        return pscCommunal.getName();
     }
 
     @Override
@@ -73,6 +72,8 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         return identification;
     }
 
+    public String getName() { return name;}
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -88,7 +89,7 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash(pscCommunal, getIdentification());
+        return Objects.hash(pscCommunal, getIdentification(), getName());
     }
 
     @Override
@@ -96,6 +97,7 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         return new StringJoiner(", ", PscWithIdentificationDto.class.getSimpleName() + "[",
                 "]").add(pscCommunal.toString())
                 .add("identification=" + identification)
+                .add("name='" + name +"'")
                 .toString();
     }
 
@@ -128,11 +130,6 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
             return this;
         }
 
-        public Builder name(final String value) {
-            commonBuilder.name(value);
-            return this;
-        }
-
         public Builder naturesOfControl(final List<String> value) {
             commonBuilder.naturesOfControl(value);
             return this;
@@ -142,7 +139,6 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
             commonBuilder.notifiedOn(value);
             return this;
         }
-
 
         public Builder referenceEtag(final String value) {
             commonBuilder.referenceEtag(value);
@@ -160,7 +156,7 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         }
 
         public Builder registerEntryDate(final LocalDate value) {
-            commonBuilder.registerEntyDate(value);
+            commonBuilder.registerEntryDate(value);
             return this;
         }
 
@@ -169,6 +165,11 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
                     .map(v -> IdentificationDto.builder(v)
                             .build())
                     .orElse(null));
+            return this;
+        }
+
+        public Builder name(final String value) {
+            buildSteps.add(data -> data.name = value);
             return this;
         }
 

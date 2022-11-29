@@ -14,6 +14,8 @@ public class PscFilingWithIdentification implements PscCommunal {
 
     private final PscCommunal pscCommunal;
     private Identification identification;
+    private String name;
+
 
     private PscFilingWithIdentification(final PscCommon.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
@@ -61,11 +63,6 @@ public class PscFilingWithIdentification implements PscCommunal {
     }
 
     @Override
-    public String getName() {
-        return pscCommunal.getName();
-    }
-
-    @Override
     public List<String> getNaturesOfControl() {
         return pscCommunal.getNaturesOfControl();
     }
@@ -104,6 +101,10 @@ public class PscFilingWithIdentification implements PscCommunal {
         return identification;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -119,7 +120,7 @@ public class PscFilingWithIdentification implements PscCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash(pscCommunal, getIdentification());
+        return Objects.hash(pscCommunal, getIdentification(), getName());
     }
 
     @Override
@@ -127,6 +128,7 @@ public class PscFilingWithIdentification implements PscCommunal {
         return new StringJoiner(", ", PscFilingWithIdentification.class.getSimpleName() + "[",
                 "]").add(pscCommunal.toString())
                 .add("identification=" + identification)
+                .add("name='" + name +"'")
                 .toString();
     }
 
@@ -184,11 +186,6 @@ public class PscFilingWithIdentification implements PscCommunal {
             return this;
         }
 
-        public Builder name(final String value) {
-            commonBuilder.name(value);
-            return this;
-        }
-
         public Builder naturesOfControl(final List<String> value) {
             commonBuilder.naturesOfControl(value);
             return this;
@@ -230,6 +227,11 @@ public class PscFilingWithIdentification implements PscCommunal {
                     .map(v -> Identification.builder(v)
                             .build())
                     .orElse(null));
+            return this;
+        }
+
+        public Builder name(final String value) {
+            buildSteps.add(data -> data.name = value);
             return this;
         }
 

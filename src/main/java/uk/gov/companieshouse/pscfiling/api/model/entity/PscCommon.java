@@ -21,7 +21,6 @@ public class PscCommon implements PscCommunal {
     protected String etag;
     protected String kind;
     protected Links links;
-    protected String name;
     protected NaturesOfControlList naturesOfControl;
     protected LocalDate notifiedOn;
     protected String referenceEtag;
@@ -68,11 +67,6 @@ public class PscCommon implements PscCommunal {
     @Override
     public Links getLinks() {
         return links;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
@@ -128,7 +122,6 @@ public class PscCommon implements PscCommunal {
                 && Objects.equals(getEtag(), pscCommon.getEtag())
                 && Objects.equals(getKind(), pscCommon.getKind())
                 && Objects.equals(getLinks(), pscCommon.getLinks())
-                && Objects.equals(getName(), pscCommon.getName())
                 && Objects.equals(getNaturesOfControl(), pscCommon.getNaturesOfControl())
                 && Objects.equals(getNotifiedOn(), pscCommon.getNotifiedOn())
                 && Objects.equals(getReferenceEtag(), pscCommon.getReferenceEtag())
@@ -141,7 +134,7 @@ public class PscCommon implements PscCommunal {
     @Override
     public int hashCode() {
         return Objects.hash(getId(), getAddress(), getAddressSameAsRegisteredOfficeAddress(),
-                getCeasedOn(), getCreatedAt(), getEtag(), getKind(), getLinks(), getName(),
+                getCeasedOn(), getCreatedAt(), getEtag(), getKind(), getLinks(),
                 getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
                 getReferencePscListEtag(), getRegisterEntryDate(), getUpdatedAt());
     }
@@ -156,7 +149,6 @@ public class PscCommon implements PscCommunal {
                 .add("etag='" + etag + "'")
                 .add("kind='" + kind + "'")
                 .add("links=" + links)
-                .add("name='" + name + "'")
                 .add("naturesOfControl=" + naturesOfControl)
                 .add("notifiedOn=" + notifiedOn)
                 .add("referenceEtag='" + referenceEtag + "'")
@@ -195,7 +187,6 @@ public class PscCommon implements PscCommunal {
                     .etag(other.getEtag())
                     .kind(other.getKind())
                     .links(other.getLinks())
-                    .name(other.getName())
                     .naturesOfControl(other.getNaturesOfControl())
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
@@ -254,12 +245,6 @@ public class PscCommon implements PscCommunal {
             buildSteps.add(data -> data.links = Optional.ofNullable(value)
                     .map(v -> new Links(v.getSelf(), v.getValidationStatus()))
                     .orElse(null));
-            return this;
-        }
-
-        public Builder name(final String value) {
-
-            buildSteps.add(data -> data.name = value);
             return this;
         }
 

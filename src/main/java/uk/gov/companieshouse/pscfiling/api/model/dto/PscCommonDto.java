@@ -18,7 +18,6 @@ public class PscCommonDto implements PscDtoCommunal {
     @PastOrPresent
     @NotNull
     private LocalDate ceasedOn;
-    private String name;
     private NaturesOfControlListDto naturesOfControl;
     private LocalDate notifiedOn;
     @NotBlank
@@ -45,11 +44,6 @@ public class PscCommonDto implements PscDtoCommunal {
     @Override
     public LocalDate getCeasedOn() {
         return ceasedOn;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
@@ -106,13 +100,12 @@ public class PscCommonDto implements PscDtoCommunal {
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
-                    .name(other.getName())
                     .naturesOfControl(other.getNaturesOfControl())
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
                     .referencePscListEtag(other.getReferencePscListEtag())
-                    .registerEntyDate(other.getRegisterEntryDate());
+                    .registerEntryDate(other.getRegisterEntryDate());
         }
 
         public Builder address(final AddressDto value) {
@@ -133,12 +126,6 @@ public class PscCommonDto implements PscDtoCommunal {
         public Builder ceasedOn(final LocalDate value) {
 
             buildSteps.add(data -> data.ceasedOn = value);
-            return this;
-        }
-
-        public Builder name(final String value) {
-
-            buildSteps.add(data -> data.name = value);
             return this;
         }
 
@@ -172,7 +159,7 @@ public class PscCommonDto implements PscDtoCommunal {
             return this;
         }
 
-        public Builder registerEntyDate(final LocalDate value) {
+        public Builder registerEntryDate(final LocalDate value) {
 
             buildSteps.add(data -> data.registerEntryDate = value);
             return this;
@@ -200,7 +187,7 @@ public class PscCommonDto implements PscDtoCommunal {
         return Objects.equals(getAddress(), that.getAddress()) && Objects.equals(
                 getAddressSameAsRegisteredOfficeAddress(),
                 that.getAddressSameAsRegisteredOfficeAddress()) && Objects.equals(getCeasedOn(),
-                that.getCeasedOn()) && Objects.equals(getName(), that.getName()) && Objects.equals(
+                that.getCeasedOn()) && Objects.equals(
                 getNaturesOfControl(), that.getNaturesOfControl()) && Objects.equals(
                 getNotifiedOn(), that.getNotifiedOn()) && Objects.equals(getReferenceEtag(),
                 that.getReferenceEtag()) && Objects.equals(getReferencePscId(),
@@ -212,7 +199,7 @@ public class PscCommonDto implements PscDtoCommunal {
     @Override
     public int hashCode() {
         return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
-                getName(), getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(),
+                getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(),
                 getReferencePscId(), getReferencePscListEtag(), getRegisterEntryDate());
     }
 
@@ -221,7 +208,6 @@ public class PscCommonDto implements PscDtoCommunal {
         return new StringJoiner(", ").add("address=" + address)
                 .add("addressSameAsRegisteredOfficeAddress=" + addressSameAsRegisteredOfficeAddress)
                 .add("ceasedOn=" + ceasedOn)
-                .add("name='" + name + "'")
                 .add("naturesOfControl=" + naturesOfControl)
                 .add("notifiedOn=" + notifiedOn)
                 .add("referenceEtag='" + referenceEtag + "'")

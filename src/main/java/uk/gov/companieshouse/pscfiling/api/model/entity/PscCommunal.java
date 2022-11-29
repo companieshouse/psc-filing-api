@@ -21,8 +21,6 @@ public interface PscCommunal {
 
     Links getLinks();
 
-    String getName();
-
     List<String> getNaturesOfControl();
 
     LocalDate getNotifiedOn();

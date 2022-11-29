@@ -21,7 +21,7 @@ title PSC Filing API: Target Data Model Class Structure
 
 legend right
 |=Revision |=Date |
-|    0.1    |     21/11/2022    |
+|    0.2    |     29/11/2022    |
 endlegend
 
     package "model" {
@@ -33,6 +33,7 @@ endlegend
                 -addressLine2
                 -careOf
                 -country
+                -locality
                 -poBox
                 -postalCode
                 -premises
@@ -44,11 +45,6 @@ endlegend
                 -month:int
                 -year:int
             }
-
-/'             note left of Date3TupleDto
-               day is null
-               for partial DOB
-            end note'/
 
             class IdentificationDto {
                 -countryRegistered
@@ -85,7 +81,6 @@ endlegend
                 +getAddress():  AddressDto
                 +getAddressSameAsRegisteredOfficeAddres()s: Boolean
                 +getCeasedOn(): LocalDate
-                +getName()
                 +getNaturesOfControl(): String[]
                 +getNotifiedOn(): LocalDate
                 +getReferenceEtag()
@@ -98,7 +93,6 @@ endlegend
                 -address: AddressDto
                 -addressSameAsRegisteredOfficeAddress: Boolean
                 -ceasedOn: LocalDate
-                -name
                 -naturesOfControl[1..*]
                 -notifiedOn: LocalDate
                 -referenceEtag
@@ -126,6 +120,7 @@ endlegend
 
             class PscWithIdentificationDto implements PscCommon {
                 -pscCommon: PscCommonDto
+                -name
                 -identification:IdentificationDto
             }
             
