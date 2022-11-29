@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,7 +38,6 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -56,8 +54,6 @@ class PscFilingControllerImplTest {
     private PscFilingController testController;
     @Mock
     private PscFilingService pscFilingService;
-    @Mock
-    private PscDetailsService pscDetailsService;
     @Mock
     private TransactionService transactionService;
     @Mock
@@ -81,7 +77,7 @@ class PscFilingControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController = new PscFilingControllerImpl(transactionService, pscDetailsService, pscFilingService, filingMapper, clock, logger) {
+        testController = new PscFilingControllerImpl(transactionService, pscFilingService, filingMapper, clock, logger) {
         };
         filing = PscIndividualFiling.builder()
                 .referencePscId("psc-id")

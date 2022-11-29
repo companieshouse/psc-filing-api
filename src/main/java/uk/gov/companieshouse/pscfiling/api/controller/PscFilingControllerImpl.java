@@ -27,7 +27,6 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -38,17 +37,15 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 public class PscFilingControllerImpl implements PscFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
-    private final PscDetailsService pscDetailsService;
     private final PscFilingService pscFilingService;
     private final PscIndividualMapper filingMapper;
     private final Clock clock;
     private final Logger logger;
 
-    public PscFilingControllerImpl(final TransactionService transactionService, PscDetailsService pscDetailsService,
+    public PscFilingControllerImpl(final TransactionService transactionService,
                                    final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
                                    final Clock clock, final Logger logger) {
         this.transactionService = transactionService;
-        this.pscDetailsService = pscDetailsService;
         this.pscFilingService = pscFilingService;
         this.filingMapper = filingMapper;
         this.clock = clock;
