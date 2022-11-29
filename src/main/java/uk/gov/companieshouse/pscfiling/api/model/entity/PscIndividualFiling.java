@@ -141,12 +141,10 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        if (this == o)
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
         PscIndividualFiling that = (PscIndividualFiling) o;
         return Objects.equals(getId(), that.getId())
                 && Objects.equals(getAddress(), that.getAddress())
@@ -176,25 +174,27 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getAddress(), getAddressSameAsRegisteredOfficeAddress(),
-                getCeasedOn(), getCountryOfResidence(), getCreatedAt(), getDateOfBirth(), getEtag(),
-                getKind(), getNameElements(), getNaturesOfControl(), getNationality(),
-                getNotifiedOn(), getReferenceEtag(), getReferencePscId(), getReferencePscListEtag(),
-                getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
-                getStatementActionDate(), getStatementType(), getUpdatedAt(), getLinks());
+        return Objects.hash(getId(), pscCommunal, getCountryOfResidence(), getDateOfBirth(), getNameElements(),
+                getNationality(), getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
+                getStatementActionDate(), getStatementType());
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add("id='" + id + "'")
-                .add("pscCommunal=" + pscCommunal).add("countryOfResidence='" + countryOfResidence + "'")
-                .add("dateOfBirth=" + dateOfBirth).add("nameElements=" + nameElements)
-                .add("nationality='" + nationality + "'").add("residentialAddress=" + residentialAddress)
-                .add("residentialAddressSameAsCorrespondenceAddress=" + residentialAddressSameAsCorrespondenceAddress)
-                .add("statementActionDate=" + statementActionDate).add("statementType='" + statementType + "'")
+        return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
+                        pscCommunal.toString())
+                .add("id='" + id + "'")
+                .add("countryOfResidence='" + countryOfResidence + "'")
+                .add("dateOfBirth=" + dateOfBirth)
+                .add("nameElements=" + nameElements)
+                .add("nationality='" + nationality + "'")
+                .add("residentialAddress=" + residentialAddress)
+                .add("residentialAddressSameAsCorrespondenceAddress="
+                        + residentialAddressSameAsCorrespondenceAddress)
+                .add("statementActionDate=" + statementActionDate)
+                .add("statementType='" + statementType + "'")
                 .toString();
     }
-
     public static Builder builder() {
         return new Builder();
     }

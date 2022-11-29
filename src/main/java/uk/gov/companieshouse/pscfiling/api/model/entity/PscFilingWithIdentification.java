@@ -129,6 +129,7 @@ public class PscFilingWithIdentification implements PscCommunal {
     public String toString() {
         return new StringJoiner(", ", PscFilingWithIdentification.class.getSimpleName() + "[",
                 "]").add(pscCommunal.toString())
+                .add("id='" + id +"'")
                 .add("identification=" + identification)
                 .add("name='" + name +"'")
                 .toString();
