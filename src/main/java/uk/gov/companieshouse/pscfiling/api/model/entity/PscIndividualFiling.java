@@ -9,12 +9,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "psc_filing")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling implements PscCommunal {
 
+    @Id
+    private String id;
     private final PscCommunal pscCommunal;
     private String countryOfResidence;
     private Date3Tuple dateOfBirth;
@@ -30,9 +33,8 @@ public class PscIndividualFiling implements PscCommunal {
         pscCommunal = commonBuilder.build();
     }
 
-    @Override
     public String getId() {
-        return pscCommunal.getId();
+        return id;
     }
 
     @Override
@@ -184,17 +186,12 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
-                        pscCommunal.toString())
-                .add("countryOfResidence='" + countryOfResidence + "'")
-                .add("dateOfBirth=" + dateOfBirth)
-                .add("nameElements=" + nameElements)
-                .add("nationality='" + nationality + "'")
-                .add("residentialAddress=" + residentialAddress)
-                .add("residentialAddressSameAsCorrespondenceAddress="
-                        + residentialAddressSameAsCorrespondenceAddress)
-                .add("statementActionDate=" + statementActionDate)
-                .add("statementType='" + statementType + "'")
+        return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add("id='" + id + "'")
+                .add("pscCommunal=" + pscCommunal).add("countryOfResidence='" + countryOfResidence + "'")
+                .add("dateOfBirth=" + dateOfBirth).add("nameElements=" + nameElements)
+                .add("nationality='" + nationality + "'").add("residentialAddress=" + residentialAddress)
+                .add("residentialAddressSameAsCorrespondenceAddress=" + residentialAddressSameAsCorrespondenceAddress)
+                .add("statementActionDate=" + statementActionDate).add("statementType='" + statementType + "'")
                 .toString();
     }
 
@@ -245,7 +242,7 @@ public class PscIndividualFiling implements PscCommunal {
 
         public Builder id(final String value) {
 
-            commonBuilder.id(value);
+            buildSteps.add(data -> data.id = value);
             return this;
         }
 

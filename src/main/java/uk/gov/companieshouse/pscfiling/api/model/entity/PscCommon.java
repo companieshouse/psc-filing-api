@@ -9,11 +9,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
-import org.springframework.data.annotation.Id;
 
 public class PscCommon implements PscCommunal {
-    @Id
-    protected String id;
     protected Address address;
     protected Boolean addressSameAsRegisteredOfficeAddress;
     protected LocalDate ceasedOn;
@@ -28,11 +25,6 @@ public class PscCommon implements PscCommunal {
     protected String referencePscListEtag;
     protected LocalDate registerEntryDate;
     protected Instant updatedAt;
-
-    @Override
-    public String getId() {
-        return id;
-    }
 
     @Override
     public Address getAddress() {
@@ -113,8 +105,8 @@ public class PscCommon implements PscCommunal {
             return false;
         }
         final var pscCommon = (PscCommon) o;
-        return Objects.equals(getId(), pscCommon.getId())
-                && Objects.equals(getAddress(), pscCommon.getAddress())
+        return
+                Objects.equals(getAddress(), pscCommon.getAddress())
                 && Objects.equals(getAddressSameAsRegisteredOfficeAddress(),
                 pscCommon.getAddressSameAsRegisteredOfficeAddress())
                 && Objects.equals(getCeasedOn(), pscCommon.getCeasedOn())
@@ -133,7 +125,7 @@ public class PscCommon implements PscCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getAddress(), getAddressSameAsRegisteredOfficeAddress(),
+        return Objects.hash( getAddress(), getAddressSameAsRegisteredOfficeAddress(),
                 getCeasedOn(), getCreatedAt(), getEtag(), getKind(), getLinks(),
                 getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
                 getReferencePscListEtag(), getRegisterEntryDate(), getUpdatedAt());
@@ -141,7 +133,7 @@ public class PscCommon implements PscCommunal {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ").add("id='" + id + "'")
+        return new StringJoiner(", ")
                 .add("address=" + address)
                 .add("addressSameAsRegisteredOfficeAddress=" + addressSameAsRegisteredOfficeAddress)
                 .add("ceasedOn=" + ceasedOn)
@@ -178,7 +170,7 @@ public class PscCommon implements PscCommunal {
 
         public Builder(final PscCommon other) {
             this();
-            this.id(other.getId())
+            this
                     .address(other.getAddress())
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
@@ -194,11 +186,6 @@ public class PscCommon implements PscCommunal {
                     .referencePscListEtag(other.getReferencePscListEtag())
                     .registerEntryDate(other.getRegisterEntryDate())
                     .updatedAt(other.getUpdatedAt());
-        }
-
-        public Builder id(final String value) {
-            buildSteps.add(data -> data.id = value);
-            return this;
         }
 
         public Builder address(final Address value) {

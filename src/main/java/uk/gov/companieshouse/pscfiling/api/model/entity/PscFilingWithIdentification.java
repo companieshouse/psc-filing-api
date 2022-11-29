@@ -9,9 +9,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
+import org.springframework.data.annotation.Id;
 
 public class PscFilingWithIdentification implements PscCommunal {
 
+    @Id
+    private String id;
     private final PscCommunal pscCommunal;
     private Identification identification;
     private String name;
@@ -22,9 +25,8 @@ public class PscFilingWithIdentification implements PscCommunal {
         pscCommunal = commonBuilder.build();
     }
 
-    @Override
     public String getId() {
-        return pscCommunal.getId();
+        return id;
     }
 
     @Override
@@ -147,7 +149,8 @@ public class PscFilingWithIdentification implements PscCommunal {
         }
 
         public Builder id(final String value) {
-            commonBuilder.id(value);
+
+            buildSteps.add(data -> data.id = value);
             return this;
         }
 
