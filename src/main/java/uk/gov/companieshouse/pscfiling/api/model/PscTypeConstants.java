@@ -6,7 +6,8 @@ import java.util.Optional;
 public enum PscTypeConstants {
     INDIVIDUAL("individual"),
     CORPORATE_ENTITY("corporate-entity"), 
-    LEGAL_PERSON("legal-person");
+    LEGAL_PERSON("legal-person"),
+    NOT_DEFINED("not-defined");
 
     PscTypeConstants(final String value) {
         this.value = value;

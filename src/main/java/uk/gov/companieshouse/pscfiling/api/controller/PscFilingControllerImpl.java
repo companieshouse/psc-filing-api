@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.NOT_DEFINED;
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 import java.time.Clock;
@@ -23,7 +24,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -70,6 +73,11 @@ public class PscFilingControllerImpl implements PscFilingController {
         final var logMap = LogHelper.createLogMap(transId);
 
         logger.debugRequest(request, "POST", logMap);
+
+        PscTypeConstants pscTypeConstant = PscTypeConstants.nameOf(pscType).orElse(NOT_DEFINED);
+        if (pscTypeConstant == NOT_DEFINED) {
+            throw new ResourceNotFoundException("No such PSC Type: " + pscType);
+        }
 
         if (bindingResult != null && bindingResult.hasErrors()) {
             throw new InvalidFilingException(bindingResult.getFieldErrors());
