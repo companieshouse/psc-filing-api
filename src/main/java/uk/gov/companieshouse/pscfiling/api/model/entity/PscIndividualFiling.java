@@ -9,12 +9,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "psc_filing")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling implements PscCommunal {
 
+    @Id
+    private String id;
     private final PscCommunal pscCommunal;
     private String countryOfResidence;
     private Date3Tuple dateOfBirth;
@@ -30,9 +33,8 @@ public class PscIndividualFiling implements PscCommunal {
         pscCommunal = commonBuilder.build();
     }
 
-    @Override
     public String getId() {
-        return pscCommunal.getId();
+        return id;
     }
 
     @Override
@@ -139,12 +141,10 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        if (this == o)
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
         PscIndividualFiling that = (PscIndividualFiling) o;
         return Objects.equals(getId(), that.getId())
                 && Objects.equals(getAddress(), that.getAddress())
@@ -174,18 +174,16 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getAddress(), getAddressSameAsRegisteredOfficeAddress(),
-                getCeasedOn(), getCountryOfResidence(), getCreatedAt(), getDateOfBirth(), getEtag(),
-                getKind(), getNameElements(), getNaturesOfControl(), getNationality(),
-                getNotifiedOn(), getReferenceEtag(), getReferencePscId(), getReferencePscListEtag(),
-                getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
-                getStatementActionDate(), getStatementType(), getUpdatedAt(), getLinks());
+        return Objects.hash(getId(), pscCommunal, getCountryOfResidence(), getDateOfBirth(), getNameElements(),
+                getNationality(), getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
+                getStatementActionDate(), getStatementType());
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
                         pscCommunal.toString())
+                .add("id='" + id + "'")
                 .add("countryOfResidence='" + countryOfResidence + "'")
                 .add("dateOfBirth=" + dateOfBirth)
                 .add("nameElements=" + nameElements)
@@ -197,7 +195,6 @@ public class PscIndividualFiling implements PscCommunal {
                 .add("statementType='" + statementType + "'")
                 .toString();
     }
-
     public static Builder builder() {
         return new Builder();
     }
@@ -245,7 +242,7 @@ public class PscIndividualFiling implements PscCommunal {
 
         public Builder id(final String value) {
 
-            commonBuilder.id(value);
+            buildSteps.add(data -> data.id = value);
             return this;
         }
 

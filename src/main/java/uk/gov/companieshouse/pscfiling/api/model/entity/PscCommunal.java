@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface PscCommunal {
-    String getId();
 
     Address getAddress();
 
