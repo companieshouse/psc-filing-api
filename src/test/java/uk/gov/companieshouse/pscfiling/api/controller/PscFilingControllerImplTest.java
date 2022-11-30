@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -95,7 +96,7 @@ class PscFilingControllerImplTest {
         resourceMap = createResources();
     }
 
-//    @ParameterizedTest(name = "[{index}] null binding result={0}")
+    @ParameterizedTest(name = "[{index}] null binding result={0}")
     @ValueSource(booleans = {true, false})
     void createFiling(final boolean nullBindingResult) {
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
