@@ -39,6 +39,7 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -57,6 +58,8 @@ class PscFilingControllerImplTest {
     private PscFilingService pscFilingService;
     @Mock
     private TransactionService transactionService;
+    @Mock
+    private PscDetailsService pscDetailsService;
     @Mock
     private Clock clock;
     @Mock
@@ -78,7 +81,7 @@ class PscFilingControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController = new PscFilingControllerImpl(transactionService, pscFilingService, filingMapper, clock, logger) {
+        testController = new PscFilingControllerImpl(transactionService, pscDetailsService, pscFilingService, filingMapper, clock, logger) {
         };
         filing = PscIndividualFiling.builder()
                 .referencePscId("psc-id")

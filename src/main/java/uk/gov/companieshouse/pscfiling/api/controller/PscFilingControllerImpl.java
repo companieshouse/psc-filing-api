@@ -24,12 +24,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -40,15 +42,17 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 public class PscFilingControllerImpl implements PscFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
+    private final PscDetailsService pscDetailsService;
     private final PscFilingService pscFilingService;
     private final PscIndividualMapper filingMapper;
     private final Clock clock;
     private final Logger logger;
 
-    public PscFilingControllerImpl(final TransactionService transactionService,
+    public PscFilingControllerImpl(final TransactionService transactionService, PscDetailsService pscDetailsService,
                                    final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
                                    final Clock clock, final Logger logger) {
         this.transactionService = transactionService;
+        this.pscDetailsService = pscDetailsService;
         this.pscFilingService = pscFilingService;
         this.filingMapper = filingMapper;
         this.clock = clock;
@@ -87,6 +91,12 @@ public class PscFilingControllerImpl implements PscFilingController {
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
+
+        try {
+            pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType, passthroughHeader);
+        } catch (PSCServiceException e) {
+            throw new ResourceNotFoundException("PSC ID not found: " + dto.getReferencePscId());
+        }
 
         final var entity = filingMapper.map(dto);
         final var links = saveFilingWithLinks(entity, transId, request, logMap);

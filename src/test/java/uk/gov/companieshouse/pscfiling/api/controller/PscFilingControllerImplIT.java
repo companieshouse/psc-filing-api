@@ -38,6 +38,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
@@ -55,6 +56,8 @@ class PscFilingControllerImplIT {
 
     @MockBean
     private TransactionService transactionService;
+    @MockBean
+    private PscDetailsService pscDetailsService;
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
