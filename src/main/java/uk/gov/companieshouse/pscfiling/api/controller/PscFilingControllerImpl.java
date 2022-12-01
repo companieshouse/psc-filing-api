@@ -93,7 +93,7 @@ public class PscFilingControllerImpl implements PscFilingController {
         logger.infoContext(transId, "transaction found", logMap);
 
         try {
-            final var pscDetails = pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType, passthroughHeader);
+            pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType, passthroughHeader);
         } catch (PSCServiceException e) {
             throw new ResourceNotFoundException("PSC ID not found: " + dto.getReferencePscId());
         }
