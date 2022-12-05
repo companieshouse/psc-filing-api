@@ -124,7 +124,7 @@
 							"var filing_resource_id = locationArray[4];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
-							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
 							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
 							"",
 							"console.log(\"...........................\");"
@@ -178,7 +178,7 @@
 							"var filing_resource_id = locationArray[4];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
-							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
 							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
 							"",
 							"console.log(\"...........................\");"
@@ -232,7 +232,7 @@
 							"var filing_resource_id = locationArray[4];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
-							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
 							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
 							"",
 							"console.log(\"...........................\");"
@@ -286,7 +286,7 @@
 							"var filing_resource_id = locationArray[4];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
-							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
 							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
 							"",
 							"console.log(\"...........................\");"
@@ -341,7 +341,7 @@
 							"var filing_resource_id = locationArray[4];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
-							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
 							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
 							"",
 							"console.log(\"...........................\");"
@@ -396,7 +396,7 @@
 							"var filing_resource_id = locationArray[4];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
-							"pm.environment.set(\"filing_resource__id\", filing_resource_id);",
+							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
 							"console.log(\"The filing resource id for this PSC07 is \" + filing_resource_id);",
 							"",
 							"console.log(\"...........................\");"
