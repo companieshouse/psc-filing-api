@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "073e99f7-3ebc-4a1e-bacb-8a143bf6f0b7",
+		"_postman_id": "b0d70e74-1341-44f9-9768-7e157ca10e7c",
 		"name": "PSC Filing API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "5589485"
+		"_exporter_id": "2395471"
 	},
 	"item": [
 		{
@@ -121,7 +121,7 @@
 							"",
 							"//extract the filing_resource_id from the Location",
 							"const locationArray = location.split(\"/\");",
-							"var filing_resource_id = locationArray[4];",
+							"var filing_resource_id = locationArray[locationArray.length-1];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
 							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
@@ -144,7 +144,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"1kdaTltWeaP1EB70SSD9SLmiK5Y\",\n    \"register_entry_date\": \"2022-10-15\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/individual",
@@ -175,7 +175,7 @@
 							"",
 							"//extract the filing_resource_id from the Location",
 							"const locationArray = location.split(\"/\");",
-							"var filing_resource_id = locationArray[4];",
+							"var filing_resource_id = llocationArray[locationArray.length-1];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
 							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
@@ -198,7 +198,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"0E9R1b-4gBlsjJQz3Zlr0qI7DUI\",\n    \"register_entry_date\": \"2022-10-15\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/corporate-entity",
@@ -229,7 +229,7 @@
 							"",
 							"//extract the filing_resource_id from the Location",
 							"const locationArray = location.split(\"/\");",
-							"var filing_resource_id = locationArray[4];",
+							"var filing_resource_id = locationArray[locationArray.length-1];",
 							"",
 							"//create an environment variable called filing_resource_id for use in future requests",
 							"pm.environment.set(\"filing_resource_id\", filing_resource_id);",
@@ -252,7 +252,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"3AftpfAa8RAq7EC3jKC6l7YDJ89=\"\n}"
+					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_list_etag\": \"686897696a7c876b7d\",\n    \"reference_psc_id\": \"23IYsKsa5GydgySUbYVkhL31s2s\",\n    \"register_entry_date\": \"2022-10-15\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/legal-person",
