@@ -222,6 +222,7 @@ public class PscIndividualFiling implements PscCommunal {
                     .countryOfResidence(other.getCountryOfResidence())
                     .createdAt(other.getCreatedAt())
                     .dateOfBirth(other.getDateOfBirth())
+                    .registerEntryDate(other.getRegisterEntryDate())
                     .etag(other.getEtag())
                     .kind(other.getKind())
                     .links(other.getLinks())
