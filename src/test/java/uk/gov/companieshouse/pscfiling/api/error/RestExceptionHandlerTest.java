@@ -34,6 +34,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
