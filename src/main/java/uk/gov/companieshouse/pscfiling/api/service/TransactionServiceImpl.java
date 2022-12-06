@@ -3,8 +3,10 @@ package uk.gov.companieshouse.pscfiling.api.service;
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
@@ -14,6 +16,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
+    private static final String INVALID_STATUS_CODE = "Invalid Status Code received";
     private final ApiClientService apiClientService;
     private final Logger logger;
 
@@ -34,6 +37,8 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public Transaction getTransaction(final String transactionId,
             final String ericPassThroughHeader) throws TransactionServiceException {
+        final var logMap = LogHelper.createLogMap(transactionId);
+
         try {
             final var uri = "/transactions/" + transactionId;
             final var transaction =
@@ -42,11 +47,16 @@ public class TransactionServiceImpl implements TransactionService {
                             .get(uri)
                             .execute()
                             .getData();
-            final var logMap = LogHelper.createLogMap(transactionId);
             logMap.put("company_number", transaction.getCompanyNumber());
             logMap.put("company_name", transaction.getCompanyName());
             logger.debugContext(transactionId, "Retrieved transaction details", logMap);
             return transaction;
+        }
+        catch (final ApiErrorResponseException e) {
+            logger.errorContext(transactionId, INVALID_STATUS_CODE, e, logMap);
+            throw new TransactionServiceException(
+                    MessageFormat.format("Error Updating Transaction details for {0}: {1} {2}",
+                            transactionId, e.getStatusCode(), e.getStatusMessage()), e);
         }
         catch (final URIValidationException | IOException e) {
             throw new TransactionServiceException("Error Retrieving Transaction " + transactionId,
@@ -78,10 +88,17 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new IOException("Invalid Status Code received: " + resp.getStatusCode());
             }
         }
-        catch (final IOException | URIValidationException e) {
-            logger.errorContext(transaction.getId(), "Invalid Status Code received", e, logMap);
+        catch (final ApiErrorResponseException e) {
+            logger.errorContext(transaction.getId(), INVALID_STATUS_CODE, e, logMap);
             throw new TransactionServiceException(
-                    "Error Updating Transaction " + transaction.getId(), e);
+                    String.format("Error Updating Transaction details for %s", transaction.getId()),
+                    e);
+        }
+        catch (final IOException | URIValidationException e) {
+            logger.errorContext(transaction.getId(), INVALID_STATUS_CODE, e, logMap);
+            throw new TransactionServiceException(
+                    MessageFormat.format("Error Updating Transaction {0}: {1}", transaction.getId(),
+                            e.getMessage()), e);
         }
     }
 

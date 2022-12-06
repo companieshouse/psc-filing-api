@@ -209,6 +209,26 @@ class RestExceptionHandlerTest {
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
 
+    @ParameterizedTest(name = "[{index}]: cause={0}")
+    @NullSource
+    @MethodSource("causeProvider")
+    void handlePscServiceException(final Exception cause) {
+        final var exception = new PSCServiceException("test", cause);
+
+        when(request.resolveReference("request")).thenReturn(servletRequest);
+
+        final var apiErrors =
+                testExceptionHandler.handlePSCServiceException(exception, request);
+
+        final var expectedError =
+                new ApiError("test", "/path/to/resource", "resource", "ch:service");
+
+        if (cause != null) {
+            expectedError.addErrorValue("cause", cause.getMessage());
+        }
+        assertThat(apiErrors.getErrors(), contains(expectedError));
+    }
+
     @Test
     void handleExceptionInternal() {
         final var exception = new NullPointerException("test");

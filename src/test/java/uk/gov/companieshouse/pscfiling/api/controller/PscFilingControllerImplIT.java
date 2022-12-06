@@ -169,7 +169,7 @@ class PscFilingControllerImplIT {
     }
 
     @Test
-    @Disabled("Annotated validation not working in DTO for ceasedOn date")
+    @Disabled("NPE in filingmapper; Spring validation not working")
     void createFilingWhenCeasedOnInvalidThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "3000-09-13") + "}";
         final var expectedError = createExpectedError(
@@ -193,7 +193,7 @@ class PscFilingControllerImplIT {
     }
 
     @Test
-    @Disabled("Annotated validation not working in DTO for ceasedOn date")
+    @Disabled("NPE in filingmapper; Spring validation not working")
     void createFilingWhenCeasedOnBlankThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "") + "}";
         final var expectedError = createExpectedError(

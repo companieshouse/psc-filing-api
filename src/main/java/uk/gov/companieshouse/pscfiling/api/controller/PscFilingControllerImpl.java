@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
-import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.NOT_DEFINED;
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 import java.time.Clock;
@@ -24,8 +23,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -48,7 +45,7 @@ public class PscFilingControllerImpl implements PscFilingController {
     private final Clock clock;
     private final Logger logger;
 
-    public PscFilingControllerImpl(final TransactionService transactionService, PscDetailsService pscDetailsService,
+    public PscFilingControllerImpl(final TransactionService transactionService, final PscDetailsService pscDetailsService,
                                    final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
                                    final Clock clock, final Logger logger) {
         this.transactionService = transactionService;
@@ -70,18 +67,13 @@ public class PscFilingControllerImpl implements PscFilingController {
      */
     @Override
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<Object> createFiling(@PathVariable final String transId,
-            @PathVariable final String pscType,
+    public ResponseEntity<Object> createFiling(@PathVariable("transId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
         final var logMap = LogHelper.createLogMap(transId);
 
         logger.debugRequest(request, "POST", logMap);
-
-        PscTypeConstants pscTypeConstant = PscTypeConstants.nameOf(pscType).orElse(NOT_DEFINED);
-        if (pscTypeConstant == NOT_DEFINED) {
-            throw new ResourceNotFoundException("No such PSC Type: " + pscType);
-        }
 
         if (bindingResult != null && bindingResult.hasErrors()) {
             throw new InvalidFilingException(bindingResult.getFieldErrors());
@@ -92,11 +84,12 @@ public class PscFilingControllerImpl implements PscFilingController {
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
 
-        try {
-            pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType, passthroughHeader);
-        } catch (PSCServiceException e) {
-            throw new ResourceNotFoundException("PSC ID not found: " + dto.getReferencePscId());
-        }
+        final var pscDetails =
+                pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType,
+                        passthroughHeader);
+        logMap.put("company_number", transaction.getCompanyNumber());
+        logMap.put("PSC name", pscDetails.getName());
+        logger.debugContext(transaction.getId(), "Retrieved PSC details", logMap);
 
         final var entity = filingMapper.map(dto);
         final var links = saveFilingWithLinks(entity, transId, request, logMap);
@@ -120,11 +113,12 @@ public class PscFilingControllerImpl implements PscFilingController {
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
     public ResponseEntity<PscIndividualDto> getFilingForReview(
             @PathVariable("transId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource) {
 
-        var maybePSCFiling = pscFilingService.get(filingResource, transId);
+        final var maybePSCFiling = pscFilingService.get(filingResource, transId);
 
-        var maybeDto = maybePSCFiling.map(filingMapper::map);
+        final var maybeDto = maybePSCFiling.map(filingMapper::map);
 
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()

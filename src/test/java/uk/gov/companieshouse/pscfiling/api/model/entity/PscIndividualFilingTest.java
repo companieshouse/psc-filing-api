@@ -128,7 +128,7 @@ class PscIndividualFilingTest {
     @DisplayName("toString")
     void testToString() throws JsonProcessingException {
         final String expected =
-                "PscIndividualFiling[address=Address[addressLine1='line1', "
+                "PscIndividualFiling[id='id', address=Address[addressLine1='line1', "
                         + "addressLine2='line2', careOf='careOf', country='country', "
                         + "locality='locality', poBox='poBox', postalCode='postalCode', "
                         + "premises='premises', region='region'], "
@@ -138,7 +138,7 @@ class PscIndividualFilingTest {
                         + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
                         + "referenceEtag='etag', referencePscId='psc', "
                         + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
-                        + "updatedAt=2022-11-05T00:00:00Z, id='id', countryOfResidence='Wales', "
+                        + "updatedAt=2022-11-05T00:00:00Z, countryOfResidence='Wales', "
                         + "dateOfBirth=Date3Tuple[day=12, month=9, year=1970], "
                         + "nameElements=NameElements[forename='forename', otherForenames='other',"
                         + " surname='surname', title='title'], nationality='nationality', "
@@ -180,7 +180,7 @@ class PscIndividualFilingTest {
                 .identification(identification)
                 .name("name")
                 .build();
-        final String expected = "PscFilingWithIdentification["
+        final String expected = "PscFilingWithIdentification[id='id', "
                 + "address=Address[addressLine1='line1', "
                 + "addressLine2='line2', careOf='careOf', country='country', "
                 + "locality='locality', poBox='poBox', postalCode='postalCode', "
@@ -191,7 +191,7 @@ class PscIndividualFilingTest {
                 + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
                 + "referenceEtag='etag', referencePscId='psc', "
                 + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
-                + "updatedAt=2019-11-05T00:00:00Z, id='id', "
+                + "updatedAt=2019-11-05T00:00:00Z, "
                 + "identification=Identification[countryRegistered='theCountry',"
                 + " legalAuthority='theAuthority', legalForm='theForm',"
                 + " placeRegistered='thePlace', registrationNumber='registration'], "
