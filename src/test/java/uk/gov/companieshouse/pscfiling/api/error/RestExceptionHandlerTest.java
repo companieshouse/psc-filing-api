@@ -34,8 +34,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
 @ExtendWith(MockitoExtension.class)
@@ -159,7 +159,7 @@ class RestExceptionHandlerTest {
 
     @Test
     void handleResourceNotFoundException() {
-        final var exception = new ResourceNotFoundException("test resource missing");
+        final var exception = new FilingResourceNotFoundException("test resource missing");
 
         final var response =
                 testExceptionHandler.handleResourceNotFoundException(exception, request);

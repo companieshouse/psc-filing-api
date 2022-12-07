@@ -14,7 +14,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @Service
 public class PscDetailsServiceImpl implements PscDetailsService {
-    private static final String INVALID_STATUS_CODE = "Invalid Status Code received";
+    private static final String UNEXPECTED_STATUS_CODE = "Unexpected Status Code received";
 
     private final ApiClientService apiClientService;
     private final Logger logger;
@@ -55,12 +55,13 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                     .getData();
         }
         catch (final ApiErrorResponseException e) {
-            logger.errorContext(transaction.getId(), INVALID_STATUS_CODE, e, logMap);
+            logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);
             throw new PSCServiceException(
-                    String.format("Error Retrieving PSC details for %s", pscId), e);
+                    MessageFormat.format("Error Retrieving PSC details for {0}: {1} {2}", pscId,
+                            e.getStatusCode(), e.getStatusMessage()), e);
         }
         catch (final URIValidationException | IOException e) {
-            logger.errorContext(transaction.getId(), INVALID_STATUS_CODE, e, logMap);
+            logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);
             throw new PSCServiceException(
                     MessageFormat.format("Error Retrieving PSC details for {0}: {1}", pscId,
                             e.getMessage()), e);

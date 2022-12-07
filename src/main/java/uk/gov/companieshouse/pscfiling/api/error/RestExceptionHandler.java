@@ -30,7 +30,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
 /**
@@ -39,7 +39,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
  * <ul>
  *     <li>JSON payload not readable/malformed</li>
  *     <li>{@link InvalidFilingException}</li>
- *     <li>{@link ResourceNotFoundException}</li>
+ *     <li>{@link FilingResourceNotFoundException}</li>
  *     <li>{@link TransactionServiceException}</li>
  *     <li>{@link PSCServiceException}</li>
  *     <li>other {@link RuntimeException}</li>
@@ -105,9 +105,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler(FilingResourceNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
-    public ResponseEntity<Void> handleResourceNotFoundException(final ResourceNotFoundException ex,
+    public ResponseEntity<Void> handleResourceNotFoundException(final FilingResourceNotFoundException ex,
             final WebRequest request) {
         logError(request, "Resource not found", ex);
         return ResponseEntity.notFound()

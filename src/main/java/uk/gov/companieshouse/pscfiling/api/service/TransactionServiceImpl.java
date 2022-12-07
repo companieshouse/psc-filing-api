@@ -2,6 +2,8 @@ package uk.gov.companieshouse.pscfiling.api.service;
 
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpResponseException;
 import java.io.IOException;
 import java.text.MessageFormat;
 import org.springframework.http.HttpStatus;
@@ -16,7 +18,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private static final String INVALID_STATUS_CODE = "Invalid Status Code received";
+    private static final String UNEXPECTED_STATUS_CODE = "Unexpected Status Code received";
     private final ApiClientService apiClientService;
     private final Logger logger;
 
@@ -53,7 +55,7 @@ public class TransactionServiceImpl implements TransactionService {
             return transaction;
         }
         catch (final ApiErrorResponseException e) {
-            logger.errorContext(transactionId, INVALID_STATUS_CODE, e, logMap);
+            logger.errorContext(transactionId, UNEXPECTED_STATUS_CODE, e, logMap);
             throw new TransactionServiceException(
                     MessageFormat.format("Error Updating Transaction details for {0}: {1} {2}",
                             transactionId, e.getStatusCode(), e.getStatusMessage()), e);
@@ -85,17 +87,20 @@ public class TransactionServiceImpl implements TransactionService {
                             .execute();
 
             if (HttpStatus.NO_CONTENT.value() != resp.getStatusCode()) {
-                throw new IOException("Invalid Status Code received: " + resp.getStatusCode());
+                throw new ApiErrorResponseException(
+                        new HttpResponseException.Builder(resp.getStatusCode(),
+                                UNEXPECTED_STATUS_CODE, new HttpHeaders()));
             }
         }
         catch (final ApiErrorResponseException e) {
-            logger.errorContext(transaction.getId(), INVALID_STATUS_CODE, e, logMap);
+            logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);
             throw new TransactionServiceException(
-                    String.format("Error Updating Transaction details for %s", transaction.getId()),
-                    e);
+                    MessageFormat.format("Error Updating Transaction details for {0}: {1} {2}",
+                            transaction.getId(), e.getStatusCode(), e.getStatusMessage()), e);
+
         }
         catch (final IOException | URIValidationException e) {
-            logger.errorContext(transaction.getId(), INVALID_STATUS_CODE, e, logMap);
+            logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);
             throw new TransactionServiceException(
                     MessageFormat.format("Error Updating Transaction {0}: {1}", transaction.getId(),
                             e.getMessage()), e);

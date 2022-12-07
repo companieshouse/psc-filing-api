@@ -1,10 +1,13 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpResponseException;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.handler.psc.PscsResourceHandler;
 import uk.gov.companieshouse.api.handler.psc.request.PscIndividualGet;
@@ -74,13 +78,27 @@ class PscDetailsServiceImplTest {
     }
 
     @Test
-    void getPscDetailsWhenNotFound() throws IOException {
+    void getPscDetailsWhenIoException() throws IOException {
         when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(
-                IOException.class);
+                new IOException("get test case"));
 
-        assertThrows(PSCServiceException.class,
+        final var thrown = assertThrows(PSCServiceException.class,
                 () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                         PASSTHROUGH_HEADER));
+        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for 654321: get test case"));
     }
+
+    @Test
+    void getPscDetailsWhenNotFound() throws IOException {
+        final var exception = new ApiErrorResponseException(
+                new HttpResponseException.Builder(404, "test case", new HttpHeaders()));
+        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
+
+        final var thrown = assertThrows(PSCServiceException.class,
+                () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
+
+        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for " + PSC_ID + ": 404 test case"));
+    }
+
 }
 
