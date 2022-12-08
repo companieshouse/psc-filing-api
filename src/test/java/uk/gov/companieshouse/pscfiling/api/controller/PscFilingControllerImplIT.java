@@ -33,11 +33,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
+import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
@@ -46,6 +49,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 class PscFilingControllerImplIT {
     private static final String TRANS_ID = "4f56fdf78b357bfc";
     private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
+    private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
     private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String PSC07_FRAGMENT = "\"reference_etag\": \"etag\","
             + "\"reference_psc_id\": \"id\","
@@ -55,6 +59,10 @@ class PscFilingControllerImplIT {
 
     @MockBean
     private TransactionService transactionService;
+    @MockBean
+    private PscDetailsService pscDetailsService;
+    @MockBean
+    private PscApi pscDetails;
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
@@ -94,10 +102,13 @@ class PscFilingControllerImplIT {
                 .build();
 
         transaction.setId(TRANS_ID);
+        transaction.setCompanyNumber("012345678");
 
         when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
+        when(pscDetailsService.getPscDetails(transaction, "id", PSC_TYPE, PASSTHROUGH_HEADER)).thenReturn(pscDetails);
+        when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
         when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
                         PscIndividualFiling.builder(filing).id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
@@ -166,7 +177,7 @@ class PscFilingControllerImplIT {
     }
 
     @Test
-    @Disabled("Annotated validation not working in DTO for ceasedOn date")
+    @Disabled("NPE in filingmapper; Spring validation not working")
     void createFilingWhenCeasedOnInvalidThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "3000-09-13") + "}";
         final var expectedError = createExpectedError(
@@ -190,7 +201,7 @@ class PscFilingControllerImplIT {
     }
 
     @Test
-    @Disabled("Annotated validation not working in DTO for ceasedOn date")
+    @Disabled("NPE in filingmapper; Spring validation not working")
     void createFilingWhenCeasedOnBlankThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "") + "}";
         final var expectedError = createExpectedError(

@@ -31,14 +31,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -46,10 +49,14 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @ExtendWith(MockitoExtension.class)
 class PscFilingControllerImplTest {
     public static final String TRANS_ID = "117524-754816-491724";
-    private static final String PSC_TYPE = "individual";
+    private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
+    private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
     private static final String PASSTHROUGH_HEADER = "passthrough";
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
-    private static final URI REQUEST_URI = URI.create("/transactions/" + TRANS_ID + "/persons-with-significant-control/" + PSC_TYPE);
+    private static final URI REQUEST_URI = URI.create("/transactions/"
+            + TRANS_ID
+            + "/persons-with-significant-control/"
+            + PSC_TYPE.getValue());
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
 
     private PscFilingController testController;
@@ -57,6 +64,8 @@ class PscFilingControllerImplTest {
     private PscFilingService pscFilingService;
     @Mock
     private TransactionService transactionService;
+    @Mock
+    private PscDetailsService pscDetailsService;
     @Mock
     private Clock clock;
     @Mock
@@ -73,24 +82,30 @@ class PscFilingControllerImplTest {
     private Transaction transaction;
 
     private PscIndividualFiling filing;
+    private PscApi pscDetails;
     private Links links;
     private Map<String, Resource> resourceMap;
 
     @BeforeEach
     void setUp() {
-        testController = new PscFilingControllerImpl(transactionService, pscFilingService, filingMapper, clock, logger) {
-        };
+        testController =
+                new PscFilingControllerImpl(transactionService, pscDetailsService, pscFilingService,
+                        filingMapper, clock, logger) {
+                };
         filing = PscIndividualFiling.builder()
-                .referencePscId("psc-id")
+                .referencePscId(PSC_ID)
                 .referenceEtag("etag")
                 .ceasedOn(LocalDate.parse("2022-09-13"))
                 .build();
         final var builder = UriComponentsBuilder.fromUri(REQUEST_URI);
-        final var privateBuilder = UriComponentsBuilder.fromUri(URI.create(PREFIX_PRIVATE + "/" + REQUEST_URI));
+        final var privateBuilder =
+                UriComponentsBuilder.fromUri(URI.create(PREFIX_PRIVATE + "/" + REQUEST_URI));
         links = new Links(builder.pathSegment(FILING_ID)
-                .build().toUri(), privateBuilder.pathSegment(FILING_ID).pathSegment("validation_status")
-                .build().toUri());
+                .build().toUri(),
+                privateBuilder.pathSegment(FILING_ID).pathSegment("validation_status")
+                        .build().toUri());
         resourceMap = createResources();
+        pscDetails = new PscApi();
     }
 
     @ParameterizedTest(name = "[{index}] null binding result={0}")
@@ -100,6 +115,7 @@ class PscFilingControllerImplTest {
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
+        when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(filingMapper.map(dto)).thenReturn(filing);
 
         final var withFilingId = PscIndividualFiling.builder(filing).id(FILING_ID)
@@ -108,12 +124,13 @@ class PscFilingControllerImplTest {
                 .build();
         when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
         when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
+                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response =
-                testController.createFiling(TRANS_ID, PSC_TYPE, dto, nullBindingResult ? null : result,
-                        request);
+        final var response = testController.createFiling(TRANS_ID, PSC_TYPE, dto,
+                nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
@@ -160,8 +177,7 @@ class PscFilingControllerImplTest {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        final var response =
-                testController.getFilingForReview(TRANS_ID, FILING_ID);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(dto));
@@ -172,8 +188,7 @@ class PscFilingControllerImplTest {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        final var response =
-                testController.getFilingForReview(TRANS_ID, FILING_ID);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
 
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }

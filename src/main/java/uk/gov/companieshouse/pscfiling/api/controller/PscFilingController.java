@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
 public interface PscFilingController {
@@ -23,9 +24,10 @@ public interface PscFilingController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @PostMapping
-    default ResponseEntity<Object> createFiling(@PathVariable("transId") final String transId, @PathVariable("pscType") final String pscType,
-                                                @RequestBody @Valid @NotNull final PscIndividualDto dto, final BindingResult result,
-                                                final HttpServletRequest request) {
+    default ResponseEntity<Object> createFiling(@PathVariable("transId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
+            @RequestBody @Valid @NotNull final PscIndividualDto dto, final BindingResult result,
+            final HttpServletRequest request) {
         throw new NotImplementedException();
     }
 
@@ -39,6 +41,7 @@ public interface PscFilingController {
     @GetMapping
     default ResponseEntity<PscIndividualDto> getFilingForReview(
             @PathVariable("transId") String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResource") String filingResource) {
         throw new NotImplementedException();
     }

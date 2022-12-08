@@ -11,6 +11,7 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Document(collection = "psc_filing")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -18,7 +19,8 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Id
     private String id;
-    private final PscCommunal pscCommunal;
+    @Unwrapped.Empty
+    private PscCommon pscCommon;
     private String countryOfResidence;
     private Date3Tuple dateOfBirth;
     private NameElements nameElements;
@@ -28,9 +30,15 @@ public class PscIndividualFiling implements PscCommunal {
     private LocalDate statementActionDate;
     private String statementType;
 
+    public PscIndividualFiling() {
+        // required by Spring JPA
+        pscCommon = PscCommon.builder()
+                .build();
+    }
+
     private PscIndividualFiling(final PscCommon.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
-        pscCommunal = commonBuilder.build();
+        pscCommon = commonBuilder.build();
     }
 
     public String getId() {
@@ -39,72 +47,72 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public Address getAddress() {
-        return pscCommunal.getAddress();
+        return pscCommon.getAddress();
     }
 
     @Override
     public Boolean getAddressSameAsRegisteredOfficeAddress() {
-        return pscCommunal.getAddressSameAsRegisteredOfficeAddress();
+        return pscCommon.getAddressSameAsRegisteredOfficeAddress();
     }
 
     @Override
     public LocalDate getCeasedOn() {
-        return pscCommunal.getCeasedOn();
+        return pscCommon.getCeasedOn();
     }
 
     @Override
     public Instant getCreatedAt() {
-        return pscCommunal.getCreatedAt();
+        return pscCommon.getCreatedAt();
     }
 
     @Override
     public String getEtag() {
-        return pscCommunal.getEtag();
+        return pscCommon.getEtag();
     }
 
     @Override
     public String getKind() {
-        return pscCommunal.getKind();
+        return pscCommon.getKind();
     }
 
     @Override
     public Links getLinks() {
-        return pscCommunal.getLinks();
+        return pscCommon.getLinks();
     }
 
     @Override
     public List<String> getNaturesOfControl() {
-        return pscCommunal.getNaturesOfControl();
+        return pscCommon.getNaturesOfControl();
     }
 
     @Override
     public LocalDate getNotifiedOn() {
-        return pscCommunal.getNotifiedOn();
+        return pscCommon.getNotifiedOn();
     }
 
     @Override
     public String getReferenceEtag() {
-        return pscCommunal.getReferenceEtag();
+        return pscCommon.getReferenceEtag();
     }
 
     @Override
     public String getReferencePscId() {
-        return pscCommunal.getReferencePscId();
+        return pscCommon.getReferencePscId();
     }
 
     @Override
     public String getReferencePscListEtag() {
-        return pscCommunal.getReferencePscListEtag();
+        return pscCommon.getReferencePscListEtag();
     }
 
     @Override
     public LocalDate getRegisterEntryDate() {
-        return pscCommunal.getRegisterEntryDate();
+        return pscCommon.getRegisterEntryDate();
     }
 
     @Override
     public Instant getUpdatedAt() {
-        return pscCommunal.getUpdatedAt();
+        return pscCommon.getUpdatedAt();
     }
 
     public String getCountryOfResidence() {
@@ -140,50 +148,40 @@ public class PscIndividualFiling implements PscCommunal {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals(final Object o) {
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
-        PscIndividualFiling that = (PscIndividualFiling) o;
+        }
+        final PscIndividualFiling that = (PscIndividualFiling) o;
         return Objects.equals(getId(), that.getId())
-                && Objects.equals(getAddress(), that.getAddress())
-                && Objects.equals(getAddressSameAsRegisteredOfficeAddress(),
-                that.getAddressSameAsRegisteredOfficeAddress())
-                && Objects.equals(getCeasedOn(), that.getCeasedOn())
+                && Objects.equals(pscCommon, that.pscCommon)
                 && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
-                && Objects.equals(getCreatedAt(), that.getCreatedAt())
                 && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
-                && Objects.equals(getEtag(), that.getEtag())
-                && Objects.equals(getKind(), that.getKind())
                 && Objects.equals(getNameElements(), that.getNameElements())
-                && Objects.equals(getNaturesOfControl(), that.getNaturesOfControl())
                 && Objects.equals(getNationality(), that.getNationality())
-                && Objects.equals(getNotifiedOn(), that.getNotifiedOn())
-                && Objects.equals(getReferenceEtag(), that.getReferenceEtag())
-                && Objects.equals(getReferencePscId(), that.getReferencePscId())
-                && Objects.equals(getReferencePscListEtag(), that.getReferencePscListEtag())
                 && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
                 && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
                 that.getResidentialAddressSameAsCorrespondenceAddress())
                 && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
-                && Objects.equals(getStatementType(), that.getStatementType())
-                && Objects.equals(getUpdatedAt(), that.getUpdatedAt())
-                && Objects.equals(getLinks(), that.getLinks());
+                && Objects.equals(getStatementType(), that.getStatementType());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), pscCommunal, getCountryOfResidence(), getDateOfBirth(), getNameElements(),
-                getNationality(), getResidentialAddress(), getResidentialAddressSameAsCorrespondenceAddress(),
-                getStatementActionDate(), getStatementType());
+        return Objects.hash(getId(), pscCommon, getCountryOfResidence(), getDateOfBirth(),
+                getNameElements(), getNationality(), getResidentialAddress(),
+                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
+                getStatementType());
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
-                        pscCommunal.toString())
-                .add("id='" + id + "'")
+                        "id='" + id + "'")
+                .add(pscCommon.toString())
                 .add("countryOfResidence='" + countryOfResidence + "'")
                 .add("dateOfBirth=" + dateOfBirth)
                 .add("nameElements=" + nameElements)
@@ -195,6 +193,7 @@ public class PscIndividualFiling implements PscCommunal {
                 .add("statementType='" + statementType + "'")
                 .toString();
     }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -222,6 +221,7 @@ public class PscIndividualFiling implements PscCommunal {
                     .countryOfResidence(other.getCountryOfResidence())
                     .createdAt(other.getCreatedAt())
                     .dateOfBirth(other.getDateOfBirth())
+                    .registerEntryDate(other.getRegisterEntryDate())
                     .etag(other.getEtag())
                     .kind(other.getKind())
                     .links(other.getLinks())
