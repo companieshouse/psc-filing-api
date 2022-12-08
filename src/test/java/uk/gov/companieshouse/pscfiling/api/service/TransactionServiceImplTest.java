@@ -1,11 +1,14 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpStatusCodes;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.handler.privatetransaction.PrivateTransactionResourceHandler;
 import uk.gov.companieshouse.api.handler.privatetransaction.request.PrivateTransactionPatch;
@@ -67,9 +71,11 @@ class TransactionServiceImplTest {
     void getTransactionWhenFound() throws IOException, URIValidationException {
         when(apiResponse.getData()).thenReturn(testTransaction(TRANS_ID));
         when(transactionsGet.execute()).thenReturn(apiResponse);
-        when(transactionsResourceHandler.get("/transactions/" + TRANS_ID)).thenReturn(transactionsGet);
+        when(transactionsResourceHandler.get("/transactions/" + TRANS_ID)).thenReturn(
+                transactionsGet);
         when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
-        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
+        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(
+                apiClient);
 
         var transaction = testService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER);
 
@@ -77,19 +83,34 @@ class TransactionServiceImplTest {
     }
 
     @Test
-    void getTransactionWhenNotFound() throws IOException, URIValidationException {
-        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(IOException.class);
+    void getTransactionWhenIoException() throws IOException {
+        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(
+                IOException.class);
 
-        assertThrows(TransactionServiceException.class, () -> testService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER));
+        assertThrows(TransactionServiceException.class,
+                () -> testService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER));
+    }
+
+    @Test
+    void getTransactionWhenNotFound() throws IOException {
+        final var exception = new ApiErrorResponseException(
+                new HttpResponseException.Builder(404, "test case", new HttpHeaders()));
+        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
+
+        final var thrown = assertThrows(TransactionServiceException.class,
+                () -> testService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER));
+
+        assertThat(thrown.getMessage(), is("Error Updating Transaction details for " + TRANS_ID + ": 404 test case"));
     }
 
     @Test
     void updateTransactionWhenResponse204() throws IOException, URIValidationException {
         when(privateTransactionPatch.execute()).thenReturn(apiResponseVoid);
-        when(privateTransactionResourceHandler.patch("/private/transactions/12345", testTransaction)).thenReturn(
-                privateTransactionPatch);
+        when(privateTransactionResourceHandler.patch("/private/transactions/12345",
+                testTransaction)).thenReturn(privateTransactionPatch);
         when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(apiClientService.getInternalOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(internalApiClient);
+        when(apiClientService.getInternalOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(
+                internalApiClient);
 
         when(apiResponseVoid.getStatusCode()).thenReturn(HttpStatusCodes.STATUS_CODE_NO_CONTENT);
         testService.updateTransaction(testTransaction, PASSTHROUGH_HEADER);
@@ -98,17 +119,29 @@ class TransactionServiceImplTest {
     }
 
     @Test
+    void updateTransactionWhenIoException() throws IOException {
+        when(apiClientService.getInternalOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(
+                new IOException("update test case"));
+
+        final var thrown = assertThrows(TransactionServiceException.class,
+                () -> testService.updateTransaction(testTransaction, PASSTHROUGH_HEADER));
+        assertThat(thrown.getMessage(), is("Error Updating Transaction 12345: update test case"));
+    }
+
+    @Test
     void updateTransactionWhenResponseNot204() throws IOException, URIValidationException {
         when(privateTransactionPatch.execute()).thenReturn(apiResponseVoid);
-        when(privateTransactionResourceHandler.patch("/private/transactions/12345", testTransaction)).thenReturn(
-                privateTransactionPatch);
+        when(privateTransactionResourceHandler.patch("/private/transactions/12345",
+                testTransaction)).thenReturn(privateTransactionPatch);
         when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(apiClientService.getInternalOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(internalApiClient);
+        when(apiClientService.getInternalOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(
+                internalApiClient);
 
         when(apiResponseVoid.getStatusCode()).thenReturn(HttpStatusCodes.STATUS_CODE_NOT_FOUND);
 
-        assertThrows(TransactionServiceException.class,
+        final var thrown = assertThrows(TransactionServiceException.class,
                 () -> testService.updateTransaction(testTransaction, PASSTHROUGH_HEADER));
+        assertThat(thrown.getMessage(), is("Error Updating Transaction details for 12345: 404 Unexpected Status Code received"));
     }
 
     private Transaction testTransaction(String id) {
