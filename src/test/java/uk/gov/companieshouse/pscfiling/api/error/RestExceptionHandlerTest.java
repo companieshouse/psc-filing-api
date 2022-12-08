@@ -34,7 +34,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
 @ExtendWith(MockitoExtension.class)
@@ -158,7 +159,7 @@ class RestExceptionHandlerTest {
 
     @Test
     void handleResourceNotFoundException() {
-        final var exception = new ResourceNotFoundException("test resource missing");
+        final var exception = new FilingResourceNotFoundException("test resource missing");
 
         final var response =
                 testExceptionHandler.handleResourceNotFoundException(exception, request);
@@ -199,6 +200,26 @@ class RestExceptionHandlerTest {
 
         final var apiErrors =
                 testExceptionHandler.handleTransactionServiceException(exception, request);
+
+        final var expectedError =
+                new ApiError("test", "/path/to/resource", "resource", "ch:service");
+
+        if (cause != null) {
+            expectedError.addErrorValue("cause", cause.getMessage());
+        }
+        assertThat(apiErrors.getErrors(), contains(expectedError));
+    }
+
+    @ParameterizedTest(name = "[{index}]: cause={0}")
+    @NullSource
+    @MethodSource("causeProvider")
+    void handlePscServiceException(final Exception cause) {
+        final var exception = new PSCServiceException("test", cause);
+
+        when(request.resolveReference("request")).thenReturn(servletRequest);
+
+        final var apiErrors =
+                testExceptionHandler.handlePSCServiceException(exception, request);
 
         final var expectedError =
                 new ApiError("test", "/path/to/resource", "resource", "ch:service");

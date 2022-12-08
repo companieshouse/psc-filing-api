@@ -10,19 +10,21 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 public class PscFilingWithIdentification implements PscCommunal {
 
     @Id
     private String id;
-    private final PscCommunal pscCommunal;
+    @Unwrapped.Empty
+    private final PscCommon pscCommon;
     private Identification identification;
     private String name;
 
 
     private PscFilingWithIdentification(final PscCommon.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
-        pscCommunal = commonBuilder.build();
+        pscCommon = commonBuilder.build();
     }
 
     public String getId() {
@@ -31,72 +33,72 @@ public class PscFilingWithIdentification implements PscCommunal {
 
     @Override
     public Address getAddress() {
-        return pscCommunal.getAddress();
+        return pscCommon.getAddress();
     }
 
     @Override
     public Boolean getAddressSameAsRegisteredOfficeAddress() {
-        return pscCommunal.getAddressSameAsRegisteredOfficeAddress();
+        return pscCommon.getAddressSameAsRegisteredOfficeAddress();
     }
 
     @Override
     public LocalDate getCeasedOn() {
-        return pscCommunal.getCeasedOn();
+        return pscCommon.getCeasedOn();
     }
 
     @Override
     public Instant getCreatedAt() {
-        return pscCommunal.getCreatedAt();
+        return pscCommon.getCreatedAt();
     }
 
     @Override
     public String getEtag() {
-        return pscCommunal.getEtag();
+        return pscCommon.getEtag();
     }
 
     @Override
     public String getKind() {
-        return pscCommunal.getKind();
+        return pscCommon.getKind();
     }
 
     @Override
     public Links getLinks() {
-        return pscCommunal.getLinks();
+        return pscCommon.getLinks();
     }
 
     @Override
     public List<String> getNaturesOfControl() {
-        return pscCommunal.getNaturesOfControl();
+        return pscCommon.getNaturesOfControl();
     }
 
     @Override
     public LocalDate getNotifiedOn() {
-        return pscCommunal.getNotifiedOn();
+        return pscCommon.getNotifiedOn();
     }
 
     @Override
     public String getReferenceEtag() {
-        return pscCommunal.getReferenceEtag();
+        return pscCommon.getReferenceEtag();
     }
 
     @Override
     public String getReferencePscId() {
-        return pscCommunal.getReferencePscId();
+        return pscCommon.getReferencePscId();
     }
 
     @Override
     public String getReferencePscListEtag() {
-        return pscCommunal.getReferencePscListEtag();
+        return pscCommon.getReferencePscListEtag();
     }
 
     @Override
     public LocalDate getRegisterEntryDate() {
-        return pscCommunal.getRegisterEntryDate();
+        return pscCommon.getRegisterEntryDate();
     }
 
     @Override
     public Instant getUpdatedAt() {
-        return pscCommunal.getUpdatedAt();
+        return pscCommon.getUpdatedAt();
     }
 
     public Identification getIdentification() {
@@ -116,22 +118,24 @@ public class PscFilingWithIdentification implements PscCommunal {
             return false;
         }
         final PscFilingWithIdentification that = (PscFilingWithIdentification) o;
-        return Objects.equals(pscCommunal, that.pscCommunal) && Objects.equals(getIdentification(),
-                that.getIdentification());
+        return Objects.equals(getId(), that.getId())
+                && Objects.equals(pscCommon, that.pscCommon)
+                && Objects.equals(getIdentification(), that.getIdentification())
+                && Objects.equals(getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pscCommunal, getIdentification(), getName());
+        return Objects.hash(getId(), pscCommon, getIdentification(), getName());
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", PscFilingWithIdentification.class.getSimpleName() + "[",
-                "]").add(pscCommunal.toString())
-                .add("id='" + id +"'")
+                "]").add("id='" + id + "'")
+                .add(pscCommon.toString())
                 .add("identification=" + identification)
-                .add("name='" + name +"'")
+                .add("name='" + name + "'")
                 .toString();
     }
 

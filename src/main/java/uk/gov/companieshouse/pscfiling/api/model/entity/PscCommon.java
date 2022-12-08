@@ -11,20 +11,20 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 public class PscCommon implements PscCommunal {
-    protected Address address;
-    protected Boolean addressSameAsRegisteredOfficeAddress;
-    protected LocalDate ceasedOn;
-    protected Instant createdAt;
-    protected String etag;
-    protected String kind;
-    protected Links links;
-    protected NaturesOfControlList naturesOfControl;
-    protected LocalDate notifiedOn;
-    protected String referenceEtag;
-    protected String referencePscId;
-    protected String referencePscListEtag;
-    protected LocalDate registerEntryDate;
-    protected Instant updatedAt;
+    private Address address;
+    private Boolean addressSameAsRegisteredOfficeAddress;
+    private LocalDate ceasedOn;
+    private Instant createdAt;
+    private String etag;
+    private String kind;
+    private Links links;
+    private NaturesOfControlList naturesOfControl;
+    private LocalDate notifiedOn;
+    private String referenceEtag;
+    private String referencePscId;
+    private String referencePscListEtag;
+    private LocalDate registerEntryDate;
+    private Instant updatedAt;
 
     @Override
     public Address getAddress() {
@@ -105,8 +105,7 @@ public class PscCommon implements PscCommunal {
             return false;
         }
         final var pscCommon = (PscCommon) o;
-        return
-                Objects.equals(getAddress(), pscCommon.getAddress())
+        return Objects.equals(getAddress(), pscCommon.getAddress())
                 && Objects.equals(getAddressSameAsRegisteredOfficeAddress(),
                 pscCommon.getAddressSameAsRegisteredOfficeAddress())
                 && Objects.equals(getCeasedOn(), pscCommon.getCeasedOn())
@@ -125,10 +124,10 @@ public class PscCommon implements PscCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash( getAddress(), getAddressSameAsRegisteredOfficeAddress(),
-                getCeasedOn(), getCreatedAt(), getEtag(), getKind(), getLinks(),
-                getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
-                getReferencePscListEtag(), getRegisterEntryDate(), getUpdatedAt());
+        return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
+                getCreatedAt(), getEtag(), getKind(), getLinks(), getNaturesOfControl(),
+                getNotifiedOn(), getReferenceEtag(), getReferencePscId(), getReferencePscListEtag(),
+                getRegisterEntryDate(), getUpdatedAt());
     }
 
     @Override
@@ -170,8 +169,7 @@ public class PscCommon implements PscCommunal {
 
         public Builder(final PscCommon other) {
             this();
-            this
-                    .address(other.getAddress())
+            this.address(other.getAddress())
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
