@@ -44,7 +44,9 @@ import java.util.Map;
 
             var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
-            return maybePscIndividualFiling.map(this::isValid).orElseThrow(() -> new FilingResourceNotFoundException("Filing resource not found"));
+            return maybePscIndividualFiling.map(this::isValid)
+                    .orElseThrow(() -> new FilingResourceNotFoundException(
+                            "Filing resource not found: " + filingResource));
         }
 
         private ValidationStatusResponse isValid(PscIndividualFiling pscFiling) {

@@ -11,6 +11,8 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
+
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +51,10 @@ class ValidationStatusControllerImplTest {
     void validateWhenNotFound() {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        assertThrows(FilingResourceNotFoundException.class, () -> testController.validate(TRANS_ID, FILING_ID, request));
+        final var filingResourceNotFoundException =
+                assertThrows(FilingResourceNotFoundException.class,
+                        () -> testController.validate(TRANS_ID, FILING_ID, request));
+
+        assertThat(filingResourceNotFoundException.getMessage(), containsString(FILING_ID));
     }
 }
