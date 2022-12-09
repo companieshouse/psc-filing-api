@@ -8,21 +8,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 
 public class PscCommonDto implements PscDtoCommunal {
     private AddressDto address;
     private Boolean addressSameAsRegisteredOfficeAddress;
-    @PastOrPresent
-    @NotNull
     private LocalDate ceasedOn;
     private NaturesOfControlListDto naturesOfControl;
     private LocalDate notifiedOn;
-    @NotBlank
     private String referenceEtag;
-    @NotBlank
     private String referencePscId;
     private String referencePscListEtag;
     private LocalDate registerEntryDate;
