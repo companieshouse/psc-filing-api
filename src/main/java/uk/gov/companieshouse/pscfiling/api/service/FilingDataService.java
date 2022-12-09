@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import javax.servlet.http.HttpServletRequest;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 
 /**
  * Produces Filing Data format for consumption as JSON by filing-resource-handler external service.
@@ -14,5 +16,6 @@ public interface FilingDataService {
      * @param filingId      the Officer Filing ID
      * @return the FilingApi resource
      */
-    FilingApi generatePscFiling(String transactionId, String filingId);
+    FilingApi generatePscFiling(String filingId, HttpServletRequest request,
+                Transaction transaction, String passthroughHeader);
 }

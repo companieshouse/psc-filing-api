@@ -9,17 +9,21 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
+import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
+import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
 @RequestMapping("/private/transactions/{transId}/persons-with-significant-control")
 public class FilingDataControllerImpl implements FilingDataController {
     private final FilingDataService filingDataService;
+    private final TransactionService transactionService;
     private final Logger logger;
 
     public FilingDataControllerImpl(final FilingDataService filingDataService,
-            final Logger logger) {
+                                    TransactionService transactionService, final Logger logger) {
         this.filingDataService = filingDataService;
+        this.transactionService = transactionService;
         this.logger = logger;
     }
 
@@ -43,7 +47,11 @@ public class FilingDataControllerImpl implements FilingDataController {
         logger.debugRequest(request,
                 "GET /private/transactions/{transId}/persons-with-significant-control/{filingId}/filings", logMap);
 
-        final var filingApi = filingDataService.generatePscFiling(transId, filingResource);
+        final var passthroughHeader =
+            request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+        final var transaction = transactionService.getTransaction(transId, passthroughHeader);
+
+        final var filingApi = filingDataService.generatePscFiling(filingResource, request, transaction, passthroughHeader);
 
         logMap.put("psc filing:", filingApi);
         logger.infoContext(transId, "psc filing data", logMap);
