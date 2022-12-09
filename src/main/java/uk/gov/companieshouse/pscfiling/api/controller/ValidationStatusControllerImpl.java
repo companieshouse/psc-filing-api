@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
-    @RequestMapping("/private/transactions/{transId}/persons-with-significant-control/{pscType}")
+    @RequestMapping("/private/transactions/{transId}/persons-with-significant-control/")
     public class ValidationStatusControllerImpl implements ValidationStatusController {
         private final PscFilingService pscFilingService;
         private final Logger logger;
