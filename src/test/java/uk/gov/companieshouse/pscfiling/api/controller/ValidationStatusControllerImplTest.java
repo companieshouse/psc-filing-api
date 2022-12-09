@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +49,6 @@ class ValidationStatusControllerImplTest {
     void validateWhenNotFound() {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> testController.validate(TRANS_ID, FILING_ID, request));
+        assertThrows(FilingResourceNotFoundException.class, () -> testController.validate(TRANS_ID, FILING_ID, request));
     }
 }

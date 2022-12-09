@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusResponse;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -44,7 +44,7 @@ import java.util.Map;
 
             var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
-            return maybePscIndividualFiling.map(this::isValid).orElseThrow(ResourceNotFoundException::new);
+            return maybePscIndividualFiling.map(this::isValid).orElseThrow(() -> new FilingResourceNotFoundException("Filing resource not found"));
         }
 
         private ValidationStatusResponse isValid(PscIndividualFiling pscFiling) {
