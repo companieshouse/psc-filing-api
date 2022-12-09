@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.util.Map;
 
 public final class MapHelper {
@@ -24,6 +25,8 @@ public final class MapHelper {
             mapper = new ObjectMapper().setPropertyNamingStrategy(
                     PropertyNamingStrategies.SNAKE_CASE);
         }
+
+        mapper.registerModule(new JavaTimeModule());
 
         return mapper.convertValue(obj, new TypeReference<>() {
         });

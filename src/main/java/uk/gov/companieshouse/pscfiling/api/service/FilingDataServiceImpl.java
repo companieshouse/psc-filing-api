@@ -3,7 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.service;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -45,8 +45,8 @@ public class FilingDataServiceImpl implements FilingDataService {
 
     private void setFilingApiData(FilingApi filing, String transactionId, String filingId) {
         var pscFilingOpt = pscFilingService.get(filingId, transactionId);
-        var pscFiling = pscFilingOpt.orElseThrow(() -> new ResourceNotFoundException(
-                String.format("Psc not found when generating filing for %s", filingId)));
+        var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
+                String.format("Psc individual not found when generating filing for %s", filingId)));
         // TODO this is dummy data until we get the details from company-appointments API
         var enhancedPscFiling = PscIndividualFiling.builder(pscFiling)
                 .dateOfBirth(new Date3Tuple(20, 10, 2000))

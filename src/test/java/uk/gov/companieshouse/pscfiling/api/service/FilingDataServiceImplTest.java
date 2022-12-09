@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
@@ -80,7 +80,7 @@ class FilingDataServiceImplTest {
     void generatePscIndividualFilingWhenNotFound() {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        final var exception = assertThrows(ResourceNotFoundException.class,
+        final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testService.generatePscFiling(TRANS_ID, FILING_ID));
 
         assertThat(exception.getMessage(),

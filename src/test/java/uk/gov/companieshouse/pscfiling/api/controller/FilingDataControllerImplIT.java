@@ -11,7 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 
@@ -70,7 +70,7 @@ class FilingDataControllerImplIT {
 
     @Test
     void getFilingsWhenNotFound() throws Exception {
-        when(filingDataService.generatePscFiling(TRANS_ID, FILING_ID)).thenThrow(new ResourceNotFoundException("for Not Found scenario"));
+        when(filingDataService.generatePscFiling(TRANS_ID, FILING_ID)).thenThrow(new FilingResourceNotFoundException("for Not Found scenario"));
 
         mockMvc.perform(
                         get("/private/transactions/{id}/officers/{filingId}/filings", TRANS_ID,

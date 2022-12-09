@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.ResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 
@@ -55,9 +55,9 @@ class FilingDataControllerImplTest {
     @Test
     void getFilingsDataWhenNotFound() {
 
-        when(filingDataService.generatePscFiling(TRANS_ID, FILING_ID)).thenThrow(new ResourceNotFoundException("Test Resource not found"));
+        when(filingDataService.generatePscFiling(TRANS_ID, FILING_ID)).thenThrow(new FilingResourceNotFoundException("Test Resource not found"));
 
-        final var exception = assertThrows(ResourceNotFoundException.class,
+        final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testController.getFilingsData(TRANS_ID, FILING_ID, request));
         assertThat(exception.getMessage(), is("Test Resource not found"));
     }
