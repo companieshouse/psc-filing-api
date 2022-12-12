@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.error;
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
@@ -49,8 +51,10 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+    private static final String CAUSE = "cause";
+    private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$", Pattern.MULTILINE);
+
     private final Logger chLogger;
-    public static final String CAUSE = "cause";
 
     public RestExceptionHandler(final Logger logger) {
         this.chLogger = logger;
@@ -66,19 +70,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         if (cause instanceof JsonProcessingException) {
             final var jpe = (JsonProcessingException) cause;
-            final var msg = baseMessage + cause.getMessage();
             final var location = jpe.getLocation();
             var jsonPath = "$";
+            Object rejectedValue = null;
 
             if (cause instanceof MismatchedInputException) {
                 final var fieldNameOpt = ((MismatchedInputException) cause).getPath()
                         .stream()
                         .findFirst()
                         .map(JsonMappingException.Reference::getFieldName);
-                jsonPath += fieldNameOpt.map(f -> ".." + f).orElse("");
-            }
+                jsonPath += fieldNameOpt.map(f -> "." + f).orElse("");
 
-            error = buildRequestBodyError(msg, jsonPath, null);
+
+                if (jpe instanceof InvalidFormatException) {
+                    rejectedValue = ((InvalidFormatException) cause).getValue();
+                }
+            }
+            error = buildRequestBodyError(baseMessage + getParseErrorMessage(cause.getMessage()),
+                    jsonPath, rejectedValue);
             addLocationInfo(error, location);
         }
         else {
@@ -107,8 +116,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(FilingResourceNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
-    public ResponseEntity<Void> handleResourceNotFoundException(final FilingResourceNotFoundException ex,
-            final WebRequest request) {
+    public ResponseEntity<Void> handleResourceNotFoundException(
+            final FilingResourceNotFoundException ex, final WebRequest request) {
         logError(request, "Resource not found", ex);
         return ResponseEntity.notFound()
                 .build();
@@ -133,10 +142,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public ApiErrors handlePSCServiceException(final PSCServiceException ex,
-                                               final WebRequest request) {
+            final WebRequest request) {
         final var error = new ApiError(ex.getMessage(), getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
-        Optional.ofNullable(ex.getCause()).ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
+        Optional.ofNullable(ex.getCause())
+                .ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
 
         final var errorList = List.of(error);
         logError(request, "PSC service error", ex, errorList);
@@ -189,6 +199,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(s -> s.replaceAll("^[^.]*", "\\$"))
                 .map(s -> s.replaceAll("([A-Z0-9]+)", "_$1").toLowerCase())
                 .orElse(null);
+    }
+
+    private static String getParseErrorMessage(final String s) {
+        final var matcher = PARSE_MESSAGE_PATTERN.matcher(s);
+
+        return matcher.find() ? matcher.group(1) : "";
     }
 
     private static String getRequestURI(final WebRequest request) {
