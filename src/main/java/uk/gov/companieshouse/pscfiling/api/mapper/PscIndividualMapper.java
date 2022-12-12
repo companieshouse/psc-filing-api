@@ -24,6 +24,9 @@ public interface PscIndividualMapper {
 
     PscIndividualDto map(PscIndividualFiling filing);
 
+    @Mapping(target = "firstName", source = "nameElements.forename")
+    @Mapping(target = "otherForenames", source = "nameElements.otherForenames")
+    @Mapping(target = "lastName", source = "nameElements.surname")
     FilingData mapFiling(final PscIndividualFiling entity);
 
     @Mapping(target = "dateOfBirth", source = "dateOfBirth")

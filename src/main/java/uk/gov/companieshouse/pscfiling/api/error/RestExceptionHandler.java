@@ -29,7 +29,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -41,7 +42,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
  *     <li>{@link InvalidFilingException}</li>
  *     <li>{@link FilingResourceNotFoundException}</li>
  *     <li>{@link TransactionServiceException}</li>
- *     <li>{@link PSCServiceException}</li>
+ *     <li>{@link PscServiceException}</li>
  *     <li>other {@link RuntimeException}</li>
  *     <li>other internal exceptions</li>
  * </ul>
@@ -129,10 +130,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
-    @ExceptionHandler(PSCServiceException.class)
+    @ExceptionHandler(PscServiceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ApiErrors handlePSCServiceException(final PSCServiceException ex,
+    public ApiErrors handlePSCServiceException(final PscServiceException ex,
                                                final WebRequest request) {
         final var error = new ApiError(ex.getMessage(), getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
@@ -140,6 +141,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         final var errorList = List.of(error);
         logError(request, "PSC service error", ex, errorList);
+        return new ApiErrors(errorList);
+    }
+
+    @ExceptionHandler(PscNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseBody
+    public ApiErrors handlePSCNotFoundException(final PscNotFoundException ex,
+                                               final WebRequest request) {
+        final var error = new ApiError(ex.getMessage(), getRequestURI(request),
+                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
+        Optional.ofNullable(ex.getCause()).ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
+
+        final var errorList = List.of(error);
+        logError(request, "PSC not found", ex, errorList);
         return new ApiErrors(errorList);
     }
 

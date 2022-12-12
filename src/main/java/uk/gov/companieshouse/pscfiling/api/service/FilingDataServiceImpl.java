@@ -39,7 +39,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     @Override
     public FilingApi generatePscFiling(String filingId, HttpServletRequest request, Transaction transaction, String passthroughHeader) {
         var filing = new FilingApi();
-        filing.setKind("psc-filing#termination"); // TODO: handling other kinds to come later
+        filing.setKind("psc-filing#ceasation"); // TODO: handling other kinds to come later
 
         setFilingApiData(filing, filingId, request, transaction, passthroughHeader);
         return filing;
@@ -57,13 +57,16 @@ public class FilingDataServiceImpl implements FilingDataService {
         final var pscDetails =
             pscDetailsService.getPscDetails(transaction, pscFiling.getReferencePscId(), PscTypeConstants.INDIVIDUAL,
                 passthroughHeader);
-        var nameElements = NameElements.builder().forename(pscDetails.getNameElements().getForename())
-            .surname(pscDetails.getNameElements().getSurname()).build();
+        var nameElements = NameElements.builder()
+                .forename(pscDetails.getNameElements().getForename())
+                .otherForenames(pscDetails.getNameElements().getMiddleName())
+                .surname(pscDetails.getNameElements().getSurname())
+                .build();
         var enhancedPscFiling = PscIndividualFiling.builder(pscFiling)
                 .dateOfBirth(new Date3Tuple(20, 10, 2000))
             .nameElements(nameElements)
                 .build();
-        var filingData = pscIndividualMapper.map(enhancedPscFiling);
+        var filingData = pscIndividualMapper.mapFiling(enhancedPscFiling);
         var dataMap = MapHelper.convertObject(filingData);
 
         final var logMap = LogHelper.createLogMap(transactionId, filingId);

@@ -2,7 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.service;
 
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 /**
@@ -17,8 +17,8 @@ public interface PscDetailsService {
      * @param pscType           the PSC Type
      * @param ericPassThroughHeader includes authorisation for transaction fetch
      * @return the PSC details if found
-     * @throws PSCServiceException if PSC details not found or an error occurred
+     * @throws PscServiceException if PSC details not found or an error occurred
      */
     PscApi getPscDetails(Transaction transaction, String pscId, PscTypeConstants pscType, final String ericPassThroughHeader)
-            throws PSCServiceException;
+            throws PscServiceException;
 }

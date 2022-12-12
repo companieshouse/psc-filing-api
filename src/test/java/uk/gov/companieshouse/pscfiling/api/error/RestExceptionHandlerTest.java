@@ -35,7 +35,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +43,7 @@ class RestExceptionHandlerTest {
     public static final String MALFORMED_JSON_QUOTED = "\"{\"";
     private static final String TM01_FRAGMENT = "{\"reference_etag\": \"etag\","
             + "\"reference_officer_id\": \"id\","
-            + "\"resigned_on\": \"2022-09-13\"}";
+            + "\"ceased_on\": \"2022-09-13\"}";
 
     private RestExceptionHandler testExceptionHandler;
 
@@ -107,7 +107,7 @@ class RestExceptionHandlerTest {
         when(mismatchedInputException.getMessage()).thenReturn(msg);
         when(mismatchedInputException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
         when(mismatchedInputException.getPath()).thenReturn(List.of(mappingReference));
-        when(mappingReference.getFieldName()).thenReturn("resigned_on");
+        when(mappingReference.getFieldName()).thenReturn("ceased_on");
 
         final var exceptionMessage =
                 new HttpMessageNotReadableException(msg, mismatchedInputException, message);
@@ -116,7 +116,7 @@ class RestExceptionHandlerTest {
                         HttpStatus.BAD_REQUEST, request);
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
-                new ApiError("JSON parse error: " + msg, "$..resigned_on", "json-path",
+                new ApiError("JSON parse error: " + msg, "$..ceased_on", "json-path",
                         "ch:validation");
         expectedError.addErrorValue("offset", "line: 3, column: 7");
         expectedError.addErrorValue("line", "3");
@@ -214,7 +214,7 @@ class RestExceptionHandlerTest {
     @NullSource
     @MethodSource("causeProvider")
     void handlePscServiceException(final Exception cause) {
-        final var exception = new PSCServiceException("test", cause);
+        final var exception = new PscServiceException("test", cause);
 
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
