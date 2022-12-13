@@ -96,7 +96,8 @@ class FilingDataServiceImplTest {
                         "other_forenames", OTHER_FORENAMES,
                         "last_name", LASTNAME,
                         "date_of_birth", DATE_OF_BIRTH_STR,
-                        "ceased_on", CEASED_ON_STR);
+                        "ceased_on", CEASED_ON_STR,
+                        "register_entry_date",REGISTER_ENTRY_DATE );
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(), is("psc-filing#cessation"));
