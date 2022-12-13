@@ -12,18 +12,21 @@ public class FilingData {
     private String lastName;
     private String dateOfBirth;
     private String ceasedOn;
+    private String registerEntryDate;
 
     @JsonCreator
     public FilingData(@JsonProperty("first_name") String firstName,
                       @JsonProperty("other_forenames") String otherForenames,
                       @JsonProperty("last_name") String lastName,
                       @JsonProperty("date_of_birth") String dateOfBirth,
-                      @JsonProperty("ceased_on") String ceasedOn) {
+                      @JsonProperty("ceased_on") String ceasedOn,
+                      @JsonProperty("register_entry_date") String registerEntryDate) {
         this.firstName = firstName;
         this.otherForenames = otherForenames;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.ceasedOn = ceasedOn;
+        this.registerEntryDate = registerEntryDate;
     }
 
     public String getFirstName() {
@@ -44,5 +47,9 @@ public class FilingData {
 
     public String getCeasedOn() {
         return ceasedOn;
+    }
+
+    public String getRegisterEntryDate() {
+        return registerEntryDate;
     }
 }

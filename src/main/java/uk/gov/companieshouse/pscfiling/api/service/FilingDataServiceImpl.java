@@ -37,7 +37,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     @Override
     public FilingApi generatePscFiling(String filingId, Transaction transaction, String passthroughHeader) {
         var filing = new FilingApi();
-        filing.setKind("psc-filing#ceasation"); // TODO: handling other kinds to come later
+        filing.setKind("psc-filing#cessation"); // TODO: handling other kinds to come later
 
         setFilingApiData(filing, filingId, transaction, passthroughHeader);
         return filing;
@@ -49,7 +49,6 @@ public class FilingDataServiceImpl implements FilingDataService {
         var pscFilingOpt = pscFilingService.get(filingId, transactionId);
         var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
                 String.format("Psc individual not found when generating filing for %s", filingId)));
-        // TODO this is dummy data until we get the details from company-appointments API
 
         final var pscDetails =
             pscDetailsService.getPscDetails(transaction, pscFiling.getReferencePscId(), PscTypeConstants.INDIVIDUAL,

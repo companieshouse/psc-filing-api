@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
-import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 public interface FilingDataController {
 

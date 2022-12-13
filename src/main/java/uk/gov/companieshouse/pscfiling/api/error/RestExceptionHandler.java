@@ -73,7 +73,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         if (cause instanceof JsonProcessingException) {
             final var jpe = (JsonProcessingException) cause;
-            final var msg = baseMessage + cause.getMessage();
             final var location = jpe.getLocation();
             var jsonPath = "$";
             Object rejectedValue = null;
@@ -161,7 +160,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(PscNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "PSC not found")
     @ResponseBody
     public ApiErrors handlePscNotFoundException(final PscNotFoundException ex,
                                                final WebRequest request) {

@@ -35,6 +35,7 @@ class FilingDataControllerImplIT {
     private static final String REF_PSC_ID = "12345";
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON = "2022-10-05";
+    private static final String REGISTER_ENTRY = "2022-10-05";
     @MockBean
     private FilingDataService filingDataService;
     @MockBean
@@ -61,9 +62,9 @@ class FilingDataControllerImplIT {
     @Test
     void getFilingsWhenFound() throws Exception {
         final var filingApi = new FilingApi();
-        filingApi.setKind("psc-filing#ceasation");
+        filingApi.setKind("psc-filing#cessation");
         final Map<String, Object> dataMap =
-                Map.of("referenceEtag", REF_ETAG, "referencePscId", REF_PSC_ID, "filing_resource_id", CEASED_ON);
+                Map.of("referenceEtag", REF_ETAG, "referencePscId", REF_PSC_ID, "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
         filingApi.setData(dataMap);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
@@ -75,11 +76,10 @@ class FilingDataControllerImplIT {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].data", is(dataMap)))
-            .andExpect(jsonPath("$[0].kind", is("psc-filing#ceasation")));
+            .andExpect(jsonPath("$[0].kind", is("psc-filing#cessation")));
     }
 
     @Test
-    @Disabled("Don't work yet")
     void getFilingsWhenNotFound() throws Exception {
         when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenThrow(new PscNotFoundException("for Not Found scenario", null));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);

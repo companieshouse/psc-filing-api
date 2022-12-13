@@ -36,6 +36,7 @@ class FilingDataServiceImplTest {
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON_STR = "2022-10-05";
     private static final LocalDate CEASED_ON = LocalDate.parse("2022-10-05");
+    private static final String REGISTER_ENTRY_DATE = "2022-10-05";
     private static final String PASSTHROUGH_HEADER = "passthrough";
     public static final String FIRSTNAME = "JOE";
     public static final String OTHER_FORENAMES = "TOM";
@@ -68,7 +69,7 @@ class FilingDataServiceImplTest {
 
     @Test
     void generatePscIndividualFilingWhenFound() {
-        final var filingData = new FilingData(FIRSTNAME, OTHER_FORENAMES, LASTNAME, DATE_OF_BIRTH_STR, CEASED_ON_STR);
+        final var filingData = new FilingData(FIRSTNAME, OTHER_FORENAMES, LASTNAME, DATE_OF_BIRTH_STR, CEASED_ON_STR, REGISTER_ENTRY_DATE);
         final var nameElements = NameElements.builder().forename(FIRSTNAME).surname(LASTNAME).build();
         final var pscFiling = PscIndividualFiling.builder()
                 .referencePscId(REF_PSC_ID)
@@ -98,7 +99,7 @@ class FilingDataServiceImplTest {
                         "ceased_on", CEASED_ON_STR);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is("psc-filing#ceasation"));
+        assertThat(filingApi.getKind(), is("psc-filing#cessation"));
     }
 
     @Test
