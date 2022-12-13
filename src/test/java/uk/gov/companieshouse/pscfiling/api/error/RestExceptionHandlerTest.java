@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.error;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -41,6 +40,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 
 @ExtendWith(MockitoExtension.class)
 class RestExceptionHandlerTest {
+    public static final String BLANK_JSON_QUOTED = "\"\"";
     public static final String MALFORMED_JSON_QUOTED = "\"{\"";
     private static final String PSC07_FRAGMENT = "{\"reference_etag\": \"etag\","
             + "\"reference_psc_id\": \"id\","
@@ -76,27 +76,49 @@ class RestExceptionHandlerTest {
     }
 
     @Test
+    void handleHttpMessageNotReadableWhenJsonBlank() {
+        final var message = new MockHttpInputMessage(BLANK_JSON_QUOTED.getBytes());
+        final var exceptionMessage = new HttpMessageNotReadableException("Unexpected end-of-input: "
+                + "expected close marker for Object (start marker at [Source: (org"
+                + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
+                + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
+                + "line: 1, column: 2]", message);
+
+        final var response =
+                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                        HttpStatus.BAD_REQUEST, request);
+        final var apiErrors = (ApiErrors) response.getBody();
+        final var expectedError =
+                new ApiError("JSON parse error: Unexpected end-of-input", "$", "json-path",
+                        "ch:validation");
+        final var actualError = Objects.requireNonNull(apiErrors).getErrors().iterator().next();
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(actualError.getErrorValues(), is(nullValue()));
+        assertThat(actualError, is(samePropertyValuesAs(expectedError)));
+    }
+
+    @Test
     void handleHttpMessageNotReadableWhenJsonMalformed() {
         final var message = new MockHttpInputMessage(MALFORMED_JSON_QUOTED.getBytes());
         final var exceptionMessage = new HttpMessageNotReadableException("Unexpected end-of-input: "
                 + "expected close marker for Object (start marker at [Source: (org"
                 + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
                 + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
-                + "line: 1, column: 2]",
-                message);
+                + "line: 1, column: 2]", message);
 
         final var response =
                 testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
                         HttpStatus.BAD_REQUEST, request);
         final var apiErrors = (ApiErrors) response.getBody();
-        final var expectedError = new ApiError("test", "$", "json-path", "ch:validation");
+        final var expectedError = new ApiError(
+                "JSON parse error: Unexpected end-of-input", "$",
+                "json-path", "ch:validation");
         final var actualError = Objects.requireNonNull(apiErrors).getErrors().iterator().next();
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(actualError.getErrorValues(), is(nullValue()));
-        assertThat(actualError, is(samePropertyValuesAs(expectedError, "error")));
-        assertThat(actualError.getError(),
-                containsString("Unexpected end-of-input: expected close marker"));
+        assertThat(actualError, is(samePropertyValuesAs(expectedError)));
     }
 
     @Test
@@ -119,8 +141,8 @@ class RestExceptionHandlerTest {
                         HttpStatus.BAD_REQUEST, request);
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
-                new ApiError("JSON parse error: Text 'ABC' could not be parsed at index 0", "$.ceased_on", "json-path",
-                        "ch:validation");
+                new ApiError("JSON parse error: Text 'ABC' could not be parsed at index 0",
+                        "$.ceased_on", "json-path", "ch:validation");
         expectedError.addErrorValue("offset", "line: 3, column: 7");
         expectedError.addErrorValue("line", "3");
         expectedError.addErrorValue("column", "7");
@@ -128,20 +150,19 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(actualError, is(samePropertyValuesAs(expectedError)));
-        assertThat(actualError.getError(), containsString("JSON parse error: Text 'ABC' could not be parsed at index 0"));
     }
 
     @Test
     void handleHttpMessageNotReadableWhenInvalidFormatException() {
-        final var msg =
-                "Cannot deserialize value of type `java.time.LocalDate` from String "
-                        + "\"2022-09-99\": Failed to deserialize java.time.LocalDate: (java.time"
-                        + ".format.DateTimeParseException) Text '2022-09-99' could not be parsed:"
-                        + " Invalid value for DayOfMonth (valid values 1 - 28/31): 99\n at "
-                        + "[Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
-                        + " line: 2, column: 18] (through reference chain: uk.gov.companieshouse"
-                        + ".pscfiling.api.model.dto.PscIndividualDto$Builder[\"ceased_on\"])";
-        final var message = new MockHttpInputMessage(PSC07_FRAGMENT.replaceAll("2022-09-13", "2022-09-99").getBytes());
+        final var msg = "Cannot deserialize value of type `java.time.LocalDate` from String "
+                + "\"2022-09-99\": Failed to deserialize java.time.LocalDate: (java.time"
+                + ".format.DateTimeParseException) Text '2022-09-99' could not be parsed:"
+                + " Invalid value for DayOfMonth (valid values 1 - 28/31): 99\n at "
+                + "[Source: (org.springframework.util.StreamUtils$NonClosingInputStream);"
+                + " line: 2, column: 18] (through reference chain: uk.gov.companieshouse"
+                + ".pscfiling.api.model.dto.PscIndividualDto$Builder[\"ceased_on\"])";
+        final var message = new MockHttpInputMessage(
+                PSC07_FRAGMENT.replaceAll("2022-09-13", "2022-09-99").getBytes());
 
         when(invalidFormatException.getMessage()).thenReturn(msg);
         when(invalidFormatException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
@@ -151,14 +172,14 @@ class RestExceptionHandlerTest {
         final var dateParseMsg =
                 "JSON parse error: Text '2022-09-99' could not be parsed: Invalid value for "
                         + "DayOfMonth (valid values 1 - 28/31): 99";
-        final var exceptionMessage = new HttpMessageNotReadableException(dateParseMsg,
-                invalidFormatException, message);
+        final var exceptionMessage =
+                new HttpMessageNotReadableException(dateParseMsg, invalidFormatException, message);
         final var response =
                 testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
                         HttpStatus.BAD_REQUEST, request);
         final var apiErrors = (ApiErrors) response.getBody();
-        final var expectedError = new ApiError(dateParseMsg,
-                "$.ceased_on", "json-path", "ch:validation");
+        final var expectedError =
+                new ApiError(dateParseMsg, "$.ceased_on", "json-path", "ch:validation");
         expectedError.addErrorValue("offset", "line: 3, column: 7");
         expectedError.addErrorValue("line", "3");
         expectedError.addErrorValue("column", "7");
@@ -166,7 +187,6 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(actualError, is(samePropertyValuesAs(expectedError)));
-        assertThat(actualError.getError(), containsString(dateParseMsg));
     }
 
     @Test
@@ -187,7 +207,7 @@ class RestExceptionHandlerTest {
 
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
-                new ApiError("JSON parse error: ", "$", "json-path", "ch:validation");
+                new ApiError("JSON parse error: " + msg, "$", "json-path", "ch:validation");
         expectedError.addErrorValue("offset", "line: 3, column: 7");
         expectedError.addErrorValue("line", "3");
         expectedError.addErrorValue("column", "7");
@@ -195,7 +215,6 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(actualError, is(samePropertyValuesAs(expectedError)));
-        assertThat(actualError.getError(), is("JSON parse error: "));
     }
 
     @Test
@@ -259,8 +278,7 @@ class RestExceptionHandlerTest {
 
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
-        final var apiErrors =
-                testExceptionHandler.handlePSCServiceException(exception, request);
+        final var apiErrors = testExceptionHandler.handlePSCServiceException(exception, request);
 
         final var expectedError =
                 new ApiError("test", "/path/to/resource", "resource", "ch:service");

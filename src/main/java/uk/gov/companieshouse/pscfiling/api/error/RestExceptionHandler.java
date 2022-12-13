@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -67,6 +68,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final var cause = ex.getCause();
         final var baseMessage = "JSON parse error: ";
         final ApiError error;
+        var message = "";
 
         if (cause instanceof JsonProcessingException) {
             final var jpe = (JsonProcessingException) cause;
@@ -81,20 +83,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                         .map(JsonMappingException.Reference::getFieldName);
                 jsonPath += fieldNameOpt.map(f -> "." + f).orElse("");
 
-
+                message = getParseErrorMessage(cause.getMessage());
                 if (jpe instanceof InvalidFormatException) {
                     rejectedValue = ((InvalidFormatException) cause).getValue();
                 }
             }
-            error = buildRequestBodyError(baseMessage + getParseErrorMessage(cause.getMessage()),
-                    jsonPath, rejectedValue);
+            else {
+                message = redactErrorMessage(cause.getMessage());
+            }
+            error = buildRequestBodyError(baseMessage + message, jsonPath, rejectedValue);
             addLocationInfo(error, location);
         }
         else {
-            error = buildRequestBodyError(ex.getMostSpecificCause().getMessage(), "$", null);
+            message = redactErrorMessage(ex.getMostSpecificCause().getMessage());
+            error = buildRequestBodyError(baseMessage + message, "$", null);
 
         }
-        logError(request, "Message not readable", ex);
+        logError(request, String.format("Message not readable: %s", message), ex);
         return ResponseEntity.badRequest().body(new ApiErrors(List.of(error)));
     }
 
@@ -205,6 +210,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final var matcher = PARSE_MESSAGE_PATTERN.matcher(s);
 
         return matcher.find() ? matcher.group(1) : "";
+    }
+
+    private String redactErrorMessage(final String s) {
+        return StringUtils.substringBefore(s, ":");
     }
 
     private static String getRequestURI(final WebRequest request) {
