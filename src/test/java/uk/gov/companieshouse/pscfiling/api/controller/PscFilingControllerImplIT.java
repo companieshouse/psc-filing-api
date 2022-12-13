@@ -20,10 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +51,10 @@ class PscFilingControllerImplIT {
     private static final String PASSTHROUGH_HEADER = "passthrough";
     private static final String PSC07_FRAGMENT = "\"reference_etag\": \"etag\","
             + "\"reference_psc_id\": \"id\","
-            + "\"ceased_on\": \"2022-09-13\"";
-    public static final String MALFORMED_JSON_QUOTED = "\"\"";
+            + "\"ceased_on\": \"2022-09-13\","
+            + "\"register_entry_date\": \"2022-09-09\"";
+    private static final String EMPTY_QUOTED_JSON = "\"\"";
+    private static final String MALFORMED_JSON = "{";
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
 
     @MockBean
@@ -91,14 +91,17 @@ class PscFilingControllerImplIT {
                 .referenceEtag("etag")
                 .referencePscId("id")
                 .ceasedOn(LocalDate.of(2022, 9, 13))
+                .registerEntryDate(LocalDate.of(2022, 9, 9))
                 .build();
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag("etag")
                 .referencePscId("id")
                 .ceasedOn(LocalDate.of(2022, 9, 13))
+                .registerEntryDate(LocalDate.of(2022, 9, 9))
                 .build();
         final var locationUri = UriComponentsBuilder.fromPath("/")
-                .pathSegment("transactions", TRANS_ID, "persons-with-significant-control/individual", FILING_ID)
+                .pathSegment("transactions", TRANS_ID,
+                        "persons-with-significant-control/individual", FILING_ID)
                 .build();
 
         transaction.setId(TRANS_ID);
@@ -107,7 +110,8 @@ class PscFilingControllerImplIT {
         when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(pscDetailsService.getPscDetails(transaction, "id", PSC_TYPE, PASSTHROUGH_HEADER)).thenReturn(pscDetails);
+        when(pscDetailsService.getPscDetails(transaction, "id", PSC_TYPE,
+                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
         when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
                         PscIndividualFiling.builder(filing).id(FILING_ID)
@@ -116,9 +120,8 @@ class PscFilingControllerImplIT {
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual", TRANS_ID).content(body)
-                        .contentType("application/json")
-                        .headers(httpHeaders))
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", locationUri.toUriString()))
@@ -127,15 +130,71 @@ class PscFilingControllerImplIT {
     }
 
     @Test
+    void createFilingWhenRequestBodyMissingThenResponse400() throws Exception {
+        final var expectedError = createExpectedError(
+                "Required request body is missing: public org.springframework.http"
+                        + ".ResponseEntity<java.lang.Object> uk.gov.companieshouse.pscfiling.api"
+                        + ".controller.PscFilingControllerImpl.createFiling(java.lang.String,uk"
+                        + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
+                        + ".companieshouse.pscfiling.api.model.dto.PscIndividualDto,org"
+                        + ".springframework.validation.BindingResult,javax.servlet.http"
+                        + ".HttpServletRequest)", "$", 1, 1);
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content("").contentType("application/json").headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("JSON parse error: Required request body is missing")))
+                .andExpect(jsonPath("$.errors[0].error_values").doesNotExist());
+    }
+
+    @Test
+    void createFilingWhenRequestBodyBlankThenResponse400() throws Exception {
+        final var expectedError = createExpectedError(
+                "Cannot coerce empty String (\"\") to `uk.gov.companieshouse.pscfiling.api.model"
+                        + ".dto"
+                        + ".PscIndividualDto$Builder` value (but could if coercion was enabled "
+                        + "using "
+                        + "`CoercionConfig`)\n"
+                        + " at [Source: (org.springframework.util"
+                        + ".StreamUtils$NonClosingInputStream); line: 1, "
+                        + "column: 1]", "$", 1, 1);
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(EMPTY_QUOTED_JSON)
+                        .contentType("application/json")
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error", is("JSON parse error: ")))
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        allOf(hasEntry("offset", "line: 1, column: 1"), hasEntry("line", "1"),
+                                hasEntry("column", "1"))));
+    }
+
+    @Test
     void createFilingWhenRequestBodyMalformedThenResponse400() throws Exception {
-        final var expectedError = createExpectedError(
-                "JSON parse error: Cannot coerce empty String (\\\"\\\") to `uk.gov"
-                        + ".companieshouse.pscfiling.api.model.dto.PscIndividualDto$Builder` "
-                        + "value (but could if coercion was enabled using `CoercionConfig`)\\n at"
-                        + " [Source: (org.springframework.util.StreamUtils$NonClosingInputStream)"
-                        + "; line: 1, column: 1]", "$", 1, 1);
+        final var expectedError = createExpectedError("Unexpected end-of-input: "
+                + "expected close marker for Object (start marker at [Source: (org"
+                + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 2])\n"
+                + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
+                + "line: 1, column: 2]", "$", 1, 1);
 
-        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual", TRANS_ID).content(MALFORMED_JSON_QUOTED)
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(MALFORMED_JSON)
                         .contentType("application/json")
                         .headers(httpHeaders))
                 .andDo(print())
@@ -146,21 +205,48 @@ class PscFilingControllerImplIT {
                         allOf(hasEntry("location", expectedError.getLocation()),
                                 hasEntry("location_type", expectedError.getLocationType()),
                                 hasEntry("type", expectedError.getType()))))
-                .andExpect(jsonPath("$.errors[0].error", containsString(
-                        "Cannot coerce empty String")))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("JSON parse error: Unexpected end-of-input")))
                 .andExpect(jsonPath("$.errors[0].error_values",
-                        is(Map.of("offset", "line: 1, column: 1", "line", "1", "column", "1"))));
+                        allOf(hasEntry("offset", "line: 1, column: 2"), hasEntry("line", "1"),
+                                hasEntry("column", "2"))));
     }
 
     @Test
-    void createFilingWhenDateUnparseableThenResponse400() throws Exception {
+    void createFilingWhenRequestBodyIncompleteThenResponse400() throws Exception {
+        final var expectedError = createExpectedError(
+                "JSON parse error: Unexpected end-of-input: expected close marker for Object "
+                        + "(start marker at [Source: (org.springframework.util"
+                        + ".StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
+                        + " at [Source: (org.springframework.util"
+                        + ".StreamUtils$NonClosingInputStream); line: 1, column: 87]", "$", 1, 87);
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content("{" + PSC07_FRAGMENT)
+                        .contentType("application/json")
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("JSON parse error: Unexpected end-of-input")))
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        allOf(hasEntry("offset", "line: 1, column: 113"), hasEntry("line", "1"),
+                                hasEntry("column", "113"))));
+    }
+
+    @Test
+    void createFilingWhenCeasedOnDateUnparseableThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "ABC") + "}";
-        final var expectedError = createExpectedError(
-                "JSON parse error:", "$..ceased_on", 1, 75);
+        final var expectedError = createExpectedError("JSON parse error:", "$.ceased_on", 1, 75);
 
-        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual", TRANS_ID).content(body)
-                        .contentType("application/json")
-                        .headers(httpHeaders))
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(header().doesNotExist("Location"))
@@ -169,23 +255,68 @@ class PscFilingControllerImplIT {
                         allOf(hasEntry("location", expectedError.getLocation()),
                                 hasEntry("location_type", expectedError.getLocationType()),
                                 hasEntry("type", expectedError.getType()))))
-                .andExpect(jsonPath("$.errors[0].error", containsString(
-                        "JSON parse error: Cannot deserialize value of type `java.time.LocalDate`"
-                                + " from String \"ABC\"")))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("JSON parse error: Text 'ABC' could not be parsed at index 0")))
                 .andExpect(jsonPath("$.errors[0].error_values",
-                        is(Map.of("offset", "line: 1, column: 65", "line", "1", "column", "65"))));
+                        allOf(hasEntry("offset", "line: 1, column: 65"), hasEntry("line", "1"),
+                                hasEntry("column", "65"))));
     }
 
     @Test
-    @Disabled("NPE in filingmapper; Spring validation not working")
-    void createFilingWhenCeasedOnInvalidThenResponse400() throws Exception {
+    void createFilingWhenCeasedOnDateOutsideRangeThenResponse400() throws Exception {
+        final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "2022-09-99") + "}";
+        final var expectedError = createExpectedError("JSON parse error:", "$.ceased_on", 1, 75);
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("JSON parse error: Text '2022-09-99' could not be parsed: Invalid "
+                                + "value for DayOfMonth (valid values 1 - 28/31): 99")))
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        allOf(hasEntry("offset", "line: 1, column: 65"), hasEntry("line", "1"),
+                                hasEntry("column", "65"))));
+    }
+
+    @Test
+    void createFilingWhenCeasedOnDateInvalidThenResponse400() throws Exception {
+        final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "2022-11-31") + "}";
+        final var expectedError = createExpectedError("JSON parse error:", "$.ceased_on", 1, 75);
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("JSON parse error: Text '2022-11-31' could not be parsed: Invalid date"
+                                + " 'NOVEMBER 31'")))
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        allOf(hasEntry("offset", "line: 1, column: 65"), hasEntry("line", "1"),
+                                hasEntry("column", "65"))));
+    }
+
+    @Test
+    void createFilingWhenCeasedOnDateFutureThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "3000-09-13") + "}";
-        final var expectedError = createExpectedError(
-                "JSON parse error:", "$.ceased_on", 1, 75);
+        final var expectedError =
+                createExpectedError("must be a date in the past or in the present", "$.ceased_on",
+                        1, 75);
 
-        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual", TRANS_ID).content(body)
-                        .contentType("application/json")
-                        .headers(httpHeaders))
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(header().doesNotExist("Location"))
@@ -194,22 +325,19 @@ class PscFilingControllerImplIT {
                         allOf(hasEntry("location", expectedError.getLocation()),
                                 hasEntry("location_type", expectedError.getLocationType()),
                                 hasEntry("type", expectedError.getType()))))
-                .andExpect(jsonPath("$.errors[0].error", containsString(
-                        "must be a date in the past or in the present")))
-                .andExpect(jsonPath("$.errors[0].error_values",
-                        is(Map.of("rejected", "3000-09-13"))));
+                .andExpect(jsonPath("$.errors[0].error",
+                        containsString("must be a date in the past or in the present")))
+                .andExpect(
+                        jsonPath("$.errors[0].error_values", hasEntry("rejected", "3000-09-13")));
     }
 
     @Test
-    @Disabled("NPE in filingmapper; Spring validation not working")
-    void createFilingWhenCeasedOnBlankThenResponse400() throws Exception {
+    void createFilingWhenCeasedOnDateBlankThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "") + "}";
-        final var expectedError = createExpectedError(
-                "JSON parse error:", "$.ceased_on", 1, 75);
+        final var expectedError = createExpectedError("must not be null", "$.ceased_on", 1, 75);
 
-        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual", TRANS_ID).content(body)
-                        .contentType("application/json")
-                        .headers(httpHeaders))
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(header().doesNotExist("Location"))
@@ -223,56 +351,29 @@ class PscFilingControllerImplIT {
     }
 
     @Test
-    void createFilingWhenRequestBodyIncompleteThenResponse400() throws Exception {
-        final var expectedError = createExpectedError(
-                "JSON parse error: Unexpected end-of-input: expected close marker for Object "
-                        + "(start marker at [Source: (org.springframework.util"
-                        + ".StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
-                        + " at [Source: (org.springframework.util"
-                        + ".StreamUtils$NonClosingInputStream); line: 1, column: 87]", "$", 1, 87);
-
-        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual", TRANS_ID).content("{" + PSC07_FRAGMENT)
-                        .contentType("application/json")
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(header().doesNotExist("Location"))
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0]",
-                        allOf(hasEntry("location", expectedError.getLocation()),
-                                hasEntry("location_type", expectedError.getLocationType()),
-                                hasEntry("type", expectedError.getType()))))
-                .andExpect(jsonPath("$.errors[0].error", containsString(
-                        "JSON parse error: Unexpected end-of-input: expected close marker for "
-                                + "Object")))
-                .andExpect(jsonPath("$.errors[0].error_values",
-                        is(Map.of("offset", "line: 1, column: 77", "line", "1", "column", "77"))));
-    }
-
-    @Test
     void getFilingForReviewThenResponse200() throws Exception {
         final var dto = PscIndividualDto.builder()
-            .referenceEtag("etag")
-            .referencePscId("id")
-            .ceasedOn(LocalDate.of(2022, 9, 13))
-            .build();
+                .referenceEtag("etag")
+                .referencePscId("id")
+                .ceasedOn(LocalDate.of(2022, 9, 13))
+                .build();
         final var filing = PscIndividualFiling.builder()
-            .referenceEtag("etag")
-            .referencePscId("id")
-            .ceasedOn(LocalDate.of(2022, 9, 13))
-            .build();
+                .referenceEtag("etag")
+                .referencePscId("id")
+                .ceasedOn(LocalDate.of(2022, 9, 13))
+                .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         when(filingMapper.map(filing)).thenReturn(dto);
 
-        mockMvc.perform(get("/transactions/{id}/persons-with-significant-control/individual/{filingId}", TRANS_ID, FILING_ID)
-            .headers(httpHeaders))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.reference_etag", is("etag")))
-            .andExpect(jsonPath("$.reference_psc_id", is("id")))
-            .andExpect(jsonPath("$.ceased_on", is("2022-09-13")));
+        mockMvc.perform(get("/transactions/{id}/persons-with-significant-control/individual"
+                        + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.reference_etag", is("etag")))
+                .andExpect(jsonPath("$.reference_psc_id", is("id")))
+                .andExpect(jsonPath("$.ceased_on", is("2022-09-13")));
     }
 
     @Test
@@ -280,10 +381,10 @@ class PscFilingControllerImplIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/transactions/{id}/persons-with-significant-control/individual/{filingId}", TRANS_ID, FILING_ID)
-                .headers(httpHeaders))
-            .andDo(print())
-            .andExpect(status().isNotFound());
+        mockMvc.perform(get("/transactions/{id}/persons-with-significant-control/individual"
+                        + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     private ApiError createExpectedError(final String msg, final String location, final int line,
