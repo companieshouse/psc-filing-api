@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
-import javax.servlet.http.HttpServletRequest;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 
@@ -9,13 +8,12 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
  */
 public interface FilingDataService {
 
+
     /**
-     * Create FilingApi data from a retrieved Officer Filing resource.
-     *
-     * @param transactionId the Transaction ID
-     * @param filingId      the Officer Filing ID
-     * @return the FilingApi resource
+     * @param filingId          the PSC Filing id
+     * @param transaction       the transaction for the filing
+     * @param passthroughHeader the Http header
+     * @return
      */
-    FilingApi generatePscFiling(String filingId, HttpServletRequest request,
-                Transaction transaction, String passthroughHeader);
+    FilingApi generatePscFiling(String filingId, Transaction transaction, String passthroughHeader);
 }

@@ -51,7 +51,7 @@ public class FilingDataControllerImpl implements FilingDataController {
             request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
 
-        final var filingApi = filingDataService.generatePscFiling(filingResource, request, transaction, passthroughHeader);
+        final var filingApi = filingDataService.generatePscFiling(filingResource, transaction, passthroughHeader);
 
         logMap.put("psc filing:", filingApi);
         logger.infoContext(transId, "psc filing data", logMap);

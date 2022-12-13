@@ -88,7 +88,7 @@ class FilingDataServiceImplTest {
         when(pscApi.getNameElements()).thenReturn(nameElementsApi);
         when(pscIndividualMapper.mapFiling(pscFiling)).thenReturn(filingData);
 
-        final var filingApi = testService.generatePscFiling(FILING_ID, request, transaction, PASSTHROUGH_HEADER);
+        final var filingApi = testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER);
 
         final Map<String, Object> expectedMap =
                 Map.of("first_name", FIRSTNAME,
@@ -106,7 +106,7 @@ class FilingDataServiceImplTest {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
-                () -> testService.generatePscFiling(FILING_ID, request, transaction, PASSTHROUGH_HEADER));
+                () -> testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER));
 
         assertThat(exception.getMessage(),
                 is("Psc individual not found when generating filing for " + FILING_ID));

@@ -35,6 +35,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -219,7 +220,27 @@ class RestExceptionHandlerTest {
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
         final var apiErrors =
-                testExceptionHandler.handlePSCServiceException(exception, request);
+                testExceptionHandler.handlePscServiceException(exception, request);
+
+        final var expectedError =
+                new ApiError("test", "/path/to/resource", "resource", "ch:service");
+
+        if (cause != null) {
+            expectedError.addErrorValue("cause", cause.getMessage());
+        }
+        assertThat(apiErrors.getErrors(), contains(expectedError));
+    }
+
+    @ParameterizedTest(name = "[{index}]: cause={0}")
+    @NullSource
+    @MethodSource("causeProvider")
+    void handlePscNotFoundException(final Exception cause) {
+        final var exception = new PscNotFoundException("test", cause);
+
+        when(request.resolveReference("request")).thenReturn(servletRequest);
+
+        final var apiErrors =
+                testExceptionHandler.handlePscNotFoundException(exception, request);
 
         final var expectedError =
                 new ApiError("test", "/path/to/resource", "resource", "ch:service");

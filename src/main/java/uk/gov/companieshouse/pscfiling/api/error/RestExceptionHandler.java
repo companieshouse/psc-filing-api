@@ -133,7 +133,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(PscServiceException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ApiErrors handlePSCServiceException(final PscServiceException ex,
+    public ApiErrors handlePscServiceException(final PscServiceException ex,
                                                final WebRequest request) {
         final var error = new ApiError(ex.getMessage(), getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
@@ -147,7 +147,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(PscNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
-    public ApiErrors handlePSCNotFoundException(final PscNotFoundException ex,
+    public ApiErrors handlePscNotFoundException(final PscNotFoundException ex,
                                                final WebRequest request) {
         final var error = new ApiError(ex.getMessage(), getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());

@@ -1,7 +1,14 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
@@ -19,21 +26,13 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @Tag("web")
 @WebMvcTest(controllers = FilingDataControllerImpl.class)
 class FilingDataControllerImplIT {
     private static final String TRANS_ID = "4f56fdf78b357bfc";
     private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
     private static final String PASSTHROUGH_HEADER = "passthrough";
-    private static final String REF_APPOINTMENT_ID = "12345";
+    private static final String REF_PSC_ID = "12345";
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON = "2022-10-05";
     @MockBean
@@ -43,11 +42,8 @@ class FilingDataControllerImplIT {
     @MockBean
     private Logger logger;
     @MockBean
-    private HttpServletRequest request;
-    @MockBean
     private TransactionService transactionService;
     private Transaction transaction;
-
     private HttpHeaders httpHeaders;
 
     @Autowired
@@ -63,16 +59,15 @@ class FilingDataControllerImplIT {
     }
 
     @Test
-    @Disabled("Don't work yet")
     void getFilingsWhenFound() throws Exception {
         final var filingApi = new FilingApi();
-        filingApi.setKind("psc-filing#termination");
+        filingApi.setKind("psc-filing#ceasation");
         final Map<String, Object> dataMap =
-                Map.of("referenceEtag", REF_ETAG, "referenceAppointmentId", REF_APPOINTMENT_ID, "filing_resource_idOn", CEASED_ON);
+                Map.of("referenceEtag", REF_ETAG, "referencePscId", REF_PSC_ID, "filing_resource_id", CEASED_ON);
         filingApi.setData(dataMap);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
-        when(filingDataService.generatePscFiling(FILING_ID, request, transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
+        when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
         mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/{filingId}/filings", TRANS_ID, FILING_ID)
             .headers(httpHeaders))
@@ -86,11 +81,11 @@ class FilingDataControllerImplIT {
     @Test
     @Disabled("Don't work yet")
     void getFilingsWhenNotFound() throws Exception {
-        when(filingDataService.generatePscFiling(FILING_ID, request, transaction, PASSTHROUGH_HEADER)).thenThrow(new PscNotFoundException("for Not Found scenario", null));
+        when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenThrow(new PscNotFoundException("for Not Found scenario", null));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
 
-        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/{filingId}/filings", TRANS_ID,
-                                FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/{filingId}/filings", TRANS_ID, FILING_ID)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason(is("PSC not found")))

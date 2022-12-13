@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -13,7 +12,6 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.utils.MapHelper;
-import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 /**
  * Produces Filing Data format for consumption as JSON by filing-resource-handler external service.
@@ -37,16 +35,15 @@ public class FilingDataServiceImpl implements FilingDataService {
     }
 
     @Override
-    public FilingApi generatePscFiling(String filingId, HttpServletRequest request, Transaction transaction, String passthroughHeader) {
+    public FilingApi generatePscFiling(String filingId, Transaction transaction, String passthroughHeader) {
         var filing = new FilingApi();
         filing.setKind("psc-filing#ceasation"); // TODO: handling other kinds to come later
 
-        setFilingApiData(filing, filingId, request, transaction, passthroughHeader);
+        setFilingApiData(filing, filingId, transaction, passthroughHeader);
         return filing;
     }
 
-    private void setFilingApiData(FilingApi filing, String filingId, HttpServletRequest request,
-                                  Transaction transaction, String passthroughHeader) {
+    private void setFilingApiData(FilingApi filing, String filingId, Transaction transaction, String passthroughHeader) {
 
         var transactionId = transaction.getId();
         var pscFilingOpt = pscFilingService.get(filingId, transactionId);
