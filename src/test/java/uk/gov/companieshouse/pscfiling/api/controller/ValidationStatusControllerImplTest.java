@@ -3,6 +3,8 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
@@ -34,21 +36,23 @@ class ValidationStatusControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController = new ValidationStatusControllerImpl(pscFilingService, logger);
+
     }
 
-    @Test
-    void validateWhenPscIndividualFound() {
+    @ParameterizedTest(name = "Run {index}: PSC Individual Found isClosable {0}")
+    @ValueSource(booleans = {true, false})
+    void validateWhenPscIndividualFoundAndFlagTrue(boolean isClosable) {
+        testController = new ValidationStatusControllerImpl(pscFilingService, isClosable, logger );
         var filing = PscIndividualFiling.builder().build();
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         final var response= testController.validate(TRANS_ID, FILING_ID, request);
 
-        assertThat(response.isValid(), is(true));
+        assertThat(response.isValid(), is(isClosable));
     }
-
 
     @Test
     void validateWhenNotFound() {
+        testController = new ValidationStatusControllerImpl(pscFilingService, true, logger );
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var filingResourceNotFoundException =
@@ -57,4 +61,5 @@ class ValidationStatusControllerImplTest {
 
         assertThat(filingResourceNotFoundException.getMessage(), containsString(FILING_ID));
     }
+
 }

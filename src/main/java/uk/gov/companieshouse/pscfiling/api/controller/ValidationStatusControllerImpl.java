@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,41 +18,56 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
-    @RequestMapping("/private/transactions/{transId}/persons-with-significant-control/")
-    public class ValidationStatusControllerImpl implements ValidationStatusController {
-        private final PscFilingService pscFilingService;
-        private final Logger logger;
+@RequestMapping("/private/transactions/{transId}/persons-with-significant-control/")
+public class ValidationStatusControllerImpl implements ValidationStatusController {
+    private final PscFilingService pscFilingService;
+    private final Logger logger;
+    private boolean isTransactionsClosableEnabled;
 
+    public ValidationStatusControllerImpl(PscFilingService pscFilingService,
+            @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled, Logger logger) {
+        this.pscFilingService = pscFilingService;
+        this.isTransactionsClosableEnabled = isTransactionsClosableEnabled;
+        this.logger = logger;
 
-    public ValidationStatusControllerImpl(PscFilingService pscFilingService, Logger logger) {
-            this.pscFilingService = pscFilingService;
-            this.logger = logger;
+        logger.info(String.format("Setting \"feature.flag.transactions.closable\" to: %s", isTransactionsClosableEnabled));
     }
 
-        @Override
-        @ResponseBody
-        @ResponseStatus(HttpStatus.OK)
-        @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
-        public ValidationStatusResponse validate(@PathVariable("transId") final String transId,
-                                                 @PathVariable("filingResourceId") final String filingResource,
-                                                 final HttpServletRequest request) {
+    @Override
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
+    public ValidationStatusResponse validate(@PathVariable("transId") final String transId,
+            @PathVariable("filingResourceId") final String filingResource,
+            final HttpServletRequest request) {
 
-            final Map<String, Object> logMap;
-            logMap = LogHelper.createLogMap(transId, filingResource);
-            logMap.put("path", request.getRequestURI());
-            logMap.put("method", request.getMethod());
-            logger.debugRequest(request, "GET validation request", logMap);
+        final Map<String, Object> logMap;
+        logMap = LogHelper.createLogMap(transId, filingResource);
+        logMap.put("path", request.getRequestURI());
+        logMap.put("method", request.getMethod());
+        logger.debugRequest(request, "GET validation request", logMap);
 
-            var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
+        var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
-            return maybePscIndividualFiling.map(this::isValid)
-                    .orElseThrow(() -> new FilingResourceNotFoundException(
-                            "Filing resource not found: " + filingResource));
-        }
+        return maybePscIndividualFiling.map(this::isValid)
+                .orElseThrow(() -> new FilingResourceNotFoundException(
+                        "Filing resource not found: " + filingResource));
+    }
 
-        private ValidationStatusResponse isValid(PscIndividualFiling pscFiling) {
-            var validationStatus = new ValidationStatusResponse();
+    private ValidationStatusResponse isValid(PscIndividualFiling pscFiling) {
+
+        var validationStatus = new ValidationStatusResponse();
+        validationStatus.setValid(isTransactionsClosableEnabled);
+
+        if(isTransactionsClosableEnabled){
+            //TODO - proper validation needs to be implemented - as this is a temporary fudge
             validationStatus.setValid(true);
-            return validationStatus;
+
+        } else {
+            validationStatus.setValid(false);
         }
+
+        return validationStatus;
     }
+
+}

@@ -1,10 +1,11 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
-import javax.servlet.http.HttpServletRequest;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 
@@ -19,4 +20,5 @@ class ValidationStatusControllerTest {
 
         assertThrows(NotImplementedException.class, () -> testController.validate("trans-id", "filing-id", request));
     }
+
 }
