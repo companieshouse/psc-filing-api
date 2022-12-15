@@ -39,11 +39,10 @@ public class FilingDataServiceImpl implements FilingDataService {
         var filing = new FilingApi();
         filing.setKind("psc-filing#cessation"); // TODO: handling other kinds to come later
 
-        setFilingApiData(filing, filingId, transaction, passthroughHeader);
-        return filing;
+        return populateFilingData(filing, filingId, transaction, passthroughHeader);
     }
 
-    private void setFilingApiData(FilingApi filing, String filingId, Transaction transaction, String passthroughHeader) {
+    private FilingApi populateFilingData(FilingApi filing, String filingId, Transaction transaction, String passthroughHeader) {
 
         var transactionId = transaction.getId();
         var pscFilingOpt = pscFilingService.get(filingId, transactionId);
@@ -71,6 +70,8 @@ public class FilingDataServiceImpl implements FilingDataService {
         logger.debugContext(transactionId, filingId, logMap);
 
         filing.setData(dataMap);
+
+        return filing;
     }
 
 }

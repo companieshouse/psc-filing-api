@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.model.filing.FilingData;
+import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
 
 @Mapper(componentModel = "spring")//, uses = NameElementsMapper.class)
 public interface PscIndividualMapper {
@@ -27,7 +27,7 @@ public interface PscIndividualMapper {
     @Mapping(target = "firstName", source = "nameElements.forename")
     @Mapping(target = "otherForenames", source = "nameElements.otherForenames")
     @Mapping(target = "lastName", source = "nameElements.surname")
-    FilingData mapFiling(final PscIndividualFiling entity);
+    FilingDataDto mapFiling(final PscIndividualFiling entity);
 
     @Mapping(target = "dateOfBirth", source = "dateOfBirth")
     default String isoDateOfBirth(Date3Tuple tuple) {

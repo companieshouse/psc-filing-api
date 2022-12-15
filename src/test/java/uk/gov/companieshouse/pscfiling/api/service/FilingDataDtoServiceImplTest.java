@@ -25,10 +25,10 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.model.filing.FilingData;
+import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataServiceImplTest {
+class FilingDataDtoServiceImplTest {
 
     private static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     private static final String TRANS_ID = "23445657412";
@@ -69,7 +69,14 @@ class FilingDataServiceImplTest {
 
     @Test
     void generatePscIndividualFilingWhenFound() {
-        final var filingData = new FilingData(FIRSTNAME, OTHER_FORENAMES, LASTNAME, DATE_OF_BIRTH_STR, CEASED_ON_STR, REGISTER_ENTRY_DATE);
+        final var filingData = FilingDataDto.builder()
+            .firstName(FIRSTNAME)
+            .otherForenames(OTHER_FORENAMES)
+            .lastName(LASTNAME)
+            .dateOfBirth(DATE_OF_BIRTH_STR)
+            .ceasedOn(CEASED_ON_STR)
+            .registerEntryDate(REGISTER_ENTRY_DATE).build();
+
         final var nameElements = NameElements.builder().forename(FIRSTNAME).surname(LASTNAME).build();
         final var pscFiling = PscIndividualFiling.builder()
                 .referencePscId(REF_PSC_ID)
