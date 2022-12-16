@@ -22,12 +22,12 @@ import java.util.Map;
 public class ValidationStatusControllerImpl implements ValidationStatusController {
     private final PscFilingService pscFilingService;
     private final Logger logger;
-    private boolean isTransactionsClosableEnabled;
+    private boolean isTransactionsCloseableEnabled;
 
     public ValidationStatusControllerImpl(PscFilingService pscFilingService,
             @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled, Logger logger) {
         this.pscFilingService = pscFilingService;
-        this.isTransactionsClosableEnabled = isTransactionsClosableEnabled;
+        this.isTransactionsCloseableEnabled = isTransactionsClosableEnabled;
         this.logger = logger;
 
         logger.info(String.format("Setting \"feature.flag.transactions.closable\" to: %s", isTransactionsClosableEnabled));
@@ -57,17 +57,15 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     private ValidationStatusResponse isValid(PscIndividualFiling pscFiling) {
 
         var validationStatus = new ValidationStatusResponse();
-        validationStatus.setValid(isTransactionsClosableEnabled);
 
-        if(isTransactionsClosableEnabled){
-            //TODO - proper validation needs to be implemented - as this is a temporary fudge
-            validationStatus.setValid(true);
-
-        } else {
-            validationStatus.setValid(false);
-        }
+        validationStatus.setValid(isTransactionsCloseableEnabled && calculateIsValid());
 
         return validationStatus;
+    }
+
+    //TODO - proper validation needs to be implemented - as this is a temporary fudge
+    private boolean calculateIsValid() {
+        return true;
     }
 
 }
