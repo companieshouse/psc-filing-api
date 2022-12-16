@@ -22,7 +22,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataDtoControllerImplTest {
+class FilingDataControllerImplTest {
 
     public static final String TRANS_ID = "117524-754816-491724";
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";

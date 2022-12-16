@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 
-class FilingDataDtoControllerTest {
+class FilingDataControllerTest {
 
     @Mock
     private HttpServletRequest request;

@@ -278,7 +278,7 @@ class PscIndividualMapperTest {
     }
 
     @Test
-    void emptyPscIndividualFilingNameElementsToFilingData() {
+    void emptyNameElementsToFilingData() {
 
         final PscIndividualFiling filing = PscIndividualFiling.builder()
             .nameElements(new NameElements(null, null, null, null))
@@ -292,7 +292,20 @@ class PscIndividualMapperTest {
     }
 
     @Test
-    void emptyPscIndividualFilingToFilingData() {
+    void nullNameElementsToFilingData() {
+
+        final PscIndividualFiling filing = PscIndividualFiling.builder()
+            .build();
+
+        final var filingData = testMapper.mapFiling(filing);
+
+        assertThat(filingData.getFirstName(), is(nullValue()));
+        assertThat(filingData.getOtherForenames(), is(nullValue()));
+        assertThat(filingData.getLastName(), is(nullValue()));
+    }
+
+    @Test
+    void nullPscIndividualFilingToFilingData() {
 
         final var filingData = testMapper.mapFiling(null);
 

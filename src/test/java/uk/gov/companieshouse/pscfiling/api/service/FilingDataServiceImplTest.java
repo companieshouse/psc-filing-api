@@ -28,7 +28,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataDtoServiceImplTest {
+class FilingDataServiceImplTest {
 
     private static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     private static final String TRANS_ID = "23445657412";
