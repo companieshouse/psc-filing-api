@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.http.HttpStatusCodes;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,8 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.PSCServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,7 +84,7 @@ class PscDetailsServiceImplTest {
         when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(
                 new IOException("get test case"));
 
-        final var thrown = assertThrows(PSCServiceException.class,
+        final var thrown = assertThrows(PscServiceException.class,
                 () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                         PASSTHROUGH_HEADER));
         assertThat(thrown.getMessage(), is("Error Retrieving PSC details for 654321: get test case"));
@@ -91,13 +93,25 @@ class PscDetailsServiceImplTest {
     @Test
     void getPscDetailsWhenNotFound() throws IOException {
         final var exception = new ApiErrorResponseException(
-                new HttpResponseException.Builder(404, "test case", new HttpHeaders()));
+                new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test case", new HttpHeaders()));
         when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
-        final var thrown = assertThrows(PSCServiceException.class,
+        final var thrown = assertThrows(PscNotFoundException.class,
                 () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
 
-        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for " + PSC_ID + ": 404 test case"));
+        assertThat(thrown.getMessage(), is("PSC Details not found for " + PSC_ID + ": 404 test case"));
+    }
+
+    @Test
+    void getPscDetailsWhenErrorRetrieving() throws IOException {
+        final var exception = new ApiErrorResponseException(
+            new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test case", new HttpHeaders()));
+        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
+
+        final var thrown = assertThrows(PscServiceException.class,
+            () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
+
+        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));
     }
 
 }

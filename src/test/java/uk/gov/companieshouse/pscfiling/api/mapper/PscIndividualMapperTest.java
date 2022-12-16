@@ -242,5 +242,74 @@ class PscIndividualMapperTest {
         assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
         assertThat(dto.getResidentialAddressSameAsCorrespondenceAddress(), is(nullValue()));
     }
+
+    @Test
+    void pscIndividualFilingToFilingData() {
+
+        final PscIndividualFiling filing = PscIndividualFiling.builder()
+            .address(address)
+            .addressSameAsRegisteredOfficeAddress(true)
+            .notifiedOn(localDate1)
+            .countryOfResidence("countryOfResidence")
+            .createdAt(instant1)
+            .dateOfBirth(dob1)
+            .naturesOfControl(List.of("a", "b", "c"))
+            .kind("kind")
+            .links(links)
+            .nameElements(nameElements)
+            .nationality("nation")
+            .referenceEtag("referenceEtag")
+            .referencePscId("referencePscId")
+            .referencePscListEtag("list")
+            .residentialAddress(address)
+            .residentialAddressSameAsCorrespondenceAddress(true)
+            .ceasedOn(localDate1)
+            .registerEntryDate(localDate1)
+            .updatedAt(instant1)
+            .statementActionDate(localDate1)
+            .statementType("type1")
+            .build();
+
+        final var filingData = testMapper.mapFiling(filing);
+
+        assertThat(filingData.getFirstName(), is(equalTo(filing.getNameElements().getForename())));
+        assertThat(filingData.getOtherForenames(), is(equalTo(filing.getNameElements().getOtherForenames())));
+        assertThat(filingData.getLastName(), is(equalTo(filing.getNameElements().getSurname())));
+    }
+
+    @Test
+    void emptyNameElementsToFilingData() {
+
+        final PscIndividualFiling filing = PscIndividualFiling.builder()
+            .nameElements(new NameElements(null, null, null, null))
+            .build();
+
+        final var filingData = testMapper.mapFiling(filing);
+
+        assertThat(filingData.getFirstName(), is(nullValue()));
+        assertThat(filingData.getOtherForenames(), is(nullValue()));
+        assertThat(filingData.getLastName(), is(nullValue()));
+    }
+
+    @Test
+    void nullNameElementsToFilingData() {
+
+        final PscIndividualFiling filing = PscIndividualFiling.builder()
+            .build();
+
+        final var filingData = testMapper.mapFiling(filing);
+
+        assertThat(filingData.getFirstName(), is(nullValue()));
+        assertThat(filingData.getOtherForenames(), is(nullValue()));
+        assertThat(filingData.getLastName(), is(nullValue()));
+    }
+
+    @Test
+    void nullPscIndividualFilingToFilingData() {
+
+        final var filingData = testMapper.mapFiling(null);
+
+        assertThat(filingData, is(nullValue()));
+    }
 }
 
