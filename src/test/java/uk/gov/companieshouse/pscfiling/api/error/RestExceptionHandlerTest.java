@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.error;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -16,6 +15,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,6 @@ import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -253,62 +252,17 @@ class RestExceptionHandlerTest {
     }
 
     @ParameterizedTest(name = "[{index}]: cause={0}")
-    @NullSource
     @MethodSource("causeProvider")
-    void handleTransactionServiceException(final Exception cause) {
-        final var exception = new TransactionServiceException("test", cause);
-
+    void handleServiceException(final Exception exception) {
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
-        final var apiErrors =
-                testExceptionHandler.handleTransactionServiceException(exception, request);
-
+        final var apiErrors = testExceptionHandler.handleServiceException(exception, request);
         final var expectedError =
-                new ApiError("test", "/path/to/resource", "resource", "ch:service");
+                new ApiError(exception.getMessage(), "/path/to/resource", "resource", "ch:service");
 
-        if (cause != null) {
-            expectedError.addErrorValue("cause", cause.getMessage());
-        }
-        assertThat(apiErrors.getErrors(), contains(expectedError));
-    }
+        Optional.ofNullable(exception.getCause())
+                .ifPresent(e -> expectedError.addErrorValue("cause", e.getMessage()));
 
-    @ParameterizedTest(name = "[{index}]: cause={0}")
-    @NullSource
-    @MethodSource("causeProvider")
-    void handlePscServiceException(final Exception cause) {
-        final var exception = new PscServiceException("test", cause);
-
-        when(request.resolveReference("request")).thenReturn(servletRequest);
-
-        final var apiErrors =
-                testExceptionHandler.handlePscServiceException(exception, request);
-
-        final var expectedError =
-                new ApiError("test", "/path/to/resource", "resource", "ch:service");
-
-        if (cause != null) {
-            expectedError.addErrorValue("cause", cause.getMessage());
-        }
-        assertThat(apiErrors.getErrors(), contains(expectedError));
-    }
-
-    @ParameterizedTest(name = "[{index}]: cause={0}")
-    @NullSource
-    @MethodSource("causeProvider")
-    void handlePscNotFoundException(final Exception cause) {
-        final var exception = new PscNotFoundException("test", cause);
-
-        when(request.resolveReference("request")).thenReturn(servletRequest);
-
-        final var apiErrors =
-                testExceptionHandler.handlePscNotFoundException(exception, request);
-
-        final var expectedError =
-                new ApiError("test", "/path/to/resource", "resource", "ch:service");
-
-        if (cause != null) {
-            expectedError.addErrorValue("cause", cause.getMessage());
-        }
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
 
@@ -351,6 +305,9 @@ class RestExceptionHandlerTest {
     }
 
     private static Stream<Arguments> causeProvider() {
-        return Stream.of(Arguments.of(new ArithmeticException("DIV/0")));
+        final var cause = new ArithmeticException("DIV/0");
+
+        return Stream.of(Arguments.of(new PscServiceException("PSCServiceException", cause),
+                new TransactionServiceException("TransactionServiceException", cause)));
     }
 }

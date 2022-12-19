@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -80,14 +80,17 @@ class FilingDataControllerImplIT {
 
     @Test
     void getFilingsWhenNotFound() throws Exception {
-        when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenThrow(new PscNotFoundException("for Not Found scenario", null));
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
+        when(filingDataService.generatePscFiling(FILING_ID, transaction,
+                PASSTHROUGH_HEADER)).thenThrow(
+                new FilingResourceNotFoundException("for Not Found scenario", null));
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                transaction);
 
         mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/{filingId}/filings", TRANS_ID, FILING_ID)
                 .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason(is("PSC not found")))
+                .andExpect(status().reason(is("Resource not found")))
                 .andExpect(jsonPath("$").doesNotExist());
     }
 }

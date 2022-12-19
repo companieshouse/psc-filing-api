@@ -20,10 +20,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,9 +33,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
+import uk.gov.companieshouse.api.error.ApiErrorResponse;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
+import uk.gov.companieshouse.pscfiling.api.error.LocationType;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -56,6 +63,8 @@ class PscFilingControllerImplIT {
     private static final String EMPTY_QUOTED_JSON = "\"\"";
     private static final String MALFORMED_JSON = "{";
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
+    private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
+    private static final String COMPANY_NUMBER = "012345678";
 
     @MockBean
     private TransactionService transactionService;
@@ -73,6 +82,9 @@ class PscFilingControllerImplIT {
     private Logger logger;
 
     private HttpHeaders httpHeaders;
+
+    @Mock
+    private ApiErrorResponseException errorResponseException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -105,7 +117,7 @@ class PscFilingControllerImplIT {
                 .build();
 
         transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
+        transaction.setCompanyNumber(COMPANY_NUMBER);
 
         when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
@@ -131,7 +143,7 @@ class PscFilingControllerImplIT {
 
     @Test
     void createFilingWhenRequestBodyMissingThenResponse400() throws Exception {
-        final var expectedError = createExpectedError(
+        final var expectedError = createExpectedValidationError(
                 "Required request body is missing: public org.springframework.http"
                         + ".ResponseEntity<java.lang.Object> uk.gov.companieshouse.pscfiling.api"
                         + ".controller.PscFilingControllerImpl.createFiling(java.lang.String,uk"
@@ -156,8 +168,47 @@ class PscFilingControllerImplIT {
     }
 
     @Test
+    void createFilingWhenPscNotFoundThenResponse400() throws Exception {
+        final var body = "{" + PSC07_FRAGMENT + "}";
+        final var expectedError =
+                createExpectedApiError("PSC Details not found for " + PSC_ID + "=: 404 Not Found",
+                        "$.reference_psc_id",
+                        LocationType.JSON_PATH, ErrorType.VALIDATION);
+        final var errorResponse = new ApiErrorResponse();
+
+        errorResponse.setErrors(List.of(expectedError));
+        when(errorResponseException.getDetails()).thenReturn(errorResponse);
+        when(errorResponseException.getMessage()).thenReturn("404 Not Found\\n{\"errors"
+                + "\":[{\"type\":\"ch:service\",\"error\":\"company-psc-details-not-found\"}]}");
+
+        final var transaction = new Transaction();
+
+        transaction.setId(TRANS_ID);
+        transaction.setCompanyNumber(COMPANY_NUMBER);
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                transaction);
+        when(pscDetailsService.getPscDetails(transaction, "id", PSC_TYPE,
+                PASSTHROUGH_HEADER)).thenThrow(
+                new FilingResourceNotFoundException("PSC Details not found for " + PSC_ID + "=: 404 Not Found",
+                        errorResponseException));
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(header().doesNotExist("Location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()),
+                                hasEntry("error", expectedError.getError()))))
+                .andExpect(jsonPath("$.errors[0].error_values", hasEntry("rejected", "id")));
+    }
+
+    @Test
     void createFilingWhenRequestBodyBlankThenResponse400() throws Exception {
-        final var expectedError = createExpectedError(
+        final var expectedError = createExpectedValidationError(
                 "Cannot coerce empty String (\"\") to `uk.gov.companieshouse.pscfiling.api.model"
                         + ".dto"
                         + ".PscIndividualDto$Builder` value (but could if coercion was enabled "
@@ -187,7 +238,7 @@ class PscFilingControllerImplIT {
 
     @Test
     void createFilingWhenRequestBodyMalformedThenResponse400() throws Exception {
-        final var expectedError = createExpectedError("Unexpected end-of-input: "
+        final var expectedError = createExpectedValidationError("Unexpected end-of-input: "
                 + "expected close marker for Object (start marker at [Source: (org"
                 + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 2])\n"
                 + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
@@ -214,7 +265,7 @@ class PscFilingControllerImplIT {
 
     @Test
     void createFilingWhenRequestBodyIncompleteThenResponse400() throws Exception {
-        final var expectedError = createExpectedError(
+        final var expectedError = createExpectedValidationError(
                 "JSON parse error: Unexpected end-of-input: expected close marker for Object "
                         + "(start marker at [Source: (org.springframework.util"
                         + ".StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
@@ -243,7 +294,8 @@ class PscFilingControllerImplIT {
     @Test
     void createFilingWhenCeasedOnDateUnparseableThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "ABC") + "}";
-        final var expectedError = createExpectedError("JSON parse error:", "$.ceased_on", 1, 75);
+        final var expectedError =
+                createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 75);
 
         mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
@@ -265,7 +317,8 @@ class PscFilingControllerImplIT {
     @Test
     void createFilingWhenCeasedOnDateOutsideRangeThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "2022-09-99") + "}";
-        final var expectedError = createExpectedError("JSON parse error:", "$.ceased_on", 1, 75);
+        final var expectedError =
+                createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 75);
 
         mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
@@ -288,7 +341,8 @@ class PscFilingControllerImplIT {
     @Test
     void createFilingWhenCeasedOnDateInvalidThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "2022-11-31") + "}";
-        final var expectedError = createExpectedError("JSON parse error:", "$.ceased_on", 1, 75);
+        final var expectedError =
+                createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 75);
 
         mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
@@ -312,8 +366,8 @@ class PscFilingControllerImplIT {
     void createFilingWhenCeasedOnDateFutureThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "3000-09-13") + "}";
         final var expectedError =
-                createExpectedError("must be a date in the past or in the present", "$.ceased_on",
-                        1, 75);
+                createExpectedValidationError("must be a date in the past or in the present",
+                        "$.ceased_on", 1, 75);
 
         mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
@@ -334,7 +388,8 @@ class PscFilingControllerImplIT {
     @Test
     void createFilingWhenCeasedOnDateBlankThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "") + "}";
-        final var expectedError = createExpectedError("must not be null", "$.ceased_on", 1, 75);
+        final var expectedError =
+                createExpectedValidationError("must not be null", "$.ceased_on", 1, 75);
 
         mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
@@ -356,11 +411,13 @@ class PscFilingControllerImplIT {
                 .referenceEtag("etag")
                 .referencePscId("id")
                 .ceasedOn(LocalDate.of(2022, 9, 13))
+                .registerEntryDate(LocalDate.of(2022, 9, 13))
                 .build();
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag("etag")
                 .referencePscId("id")
                 .ceasedOn(LocalDate.of(2022, 9, 13))
+                .registerEntryDate(LocalDate.of(2022, 9, 13))
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
@@ -387,8 +444,8 @@ class PscFilingControllerImplIT {
                 .andExpect(status().isNotFound());
     }
 
-    private ApiError createExpectedError(final String msg, final String location, final int line,
-            final int column) {
+    private ApiError createExpectedValidationError(final String msg, final String location,
+            final int line, final int column) {
         final var expectedError = new ApiError(msg, location, "json-path", "ch:validation");
 
         expectedError.addErrorValue("offset", String.format("line: %d, column: %d", line, column));
@@ -396,6 +453,11 @@ class PscFilingControllerImplIT {
         expectedError.addErrorValue("column", String.valueOf(column));
 
         return expectedError;
+    }
+
+    private ApiError createExpectedApiError(final String msg, final String location,
+            final LocationType locationType, final ErrorType errorType) {
+        return new ApiError(msg, location, locationType.getValue(), errorType.getType());
     }
 
 }

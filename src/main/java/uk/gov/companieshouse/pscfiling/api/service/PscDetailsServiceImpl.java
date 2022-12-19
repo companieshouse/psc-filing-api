@@ -9,7 +9,7 @@ import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -59,7 +59,7 @@ public class PscDetailsServiceImpl implements PscDetailsService {
         catch (final ApiErrorResponseException e) {
             logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);
             if (e.getStatusCode() == HttpStatus.NOT_FOUND.value()) {
-                throw new PscNotFoundException(
+                throw new FilingResourceNotFoundException(
                         MessageFormat.format("PSC Details not found for {0}: {1} {2}", pscId,
                                 e.getStatusCode(), e.getStatusMessage()), e);
             }
