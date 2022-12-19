@@ -21,6 +21,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
@@ -107,7 +108,7 @@ class FilingDataServiceImplTest {
                         "register_entry_date",REGISTER_ENTRY_DATE );
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is("psc-filing#cessation"));
+        assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));
     }
 
     @Test
