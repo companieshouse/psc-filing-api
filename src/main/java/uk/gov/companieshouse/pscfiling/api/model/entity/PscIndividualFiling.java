@@ -22,7 +22,6 @@ public class PscIndividualFiling implements PscCommunal {
     @Unwrapped.Empty
     private PscCommon pscCommon;
     private String countryOfResidence;
-    private Date3Tuple dateOfBirth;
     private NameElements nameElements;
     private String nationality;
     private Address residentialAddress;
@@ -119,10 +118,6 @@ public class PscIndividualFiling implements PscCommunal {
         return countryOfResidence;
     }
 
-    public Date3Tuple getDateOfBirth() {
-        return dateOfBirth;
-    }
-
     public NameElements getNameElements() {
         return nameElements;
     }
@@ -159,7 +154,6 @@ public class PscIndividualFiling implements PscCommunal {
         return Objects.equals(getId(), that.getId())
                 && Objects.equals(pscCommon, that.pscCommon)
                 && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
-                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
                 && Objects.equals(getNameElements(), that.getNameElements())
                 && Objects.equals(getNationality(), that.getNationality())
                 && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
@@ -171,7 +165,7 @@ public class PscIndividualFiling implements PscCommunal {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), pscCommon, getCountryOfResidence(), getDateOfBirth(),
+        return Objects.hash(getId(), pscCommon, getCountryOfResidence(),
                 getNameElements(), getNationality(), getResidentialAddress(),
                 getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
                 getStatementType());
@@ -183,7 +177,6 @@ public class PscIndividualFiling implements PscCommunal {
                         "id='" + id + "'")
                 .add(pscCommon.toString())
                 .add("countryOfResidence='" + countryOfResidence + "'")
-                .add("dateOfBirth=" + dateOfBirth)
                 .add("nameElements=" + nameElements)
                 .add("nationality='" + nationality + "'")
                 .add("residentialAddress=" + residentialAddress)
@@ -220,7 +213,6 @@ public class PscIndividualFiling implements PscCommunal {
                     .ceasedOn(other.getCeasedOn())
                     .countryOfResidence(other.getCountryOfResidence())
                     .createdAt(other.getCreatedAt())
-                    .dateOfBirth(other.getDateOfBirth())
                     .registerEntryDate(other.getRegisterEntryDate())
                     .etag(other.getEtag())
                     .kind(other.getKind())
@@ -273,14 +265,6 @@ public class PscIndividualFiling implements PscCommunal {
         public Builder createdAt(final Instant value) {
 
             commonBuilder.createdAt(value);
-            return this;
-        }
-
-        public Builder dateOfBirth(final Date3Tuple value) {
-
-            buildSteps.add(data -> data.dateOfBirth = Optional.ofNullable(value)
-                    .map(v -> new Date3Tuple(v.getDay(), v.getMonth(), v.getYear()))
-                    .orElse(null));
             return this;
         }
 

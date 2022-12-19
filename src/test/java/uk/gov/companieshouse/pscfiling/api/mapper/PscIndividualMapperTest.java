@@ -33,7 +33,6 @@ class PscIndividualMapperTest {
     private Address address;
     private AddressDto addressDto;
     private LocalDate localDate1;
-    private Date3Tuple dob1;
     private Instant instant1;
     private Links links;
     private NameElements nameElements;
@@ -66,7 +65,6 @@ class PscIndividualMapperTest {
                 .region("region")
                 .build();
         localDate1 = LocalDate.of(2019, 11, 5);
-        dob1 = new Date3Tuple(12, 9, 1970);
         instant1 = Instant.parse("2019-11-05T00:00:00Z");
         links = new Links(URI.create(SELF_URI), URI.create(SELF_URI + "validation_status"));
         nameElements = NameElements.builder().title("Mr").forename("Something")
@@ -81,7 +79,6 @@ class PscIndividualMapperTest {
                 .address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
                 .nameElements(nameElementsDto)
-                .dateOfBirth(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear()))
                 .countryOfResidence("countryOfResidence")
                 .naturesOfControl(List.of("a", "b", "c"))
                 .referenceEtag("referenceEtag")
@@ -101,7 +98,6 @@ class PscIndividualMapperTest {
         assertThat(filing.getNotifiedOn(), is(localDate1.atStartOfDay().toLocalDate()));
         assertThat(filing.getCountryOfResidence(), is("countryOfResidence"));
         assertThat(filing.getCreatedAt(), is(nullValue()));
-        assertThat(filing.getDateOfBirth(), is(dob1));
         assertThat(filing.getKind(), is(nullValue()));
         assertThat(filing.getLinks(), is(nullValue()));
         assertThat(filing.getNaturesOfControl(), contains("a", "b", "c"));
@@ -160,7 +156,6 @@ class PscIndividualMapperTest {
                 .notifiedOn(localDate1)
                 .countryOfResidence("countryOfResidence")
                 .createdAt(instant1)
-                .dateOfBirth(dob1)
                 .naturesOfControl(List.of("a", "b", "c"))
                 .kind("kind")
                 .links(links)
@@ -183,8 +178,6 @@ class PscIndividualMapperTest {
         assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(true));
         assertThat(dto.getNotifiedOn(), is(localDate1));
         assertThat(dto.getCountryOfResidence(), is("countryOfResidence"));
-        assertThat(dto.getDateOfBirth(),
-                is(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear())));
         assertThat(dto.getNameElements(), is(nameElementsDto));
         assertThat(dto.getNaturesOfControl(), contains("a", "b", "c"));
         assertThat(dto.getReferenceEtag(), is("referenceEtag"));
@@ -252,7 +245,6 @@ class PscIndividualMapperTest {
             .notifiedOn(localDate1)
             .countryOfResidence("countryOfResidence")
             .createdAt(instant1)
-            .dateOfBirth(dob1)
             .naturesOfControl(List.of("a", "b", "c"))
             .kind("kind")
             .links(links)

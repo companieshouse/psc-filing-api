@@ -7,7 +7,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -58,7 +57,6 @@ public class FilingDataServiceImpl implements FilingDataService {
                 .surname(pscDetails.getNameElements().getSurname())
                 .build();
         var enhancedPscFiling = PscIndividualFiling.builder(pscFiling)
-                .dateOfBirth(new Date3Tuple(20, 10, 2000))
             .nameElements(nameElements)
                 .build();
         var filingData = pscIndividualMapper.mapFiling(enhancedPscFiling);

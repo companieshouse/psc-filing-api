@@ -28,7 +28,6 @@ class PscIndividualFilingTest {
     private LocalDate notifiedOn;
     private LocalDate registerEntryDate;
     private LocalDate statementActionDate;
-    private Date3Tuple dob1;
     private Instant createdAt;
     private Instant updatedAt;
     private NameElements nameElements;
@@ -41,7 +40,6 @@ class PscIndividualFilingTest {
         address = createAddress();
         ceasedOn = LocalDate.of(2022,11,21);
         createdAt = Instant.parse("2019-11-05T00:00:00Z");
-        dob1 = new Date3Tuple(12, 9, 1970);
         links = new Links(new URI("self"), new URI("valid"));
         notifiedOn = LocalDate.of(2022,11,10);
         registerEntryDate = LocalDate.of(2022,11,5);
@@ -68,10 +66,6 @@ class PscIndividualFilingTest {
     void getCountryOfResidence() {
         assertThat(test.getCountryOfResidence(), is(equalTo("Wales")));
 
-    }
-    @Test
-    void getDateOfBirth() {
-        assertThat(test.getDateOfBirth(), is(equalTo(dob1)));
     }
 
     @Test
@@ -139,7 +133,6 @@ class PscIndividualFilingTest {
                         + "referenceEtag='etag', referencePscId='psc', "
                         + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
                         + "updatedAt=2022-11-05T00:00:00Z, countryOfResidence='Wales', "
-                        + "dateOfBirth=Date3Tuple[day=12, month=9, year=1970], "
                         + "nameElements=NameElements[forename='forename', otherForenames='other',"
                         + " surname='surname', title='title'], nationality='nationality', "
                         + "residentialAddress=Address[addressLine1='line1', addressLine2='line2',"
@@ -256,7 +249,6 @@ class PscIndividualFilingTest {
                 .ceasedOn(ceasedOn)
                 .countryOfResidence("Wales")
                 .createdAt(createdAt)
-                .dateOfBirth(dob1)
                 .etag("etag")
                 .kind("kind")
                 .links(links)
