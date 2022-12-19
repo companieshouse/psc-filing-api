@@ -21,6 +21,7 @@ import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -61,7 +62,7 @@ class FilingDataControllerImplIT {
     @Test
     void getFilingsWhenFound() throws Exception {
         final var filingApi = new FilingApi();
-        filingApi.setKind("psc-filing#cessation");
+        filingApi.setKind(FilingKind.PSC_CESSATION.getValue());
         final Map<String, Object> dataMap =
                 Map.of("referenceEtag", REF_ETAG, "referencePscId", REF_PSC_ID, "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
         filingApi.setData(dataMap);
@@ -75,7 +76,7 @@ class FilingDataControllerImplIT {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].data", is(dataMap)))
-            .andExpect(jsonPath("$[0].kind", is("psc-filing#cessation")));
+            .andExpect(jsonPath("$[0].kind", is(FilingKind.PSC_CESSATION.getValue())));
     }
 
     @Test

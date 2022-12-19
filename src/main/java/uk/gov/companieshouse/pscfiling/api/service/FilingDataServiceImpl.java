@@ -6,8 +6,8 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -37,7 +37,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     @Override
     public FilingApi generatePscFiling(String filingId, Transaction transaction, String passthroughHeader) {
         var filing = new FilingApi();
-        filing.setKind("psc-filing#cessation"); // TODO: handling other kinds to come later
+        filing.setKind(FilingKind.PSC_CESSATION.getValue()); // TODO: handling other kinds to come later
 
         return populateFilingData(filing, filingId, transaction, passthroughHeader);
     }
@@ -58,8 +58,7 @@ public class FilingDataServiceImpl implements FilingDataService {
                 .surname(pscDetails.getNameElements().getSurname())
                 .build();
         var enhancedPscFiling = PscIndividualFiling.builder(pscFiling)
-                .dateOfBirth(new Date3Tuple(20, 10, 2000))
-            .nameElements(nameElements)
+                .nameElements(nameElements)
                 .build();
         var filingData = pscIndividualMapper.mapFiling(enhancedPscFiling);
         var dataMap = MapHelper.convertObject(filingData);

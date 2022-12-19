@@ -13,7 +13,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
-@Document(collection = "psc_filing")
+@Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling implements PscCommunal {
 
