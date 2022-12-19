@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -155,13 +156,16 @@ public class PscFilingControllerImpl implements PscFilingController {
 
     private Links buildLinks(final PscIndividualFiling savedFiling, final HttpServletRequest request) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
-        final var uriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURI())
-                .pathSegment(objectId.toHexString());
-        final var selfUri = uriBuilder.build().toUri();
-        final var privateUriBuilder =
-                UriComponentsBuilder.fromUriString(PREFIX_PRIVATE + "/" + request.getRequestURI())
-                        .pathSegment(objectId.toHexString());
-        final var validateUri = privateUriBuilder.pathSegment(VALIDATION_STATUS)
+        final var selfUri = UriComponentsBuilder
+                .fromUriString(request.getRequestURI())
+                .pathSegment(objectId.toHexString())
+                .build().toUri();
+
+        final var validateUri = UriComponentsBuilder
+                .fromUriString(PREFIX_PRIVATE + "/" + request.getRequestURI()
+                .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
+                .pathSegment(objectId.toHexString())
+                .pathSegment(VALIDATION_STATUS)
                 .build().toUri();
 
         return new Links(selfUri, validateUri);

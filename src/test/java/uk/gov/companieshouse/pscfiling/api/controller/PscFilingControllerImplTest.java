@@ -55,6 +55,9 @@ class PscFilingControllerImplTest {
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     private static final URI REQUEST_URI = URI.create("/transactions/"
             + TRANS_ID
+            + "/persons-with-significant-control/");
+    private static final URI REQUEST_URI_WITH_PSC_TYPE = URI.create("/transactions/"
+            + TRANS_ID
             + "/persons-with-significant-control/"
             + PSC_TYPE.getValue());
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
@@ -97,7 +100,7 @@ class PscFilingControllerImplTest {
                 .referenceEtag("etag")
                 .ceasedOn(LocalDate.parse("2022-09-13"))
                 .build();
-        final var builder = UriComponentsBuilder.fromUri(REQUEST_URI);
+        final var builder = UriComponentsBuilder.fromUri(REQUEST_URI_WITH_PSC_TYPE);
         final var privateBuilder =
                 UriComponentsBuilder.fromUri(URI.create(PREFIX_PRIVATE + "/" + REQUEST_URI));
         links = new Links(builder.pathSegment(FILING_ID)
@@ -126,7 +129,7 @@ class PscFilingControllerImplTest {
         when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
-        when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
+        when(request.getRequestURI()).thenReturn(REQUEST_URI_WITH_PSC_TYPE.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         final var response = testController.createFiling(TRANS_ID, PSC_TYPE, dto,
@@ -158,9 +161,9 @@ class PscFilingControllerImplTest {
     private Map<String, Resource> createResources() {
         final Map<String, Resource> resourceMap = new HashMap<>();
         final var resource = new Resource();
-        final var self = REQUEST_URI + "/" + FILING_ID;
+        final var self = REQUEST_URI_WITH_PSC_TYPE + "/" + FILING_ID;
         final var linksMap = Map.of("resource", self, VALIDATION_STATUS,
-                PREFIX_PRIVATE + REQUEST_URI + "/" + FILING_ID + "/" + VALIDATION_STATUS);
+                PREFIX_PRIVATE + REQUEST_URI_WITH_PSC_TYPE + "/" + FILING_ID + "/" + VALIDATION_STATUS);
 
         resource.setKind("psc-filing");
         resource.setLinks(linksMap);
