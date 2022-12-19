@@ -58,8 +58,7 @@ public class FilingDataServiceImpl implements FilingDataService {
                 .surname(pscDetails.getNameElements().getSurname())
                 .build();
         var enhancedPscFiling = PscIndividualFiling.builder(pscFiling)
-                .dateOfBirth(new Date3Tuple(20, 10, 2000))
-            .nameElements(nameElements)
+                .nameElements(nameElements)
                 .build();
         var filingData = pscIndividualMapper.mapFiling(enhancedPscFiling);
         var dataMap = MapHelper.convertObject(filingData);

@@ -22,7 +22,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
@@ -41,8 +40,6 @@ class FilingDataServiceImplTest {
     public static final String FIRSTNAME = "JOE";
     public static final String OTHER_FORENAMES = "TOM";
     public static final String LASTNAME = "BLOGGS";
-    public static final String DATE_OF_BIRTH_STR = "2000-10-20";
-    public static final Date3Tuple DATE_OF_BIRTH_TUPLE = new Date3Tuple(20, 10, 2000);
     @Mock
     private PscFilingService pscFilingService;
     @Mock
@@ -73,7 +70,6 @@ class FilingDataServiceImplTest {
             .firstName(FIRSTNAME)
             .otherForenames(OTHER_FORENAMES)
             .lastName(LASTNAME)
-            .dateOfBirth(DATE_OF_BIRTH_STR)
             .ceasedOn(CEASED_ON_STR)
             .registerEntryDate(REGISTER_ENTRY_DATE).build();
 
@@ -83,7 +79,6 @@ class FilingDataServiceImplTest {
                 .referenceEtag(REF_ETAG)
                 .nameElements(nameElements)
                 .ceasedOn(CEASED_ON)
-                .dateOfBirth(DATE_OF_BIRTH_TUPLE)
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
@@ -102,7 +97,6 @@ class FilingDataServiceImplTest {
                 Map.of("first_name", FIRSTNAME,
                         "other_forenames", OTHER_FORENAMES,
                         "last_name", LASTNAME,
-                        "date_of_birth", DATE_OF_BIRTH_STR,
                         "ceased_on", CEASED_ON_STR,
                         "register_entry_date",REGISTER_ENTRY_DATE );
 
