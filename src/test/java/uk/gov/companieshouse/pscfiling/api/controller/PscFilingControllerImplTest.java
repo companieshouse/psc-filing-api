@@ -58,8 +58,7 @@ class PscFilingControllerImplTest {
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     private static final URI REQUEST_URI = URI.create("/transactions/"
             + TRANS_ID
-            + "/persons-with-significant-control/"
-            + PSC_TYPE.getValue());
+            + "/persons-with-significant-control/");
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
 
     private PscFilingController testController;
