@@ -113,7 +113,7 @@ class PscFilingControllerImplIT {
                 .build();
         final var locationUri = UriComponentsBuilder.fromPath("/")
                 .pathSegment("transactions", TRANS_ID,
-                        "persons-with-significant-control", FILING_ID)
+                        "persons-with-significant-control/individual", FILING_ID)
                 .build();
 
         transaction.setId(TRANS_ID);
