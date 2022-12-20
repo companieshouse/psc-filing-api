@@ -3,6 +3,8 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.verify;
@@ -36,6 +38,7 @@ import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -153,6 +156,28 @@ class PscFilingControllerImplTest {
                 () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
+    }
+
+    @Test
+    void createFilingWhenPscDetailsNotFound() {
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
+                PASSTHROUGH_HEADER);
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                transaction);
+        when(dto.getReferencePscId()).thenReturn(PSC_ID);
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE, PASSTHROUGH_HEADER))
+                .thenThrow(new FilingResourceNotFoundException("PSC not found test"));
+
+        final var exception = assertThrows(InvalidFilingException.class,
+                () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
+
+        assertThat(exception.getFieldErrors(), hasSize(1));
+
+        final var fieldError = exception.getFieldErrors().get(0);
+
+        assertThat(fieldError.getField(), is("reference_psc_id"));
+        assertThat(fieldError.getRejectedValue(), is(equalTo(PSC_ID)));
+        assertThat(fieldError.getDefaultMessage(), is("PSC not found test"));
     }
 
     private Map<String, Resource> createResources() {
