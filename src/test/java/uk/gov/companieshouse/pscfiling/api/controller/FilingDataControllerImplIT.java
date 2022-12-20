@@ -70,7 +70,7 @@ class FilingDataControllerImplIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
         when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
-        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/{filingId}/filings", TRANS_ID, FILING_ID)
+        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/individual/{filingId}/filings", TRANS_ID, FILING_ID)
             .headers(httpHeaders))
             .andDo(print())
             .andExpect(status().isOk())
@@ -87,7 +87,7 @@ class FilingDataControllerImplIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
 
-        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/{filingId}/filings", TRANS_ID, FILING_ID)
+        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/individual/{filingId}/filings", TRANS_ID, FILING_ID)
                 .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())

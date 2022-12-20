@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 class FilingDataControllerTest {
 
@@ -18,6 +19,6 @@ class FilingDataControllerTest {
         var testController = new FilingDataController(){};
 
         assertThrows(NotImplementedException.class,
-            () -> testController.getFilingsData("trans-id", "filing-id", request));
+            () -> testController.getFilingsData("trans-id", PscTypeConstants.INDIVIDUAL, "filing-id", request));
     }
 }

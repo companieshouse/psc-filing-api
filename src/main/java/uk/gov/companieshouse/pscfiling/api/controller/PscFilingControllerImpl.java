@@ -171,8 +171,7 @@ public class PscFilingControllerImpl implements PscFilingController {
     private Links buildLinks(final PscIndividualFiling savedFiling, final HttpServletRequest request) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
         final var selfUri = UriComponentsBuilder
-                .fromUriString(request.getRequestURI()
-                .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
+                .fromUriString(request.getRequestURI())
                 .pathSegment(objectId.toHexString())
                 .build().toUri();
 

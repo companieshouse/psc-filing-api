@@ -16,6 +16,7 @@ import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -26,6 +27,7 @@ class FilingDataControllerImplTest {
 
     public static final String TRANS_ID = "117524-754816-491724";
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
+    public static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
     private static final String PASSTHROUGH_HEADER = "passthrough";
     private Transaction transaction;
 
@@ -60,7 +62,7 @@ class FilingDataControllerImplTest {
         when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
 
-        final var filingsList= testController.getFilingsData(TRANS_ID, FILING_ID, request);
+        final var filingsList= testController.getFilingsData(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(filingsList, Matchers.contains(filingApi));
     }
@@ -72,7 +74,7 @@ class FilingDataControllerImplTest {
         when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenThrow(new FilingResourceNotFoundException("Test Resource not found"));
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
-                () -> testController.getFilingsData(TRANS_ID, FILING_ID, request));
+                () -> testController.getFilingsData(TRANS_ID, PSC_TYPE, FILING_ID, request));
         assertThat(exception.getMessage(), is("Test Resource not found"));
     }
 }
