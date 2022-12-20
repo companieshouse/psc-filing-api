@@ -26,7 +26,7 @@ import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
@@ -96,7 +96,7 @@ class PscDetailsServiceImplTest {
                 new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test case", new HttpHeaders()));
         when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
-        final var thrown = assertThrows(PscNotFoundException.class,
+        final var thrown = assertThrows(FilingResourceNotFoundException.class,
                 () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
 
         assertThat(thrown.getMessage(), is("PSC Details not found for " + PSC_ID + ": 404 test case"));

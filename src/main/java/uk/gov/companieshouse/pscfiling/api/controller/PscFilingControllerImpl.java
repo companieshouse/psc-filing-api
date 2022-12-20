@@ -5,6 +5,7 @@ import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIV
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -85,9 +89,18 @@ public class PscFilingControllerImpl implements PscFilingController {
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
 
-        final var pscDetails =
-                pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType,
-                        passthroughHeader);
+        final PscApi pscDetails;
+        try {
+            pscDetails =
+                    pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType,
+                            passthroughHeader);
+        }
+        catch (FilingResourceNotFoundException e) {
+            var fieldError =
+                    new FieldError("object", "reference_psc_id", dto.getReferencePscId(), false,
+                            new String[]{null, "notFound.reference_psc_id"}, null, e.getMessage());
+            throw new InvalidFilingException(List.of(fieldError));
+        }
         logMap.put("company_number", transaction.getCompanyNumber());
         logMap.put("PSC name", pscDetails.getName());
         logger.debugContext(transaction.getId(), "Retrieved PSC details", logMap);

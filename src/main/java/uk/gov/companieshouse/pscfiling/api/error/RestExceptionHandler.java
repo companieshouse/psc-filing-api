@@ -32,9 +32,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.exception.PscNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
 /**
@@ -129,47 +128,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(TransactionServiceException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({PscServiceException.class, TransactionServiceException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
-    public ApiErrors handleTransactionServiceException(final TransactionServiceException ex,
+    public ApiErrors handleServiceException(final Exception ex,
             final WebRequest request) {
-        final var error = new ApiError(ex.getMessage(), getRequestURI(request),
-                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
-        Optional.ofNullable(ex.getCause())
-                .ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
-
-        final var errorList = List.of(error);
-        logError(request, "Transaction service error", ex, errorList);
-        return new ApiErrors(errorList);
-    }
-
-    @ExceptionHandler(PscServiceException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public ApiErrors handlePscServiceException(final PscServiceException ex,
-                                               final WebRequest request) {
-        final var error = new ApiError(ex.getMessage(), getRequestURI(request),
-                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
-        Optional.ofNullable(ex.getCause())
-                .ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
-
-        final var errorList = List.of(error);
-        logError(request, "PSC service error", ex, errorList);
-        return new ApiErrors(errorList);
-    }
-
-    @ExceptionHandler(PscNotFoundException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "PSC not found")
-    @ResponseBody
-    public ApiErrors handlePscNotFoundException(final PscNotFoundException ex,
-                                               final WebRequest request) {
-        final var error = new ApiError(ex.getMessage(), getRequestURI(request),
-                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
-        Optional.ofNullable(ex.getCause()).ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
-
-        final var errorList = List.of(error);
-        logError(request, "PSC not found", ex, errorList);
+        final var errorList = List.of(createApiServiceError(ex, request));
+        logError(request, ex.getMessage(), ex, errorList);
         return new ApiErrors(errorList);
     }
 
@@ -177,12 +142,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleExceptionInternal(final Exception ex, final Object body,
             final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
         chLogger.error("INTERNAL ERROR", ex);
-        final var error = new ApiError(ex.getMessage(), getRequestURI(request),
-                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
-        Optional.ofNullable(ex.getCause())
-                .ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
 
-        final var errorList = List.of(error);
+        final var errorList = List.of(createApiServiceError(ex, request));
         logError(request, "Internal error", ex, errorList);
         return super.handleExceptionInternal(ex, new ApiErrors(errorList), headers, status,
                 request);
@@ -193,15 +154,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ApiErrors handleAllUncaughtException(final RuntimeException ex,
             final WebRequest request) {
-        chLogger.error("Unknown error occurred", ex);
+        final var errorList = List.of(createApiServiceError(ex, request));
+        logError(request, "Unknown error", ex, errorList);
+        return new ApiErrors(errorList);
+    }
+
+    private static ApiError createApiServiceError(final Exception ex, final WebRequest request) {
         final var error = new ApiError(ex.getMessage(), getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
         Optional.ofNullable(ex.getCause())
                 .ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
 
-        final var errorList = List.of(error);
-        logError(request, "Unknown error", ex, errorList);
-        return new ApiErrors(errorList);
+        return error;
     }
 
     private static void addLocationInfo(final ApiError error, final JsonLocation location) {

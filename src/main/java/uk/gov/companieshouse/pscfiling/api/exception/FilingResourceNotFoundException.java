@@ -8,4 +8,8 @@ public class FilingResourceNotFoundException extends RuntimeException {
     public FilingResourceNotFoundException(final String message) {
         super(message);
     }
+
+    public FilingResourceNotFoundException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 }
