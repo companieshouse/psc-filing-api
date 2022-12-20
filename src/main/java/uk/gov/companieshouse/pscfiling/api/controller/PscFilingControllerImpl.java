@@ -154,10 +154,12 @@ public class PscFilingControllerImpl implements PscFilingController {
         return links;
     }
 
+    // TODO Refactor this to handle PSC types other than Individual, in both the arguments and the path build
     private Links buildLinks(final PscIndividualFiling savedFiling, final HttpServletRequest request) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
         final var selfUri = UriComponentsBuilder
-                .fromUriString(request.getRequestURI())
+                .fromUriString(request.getRequestURI()
+                .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
                 .pathSegment(objectId.toHexString())
                 .build().toUri();
 
