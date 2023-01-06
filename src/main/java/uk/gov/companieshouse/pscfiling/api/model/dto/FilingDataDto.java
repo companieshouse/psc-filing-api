@@ -10,6 +10,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FilingDataDto {
+
+    private String title;
     private String firstName;
     private String otherForenames;
     private String lastName;
@@ -19,6 +21,10 @@ public class FilingDataDto {
 
     public FilingDataDto() {
         // prevent direct instantiation
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getFirstName() {
@@ -64,12 +70,19 @@ public class FilingDataDto {
 
         public Builder(final FilingDataDto other) {
             this();
-            this.firstName(other.getFirstName())
+            this.title(other.getTitle())
+                .firstName(other.getFirstName())
                 .otherForenames(other.getOtherForenames())
                 .lastName(other.getLastName())
                 .dateOfBirth(other.getDateOfBirth())
                 .ceasedOn(other.getCeasedOn())
                 .registerEntryDate(other.getRegisterEntryDate());
+        }
+
+        public Builder title(final String value) {
+
+            buildSteps.add(data -> data.title = value);
+            return this;
         }
 
         public Builder firstName(final String value) {
@@ -126,7 +139,8 @@ public class FilingDataDto {
             return false;
         }
         FilingDataDto that = (FilingDataDto) o;
-        return Objects.equals(getFirstName(), that.getFirstName()) &&
+        return Objects.equals(getTitle(), that.getTitle()) &&
+            Objects.equals(getFirstName(), that.getFirstName()) &&
             Objects.equals(getOtherForenames(), that.getOtherForenames()) &&
             Objects.equals(getLastName(), that.getLastName()) &&
             Objects.equals(getDateOfBirth(), that.getDateOfBirth()) &&
@@ -136,13 +150,14 @@ public class FilingDataDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getFirstName(), getOtherForenames(), getLastName(), getDateOfBirth(),
+        return Objects.hash(getTitle(), getFirstName(), getOtherForenames(), getLastName(), getDateOfBirth(),
             getCeasedOn(), getRegisterEntryDate());
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("firstName", firstName)
+        return new ToStringBuilder(this).append("title", title)
+            .append("firstName", firstName)
             .append("otherForenames", otherForenames)
             .append("lastName", lastName)
             .append("dateOfBirth", dateOfBirth)

@@ -53,6 +53,7 @@ public class FilingDataServiceImpl implements FilingDataService {
             pscDetailsService.getPscDetails(transaction, pscFiling.getReferencePscId(), PscTypeConstants.INDIVIDUAL,
                 passthroughHeader);
         var nameElements = NameElements.builder()
+                .title(pscDetails.getNameElements().getTitle())
                 .forename(pscDetails.getNameElements().getForename())
                 .otherForenames(pscDetails.getNameElements().getMiddleName())
                 .surname(pscDetails.getNameElements().getSurname())

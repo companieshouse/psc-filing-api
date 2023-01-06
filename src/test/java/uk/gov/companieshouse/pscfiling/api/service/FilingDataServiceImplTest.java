@@ -38,6 +38,7 @@ class FilingDataServiceImplTest {
     private static final LocalDate CEASED_ON = LocalDate.parse("2022-10-05");
     private static final String REGISTER_ENTRY_DATE = "2022-10-05";
     private static final String PASSTHROUGH_HEADER = "passthrough";
+    public static final String TITLE = "MR";
     public static final String FIRSTNAME = "JOE";
     public static final String OTHER_FORENAMES = "TOM";
     public static final String LASTNAME = "BLOGGS";
@@ -68,13 +69,15 @@ class FilingDataServiceImplTest {
     @Test
     void generatePscIndividualFilingWhenFound() {
         final var filingData = FilingDataDto.builder()
+            .title(TITLE)
             .firstName(FIRSTNAME)
             .otherForenames(OTHER_FORENAMES)
             .lastName(LASTNAME)
             .ceasedOn(CEASED_ON_STR)
             .registerEntryDate(REGISTER_ENTRY_DATE).build();
 
-        final var nameElements = NameElements.builder().forename(FIRSTNAME).surname(LASTNAME).build();
+        final var nameElements = NameElements.builder().title(TITLE)
+            .forename(FIRSTNAME).surname(LASTNAME).build();
         final var pscFiling = PscIndividualFiling.builder()
                 .referencePscId(REF_PSC_ID)
                 .referenceEtag(REF_ETAG)
@@ -87,6 +90,7 @@ class FilingDataServiceImplTest {
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
         var nameElementsApi = new NameElementsApi();
+        nameElementsApi.setTitle(TITLE);
         nameElementsApi.setForename(FIRSTNAME);
         nameElementsApi.setSurname(LASTNAME);
         when(pscApi.getNameElements()).thenReturn(nameElementsApi);
@@ -95,7 +99,8 @@ class FilingDataServiceImplTest {
         final var filingApi = testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER);
 
         final Map<String, Object> expectedMap =
-                Map.of("first_name", FIRSTNAME,
+                Map.of("title", TITLE,
+                        "first_name", FIRSTNAME,
                         "other_forenames", OTHER_FORENAMES,
                         "last_name", LASTNAME,
                         "ceased_on", CEASED_ON_STR,
