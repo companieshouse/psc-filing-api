@@ -20,11 +20,6 @@ class FilingKindTest {
     }
 
     @Test
-    void getDescription() {
-        assertThat(FilingKind.PSC_CESSATION.getDescription(), is ("Notice of ceasing to be a Person of Significant Control"));
-    }
-
-    @Test
     void nameOfWhenFound() {
         assertThat(FilingKind.nameOf("psc-filing#cessation"), is(Optional.of(FilingKind.PSC_CESSATION)));
     }
