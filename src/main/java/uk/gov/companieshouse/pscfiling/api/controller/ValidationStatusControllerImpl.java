@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusError;
 import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusResponse;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -20,6 +22,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/private/transactions/{transId}/persons-with-significant-control/")
 public class ValidationStatusControllerImpl implements ValidationStatusController {
+    public static final String TRANSACTION_NOT_SUPPORTED_ERROR =
+            "Transaction not supported: FEATURE_FLAG_TRANSACTIONS_CLOSABLE=false";
     private final PscFilingService pscFilingService;
     private final Logger logger;
     private boolean isTransactionsCloseableEnabled;
@@ -58,7 +62,14 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
         var validationStatus = new ValidationStatusResponse();
 
-        validationStatus.setValid(isTransactionsCloseableEnabled && calculateIsValid());
+        if(isTransactionsCloseableEnabled){
+            validationStatus.setValid(calculateIsValid());
+
+        } else {
+            validationStatus.setValidationStatusError(new ValidationStatusError[]{
+                    new ValidationStatusError(TRANSACTION_NOT_SUPPORTED_ERROR, null, null, ErrorType.SERVICE.getType())
+            });
+        }
 
         return validationStatus;
     }
