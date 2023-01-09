@@ -6,7 +6,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
-import uk.gov.companieshouse.pscfiling.api.model.FilingDescription;
+import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
@@ -23,18 +23,18 @@ public class FilingDataServiceImpl implements FilingDataService {
     private final PscFilingService pscFilingService;
     private final PscIndividualMapper pscIndividualMapper;
     private final PscDetailsService pscDetailsService;
-    private final FilingDescription filingDescription;
+    private final FilingDataConfig filingDataConfig;
     private final Logger logger;
 
     public FilingDataServiceImpl(PscFilingService pscFilingService,
                                  PscIndividualMapper filingMapper,
                                  PscDetailsService pscDetailsService,
-                                 FilingDescription filingDescription,
+                                 FilingDataConfig filingDataConfig,
                                  Logger logger) {
         this.pscFilingService = pscFilingService;
         this.pscIndividualMapper = filingMapper;
         this.pscDetailsService = pscDetailsService;
-        this.filingDescription = filingDescription;
+        this.filingDataConfig = filingDataConfig;
         this.logger = logger;
     }
 
@@ -42,7 +42,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     public FilingApi generatePscFiling(String filingId, Transaction transaction, String passthroughHeader) {
         var filing = new FilingApi();
         filing.setKind(FilingKind.PSC_CESSATION.getValue()); // TODO: handling other kinds to come later
-        filing.setDescription(filingDescription.getPsc07());
+        filing.setDescription(filingDataConfig.getPsc07Description());
 
         return populateFilingData(filing, filingId, transaction, passthroughHeader);
     }

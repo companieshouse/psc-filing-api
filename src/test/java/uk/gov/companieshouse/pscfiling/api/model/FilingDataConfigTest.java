@@ -7,22 +7,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDescriptionTest {
+class FilingDataConfigTest {
 
-    private FilingDescription filingDescription;
+    private FilingDataConfig filingDataConfig;
 
     @BeforeEach
     void setup() {
-        filingDescription = new FilingDescription();
+        filingDataConfig = new FilingDataConfig();
     }
 
     @Test
     void getPsc07() {
-        filingDescription.setPsc07("Notice of ceasing to be a Person of Significant Control");
+        filingDataConfig.setPsc07Description("Notice of ceasing to be a Person of Significant Control");
 
-        assertThat(filingDescription.getPsc07(), is("Notice of ceasing to be a Person of Significant Control"));
+        assertThat(filingDataConfig.getPsc07Description(), is("Notice of ceasing to be a Person of Significant Control"));
     }
 
 }

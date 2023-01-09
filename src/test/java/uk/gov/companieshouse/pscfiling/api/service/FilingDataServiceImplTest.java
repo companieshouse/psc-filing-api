@@ -21,7 +21,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
-import uk.gov.companieshouse.pscfiling.api.model.FilingDescription;
+import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
@@ -53,7 +53,7 @@ class FilingDataServiceImplTest {
     @Mock
     private PscApi pscApi;
     @Mock
-    private FilingDescription filingDescription;
+    private FilingDataConfig filingDataConfig;
     @Mock
     private Logger logger;
     private Transaction transaction;
@@ -62,7 +62,7 @@ class FilingDataServiceImplTest {
     @BeforeEach
     void setUp() {
         testService = new FilingDataServiceImpl(pscFilingService, pscIndividualMapper,
-            pscDetailsService, filingDescription, logger);
+            pscDetailsService, filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
         transaction.setCompanyNumber("012345678");
