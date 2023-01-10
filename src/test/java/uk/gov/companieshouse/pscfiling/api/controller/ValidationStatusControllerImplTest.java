@@ -16,9 +16,12 @@ import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscfiling.api.controller.ValidationStatusControllerImpl.TRANSACTION_NOT_SUPPORTED_ERROR;
 
 @ExtendWith(MockitoExtension.class)
 class ValidationStatusControllerImplTest {
@@ -48,6 +51,14 @@ class ValidationStatusControllerImplTest {
         final var response= testController.validate(TRANS_ID, FILING_ID, request);
 
         assertThat(response.isValid(), is(isClosable));
+
+        if(isClosable) {
+            assertThat(response.getValidationStatusError(), is(nullValue()));
+
+        } else{
+            assertThat(response.getValidationStatusError(), is(arrayWithSize(1)));
+            assertThat(response.getValidationStatusError()[0].getError(), is(TRANSACTION_NOT_SUPPORTED_ERROR));
+        }
     }
 
     @Test
