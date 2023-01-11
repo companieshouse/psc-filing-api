@@ -44,7 +44,7 @@ class ValidationStatusControllerImplFlagFalseIT {
     }
 
     @Test
-    void validateWhenFeatureFlagIsTrue() throws Exception {
+    void validateWhenFeatureFlagIsFalse() throws Exception {
         final var transaction = new Transaction();
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag("etag")
@@ -61,6 +61,7 @@ class ValidationStatusControllerImplFlagFalseIT {
                         + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID)
                         .headers(httpHeaders))
                 .andDo(print())
+                //status code is '200' as this is expected behaviour
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"is_valid\":%s}", false)));
     }
