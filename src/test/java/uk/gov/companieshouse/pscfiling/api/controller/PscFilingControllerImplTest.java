@@ -17,6 +17,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,20 +34,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.error.ApiErrors;
+import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
+import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,8 +70,6 @@ class PscFilingControllerImplTest {
     @Mock
     private TransactionService transactionService;
     @Mock
-    private PscDetailsService pscDetailsService;
-    @Mock
     private Clock clock;
     @Mock
     private Logger logger;
@@ -82,6 +83,8 @@ class PscFilingControllerImplTest {
     private HttpServletRequest request;
     @Mock
     private Transaction transaction;
+    @Mock
+    private PscExistsValidator pscExistsValidator;
 
     private PscIndividualFiling filing;
     private PscApi pscDetails;
@@ -91,8 +94,8 @@ class PscFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController =
-                new PscFilingControllerImpl(transactionService, pscDetailsService, pscFilingService,
-                        filingMapper, clock, logger) {
+                new PscFilingControllerImpl(transactionService, pscFilingService,
+                        filingMapper, pscExistsValidator, clock, logger) {
                 };
         filing = PscIndividualFiling.builder()
                 .referencePscId(PSC_ID)
@@ -117,7 +120,6 @@ class PscFilingControllerImplTest {
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(filingMapper.map(dto)).thenReturn(filing);
 
         final var withFilingId = PscIndividualFiling.builder(filing).id(FILING_ID)
@@ -126,8 +128,7 @@ class PscFilingControllerImplTest {
                 .build();
         when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
         when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
-                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
+        when(pscExistsValidator.validate(dto, null, transaction, PSC_TYPE, PASSTHROUGH_HEADER)).thenReturn(new ApiErrors());
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -164,8 +165,9 @@ class PscFilingControllerImplTest {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE, PASSTHROUGH_HEADER))
-                .thenThrow(new FilingResourceNotFoundException("PSC not found test"));
+        final var apiError = new ApiError("PSC not found test", "", "", ErrorType.SERVICE.getType());
+        when(pscExistsValidator.validate(dto, null, transaction, PSC_TYPE, PASSTHROUGH_HEADER)).thenReturn(new ApiErrors(
+            Collections.singletonList(apiError)));
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));

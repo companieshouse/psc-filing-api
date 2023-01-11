@@ -29,6 +29,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -48,22 +49,24 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
+import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
+@Import(PscExistsValidator.class)
 @WebMvcTest(controllers = PscFilingControllerImpl.class)
 class PscFilingControllerImplIT {
     private static final String TRANS_ID = "4f56fdf78b357bfc";
     private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
     private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
     private static final String PASSTHROUGH_HEADER = "passthrough";
+    private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final String PSC07_FRAGMENT = "\"reference_etag\": \"etag\","
-            + "\"reference_psc_id\": \"id\","
+            + "\"reference_psc_id\": \"" + PSC_ID + "\","
             + "\"ceased_on\": \"2022-09-13\","
             + "\"register_entry_date\": \"2022-09-09\"";
     private static final String EMPTY_QUOTED_JSON = "\"\"";
     private static final String MALFORMED_JSON = "{";
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
-    private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final String COMPANY_NUMBER = "012345678";
 
     @MockBean
@@ -101,13 +104,13 @@ class PscFilingControllerImplIT {
         final var transaction = new Transaction();
         final var dto = PscIndividualDto.builder()
                 .referenceEtag("etag")
-                .referencePscId("id")
+                .referencePscId(PSC_ID)
                 .ceasedOn(LocalDate.of(2022, 9, 13))
                 .registerEntryDate(LocalDate.of(2022, 9, 9))
                 .build();
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag("etag")
-                .referencePscId("id")
+                .referencePscId(PSC_ID)
                 .ceasedOn(LocalDate.of(2022, 9, 13))
                 .registerEntryDate(LocalDate.of(2022, 9, 9))
                 .build();
@@ -122,7 +125,7 @@ class PscFilingControllerImplIT {
         when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(pscDetailsService.getPscDetails(transaction, "id", PSC_TYPE,
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
         when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
@@ -171,7 +174,7 @@ class PscFilingControllerImplIT {
     void createFilingWhenPscNotFoundThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT + "}";
         final var expectedError =
-                createExpectedApiError("PSC Details not found for " + PSC_ID + "=: 404 Not Found",
+                createExpectedApiError("PSC Details not found for " + PSC_ID + ": 404 Not Found",
                         "$.reference_psc_id",
                         LocationType.JSON_PATH, ErrorType.VALIDATION);
         final var errorResponse = new ApiErrorResponse();
@@ -187,9 +190,9 @@ class PscFilingControllerImplIT {
         transaction.setCompanyNumber(COMPANY_NUMBER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(pscDetailsService.getPscDetails(transaction, "id", PSC_TYPE,
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
                 PASSTHROUGH_HEADER)).thenThrow(
-                new FilingResourceNotFoundException("PSC Details not found for " + PSC_ID + "=: 404 Not Found",
+                new FilingResourceNotFoundException("PSC Details not found for " + PSC_ID + ": 404 Not Found",
                         errorResponseException));
 
         mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/individual",
@@ -203,7 +206,7 @@ class PscFilingControllerImplIT {
                                 hasEntry("location_type", expectedError.getLocationType()),
                                 hasEntry("type", expectedError.getType()),
                                 hasEntry("error", expectedError.getError()))))
-                .andExpect(jsonPath("$.errors[0].error_values", hasEntry("rejected", "id")));
+                .andExpect(jsonPath("$.errors[0].error_values", hasEntry("rejected", PSC_ID)));
     }
 
     @Test
@@ -409,13 +412,13 @@ class PscFilingControllerImplIT {
     void getFilingForReviewThenResponse200() throws Exception {
         final var dto = PscIndividualDto.builder()
                 .referenceEtag("etag")
-                .referencePscId("id")
+                .referencePscId(PSC_ID)
                 .ceasedOn(LocalDate.of(2022, 9, 13))
                 .registerEntryDate(LocalDate.of(2022, 9, 13))
                 .build();
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag("etag")
-                .referencePscId("id")
+                .referencePscId(PSC_ID)
                 .ceasedOn(LocalDate.of(2022, 9, 13))
                 .registerEntryDate(LocalDate.of(2022, 9, 13))
                 .build();
@@ -429,7 +432,7 @@ class PscFilingControllerImplIT {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reference_etag", is("etag")))
-                .andExpect(jsonPath("$.reference_psc_id", is("id")))
+                .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
                 .andExpect(jsonPath("$.ceased_on", is("2022-09-13")));
     }
 

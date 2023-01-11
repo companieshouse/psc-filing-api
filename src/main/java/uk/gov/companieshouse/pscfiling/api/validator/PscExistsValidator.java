@@ -1,18 +1,13 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.text.MessageFormat;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.error.ApiError;
-import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.error.ApiErrors;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -33,16 +28,15 @@ public class PscExistsValidator {
 
         var apiErrors = Optional.ofNullable(errors).orElseGet(ApiErrors::new);
 
-
-        final PscApi pscDetails;
         try {
-            pscDetails =
                 pscDetailsService.getPscDetails(transaction, dto.getReferencePscId(), pscType,
                     passthroughHeader);
         }
         catch (FilingResourceNotFoundException e) {
 
-            apiErrors.add(new ApiError("Psc not found for this company.", null, LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType()));
+            apiErrors.add(new ApiError(
+                MessageFormat.format("PSC Details not found for {0}: {1} {2}", dto.getReferencePscId(),
+                    HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.getReasonPhrase()), null, LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType()));
 
         }
 
