@@ -15,7 +15,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 @Component
-public class PscExistsValidator {
+public class PscExistsValidator extends FilingValidatorImpl{
 
     private PscDetailsService pscDetailsService;
 
@@ -40,6 +40,6 @@ public class PscExistsValidator {
 
         }
 
-        return apiErrors;
+        return super.validate(dto, apiErrors, transaction, pscType, passthroughHeader);
     }
 }

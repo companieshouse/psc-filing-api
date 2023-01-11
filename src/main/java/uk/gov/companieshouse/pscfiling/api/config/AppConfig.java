@@ -3,6 +3,9 @@ package uk.gov.companieshouse.pscfiling.api.config;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 /**
  * Main application configuration class.
@@ -22,5 +25,15 @@ public class AppConfig {
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
+    }
+
+    @Bean(name = "dtoFiling")
+    public FilingValidator dtoFilingValidator(PscDetailsService pscDetailsService) {
+
+        var firstValidator = new PscExistsValidator(pscDetailsService);
+
+        firstValidator.setNext(new PscExistsValidator(pscDetailsService));
+
+        return firstValidator;
     }
 }

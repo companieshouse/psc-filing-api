@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -35,7 +36,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -45,17 +46,18 @@ public class PscFilingControllerImpl implements PscFilingController {
     private final TransactionService transactionService;
     private final PscFilingService pscFilingService;
     private final PscIndividualMapper filingMapper;
-    private final PscExistsValidator pscExistsValidator;
+    private final FilingValidator firstValidator;
     private final Clock clock;
     private final Logger logger;
 
     public PscFilingControllerImpl(final TransactionService transactionService,
                                    final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
-                                   PscExistsValidator pscExistsValidator, final Clock clock, final Logger logger) {
+                                   @Qualifier("dtoFiling") final FilingValidator firstValidator,
+                                   final Clock clock, final Logger logger) {
         this.transactionService = transactionService;
         this.pscFilingService = pscFilingService;
         this.filingMapper = filingMapper;
-        this.pscExistsValidator = pscExistsValidator;
+        this.firstValidator = firstValidator;
         this.clock = clock;
         this.logger = logger;
     }
@@ -88,7 +90,7 @@ public class PscFilingControllerImpl implements PscFilingController {
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
 
-        var apiErrors = pscExistsValidator.validate(dto, null, transaction, pscType, passthroughHeader);
+        var apiErrors = firstValidator.validate(dto, null, transaction, pscType, passthroughHeader);
 
         if (apiErrors.hasErrors()) {
             var fieldError =

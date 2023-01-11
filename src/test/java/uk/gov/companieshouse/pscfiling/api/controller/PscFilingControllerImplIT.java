@@ -290,8 +290,8 @@ class PscFilingControllerImplIT {
                 .andExpect(jsonPath("$.errors[0].error",
                         is("JSON parse error: Unexpected end-of-input")))
                 .andExpect(jsonPath("$.errors[0].error_values",
-                        allOf(hasEntry("offset", "line: 1, column: 113"), hasEntry("line", "1"),
-                                hasEntry("column", "113"))));
+                        allOf(hasEntry("offset", "line: 1, column: 138"), hasEntry("line", "1"),
+                                hasEntry("column", "138"))));
     }
 
     @Test
@@ -313,8 +313,8 @@ class PscFilingControllerImplIT {
                 .andExpect(jsonPath("$.errors[0].error",
                         is("JSON parse error: Text 'ABC' could not be parsed at index 0")))
                 .andExpect(jsonPath("$.errors[0].error_values",
-                        allOf(hasEntry("offset", "line: 1, column: 65"), hasEntry("line", "1"),
-                                hasEntry("column", "65"))));
+                        allOf(hasEntry("offset", "line: 1, column: 90"), hasEntry("line", "1"),
+                                hasEntry("column", "90"))));
     }
 
     @Test
@@ -337,8 +337,8 @@ class PscFilingControllerImplIT {
                         is("JSON parse error: Text '2022-09-99' could not be parsed: Invalid "
                                 + "value for DayOfMonth (valid values 1 - 28/31): 99")))
                 .andExpect(jsonPath("$.errors[0].error_values",
-                        allOf(hasEntry("offset", "line: 1, column: 65"), hasEntry("line", "1"),
-                                hasEntry("column", "65"))));
+                        allOf(hasEntry("offset", "line: 1, column: 90"), hasEntry("line", "1"),
+                                hasEntry("column", "90"))));
     }
 
     @Test
@@ -361,8 +361,8 @@ class PscFilingControllerImplIT {
                         is("JSON parse error: Text '2022-11-31' could not be parsed: Invalid date"
                                 + " 'NOVEMBER 31'")))
                 .andExpect(jsonPath("$.errors[0].error_values",
-                        allOf(hasEntry("offset", "line: 1, column: 65"), hasEntry("line", "1"),
-                                hasEntry("column", "65"))));
+                        allOf(hasEntry("offset", "line: 1, column: 90"), hasEntry("line", "1"),
+                                hasEntry("column", "90"))));
     }
 
     @Test
