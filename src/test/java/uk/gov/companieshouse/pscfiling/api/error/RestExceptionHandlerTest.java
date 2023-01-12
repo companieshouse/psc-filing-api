@@ -237,7 +237,7 @@ class RestExceptionHandlerTest {
                 new FieldError("object", "field", "rejectedValue", false, codes, null,
                         "errorWithRejectedValue");
         final var exception =
-                new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
+                new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue), null);
 
         final var apiErrors = testExceptionHandler.handleInvalidFilingException(exception, request);
 

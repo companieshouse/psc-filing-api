@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.PscCeasedOnNotBeforeLegislationDateValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 /**
@@ -28,11 +29,11 @@ public class AppConfig {
     }
 
     @Bean(name = "dtoFiling")
-    public FilingValidator dtoFilingValidator(PscDetailsService pscDetailsService) {
+    public FilingValidator firstDtoFilingValidator(final PscExistsValidator pscExistsValidator,
+            final PscCeasedOnNotBeforeLegislationDateValidator pscCeasedOnNotBeforeLegislationDateValidator) {
 
-        var firstValidator = new PscExistsValidator(pscDetailsService);
-
-        firstValidator.setNext(new PscExistsValidator(pscDetailsService));
+        var firstValidator = pscExistsValidator;
+        firstValidator.setNext(pscCeasedOnNotBeforeLegislationDateValidator);
 
         return firstValidator;
     }

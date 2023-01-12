@@ -9,13 +9,20 @@ import org.springframework.validation.FieldError;
  */
 public class InvalidFilingException extends RuntimeException {
     private final List<FieldError> fieldErrors;
+    private final ApiErrors apiErrors;
 
-    public InvalidFilingException(final List<FieldError> fieldErrors) {
 
+    public InvalidFilingException(final List<FieldError> fieldErrors, final ApiErrors apiErrors) {
         this.fieldErrors = fieldErrors;
+        this.apiErrors = apiErrors;
     }
+
 
     public List<FieldError> getFieldErrors() {
         return Collections.unmodifiableList(fieldErrors);
+    }
+
+    public ApiErrors getApiErrors() {
+        return apiErrors;
     }
 }

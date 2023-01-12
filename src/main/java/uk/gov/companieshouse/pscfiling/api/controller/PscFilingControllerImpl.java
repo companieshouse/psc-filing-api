@@ -82,7 +82,7 @@ public class PscFilingControllerImpl implements PscFilingController {
         logger.debugRequest(request, "POST", logMap);
 
         if (bindingResult != null && bindingResult.hasErrors()) {
-            throw new InvalidFilingException(bindingResult.getFieldErrors());
+            throw new InvalidFilingException(bindingResult.getFieldErrors(), null);
         }
 
         final var passthroughHeader =
@@ -97,7 +97,7 @@ public class PscFilingControllerImpl implements PscFilingController {
                 new FieldError("object", "reference_psc_id", dto.getReferencePscId(), false,
                     new String[]{null, "notFound.reference_psc_id"}, null, apiErrors.getErrors().stream().findFirst().map(
                     ApiError::getError).orElseThrow());
-            throw new InvalidFilingException(List.of(fieldError));
+            throw new InvalidFilingException(List.of(fieldError),);
         }
 
         final var entity = filingMapper.map(dto);
