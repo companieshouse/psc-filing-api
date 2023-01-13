@@ -3,35 +3,32 @@ package uk.gov.companieshouse.pscfiling.api.validator;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Optional;
+import java.util.List;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.error.ApiError;
+import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.pscfiling.api.error.ApiErrors;
-import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
 @Component
-public class PscCeasedOnNotBeforeLegislationDateValidator extends FilingValidatorImpl implements FilingValidator  {
+public class PscCeasedOnNotBeforeLegislationDateValidator extends BaseFilingValidator
+        implements FilingPermissible {
 
     private static final LocalDate PSC_LEGISLATION_DATE = LocalDate.of(2016, Month.APRIL, 6);
 
     @Override
-    public ApiErrors validate(final PscIndividualDto dto, final ApiErrors errors,
+    public void validate(final PscIndividualDto dto, final List<FieldError> errors,
             final Transaction transaction, final PscTypeConstants pscType,
             final String passThroughHeader) {
 
-        var apiErrors = Optional.ofNullable(errors).orElseGet(ApiErrors::new);
-
         if (!PSC_LEGISLATION_DATE.isBefore(dto.getCeasedOn())) {
-            apiErrors.add(new ApiError(
-                    MessageFormat.format("Date {0} must not be before legislation date of {1}", dto.getCeasedOn(), PSC_LEGISLATION_DATE), "$.ceased_on",
-                    LocationType.JSON_PATH.getValue(), ErrorType.VALIDATION.getType()));
+            errors.add(new FieldError("object", "ceased_on", dto.getCeasedOn(), false,
+                    new String[]{null, "notBeforeLegislationDate.ceased_on"}, null,
+                    MessageFormat.format("Date must not be before legislation date {0}",
+                            PSC_LEGISLATION_DATE)));
         }
 
-        return super.validate(dto, apiErrors, transaction, pscType, passThroughHeader);
+        super.validate(dto, errors, transaction, pscType, passThroughHeader);
     }
 
 }

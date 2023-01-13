@@ -4,10 +4,11 @@ import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIV
 
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -16,7 +17,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,10 +25,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -36,7 +36,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingPermissible;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -46,14 +46,14 @@ public class PscFilingControllerImpl implements PscFilingController {
     private final TransactionService transactionService;
     private final PscFilingService pscFilingService;
     private final PscIndividualMapper filingMapper;
-    private final FilingValidator firstValidator;
+    private final FilingPermissible firstValidator;
     private final Clock clock;
     private final Logger logger;
 
     public PscFilingControllerImpl(final TransactionService transactionService,
-                                   final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
-                                   @Qualifier("dtoFiling") final FilingValidator firstValidator,
-                                   final Clock clock, final Logger logger) {
+            final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
+            @Qualifier("dtoFiling") final FilingPermissible firstValidator, final Clock clock,
+            final Logger logger) {
         this.transactionService = transactionService;
         this.pscFilingService = pscFilingService;
         this.filingMapper = filingMapper;
@@ -81,23 +81,18 @@ public class PscFilingControllerImpl implements PscFilingController {
 
         logger.debugRequest(request, "POST", logMap);
 
-        if (bindingResult != null && bindingResult.hasErrors()) {
-            throw new InvalidFilingException(bindingResult.getFieldErrors(), null);
-        }
-
+        final var validationErrors = Optional.ofNullable(bindingResult)
+                .map(Errors::getFieldErrors).map(ArrayList::new)
+                .orElseGet(ArrayList::new);
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
 
-        var apiErrors = firstValidator.validate(dto, null, transaction, pscType, passthroughHeader);
+        firstValidator.validate(dto, validationErrors, transaction, pscType, passthroughHeader);
 
-        if (apiErrors.hasErrors()) {
-            var fieldError =
-                new FieldError("object", "reference_psc_id", dto.getReferencePscId(), false,
-                    new String[]{null, "notFound.reference_psc_id"}, null, apiErrors.getErrors().stream().findFirst().map(
-                    ApiError::getError).orElseThrow());
-            throw new InvalidFilingException(List.of(fieldError),);
+        if (!validationErrors.isEmpty()) {
+            throw new InvalidFilingException(validationErrors);
         }
 
         final var entity = filingMapper.map(dto);

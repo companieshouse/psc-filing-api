@@ -36,6 +36,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -237,7 +238,7 @@ class RestExceptionHandlerTest {
                 new FieldError("object", "field", "rejectedValue", false, codes, null,
                         "errorWithRejectedValue");
         final var exception =
-                new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue), null);
+                new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
 
         final var apiErrors = testExceptionHandler.handleInvalidFilingException(exception, request);
 

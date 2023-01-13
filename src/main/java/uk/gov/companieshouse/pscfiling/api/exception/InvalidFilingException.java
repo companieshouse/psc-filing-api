@@ -1,5 +1,6 @@
-package uk.gov.companieshouse.pscfiling.api.error;
+package uk.gov.companieshouse.pscfiling.api.exception;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.validation.FieldError;
@@ -9,20 +10,12 @@ import org.springframework.validation.FieldError;
  */
 public class InvalidFilingException extends RuntimeException {
     private final List<FieldError> fieldErrors;
-    private final ApiErrors apiErrors;
 
-
-    public InvalidFilingException(final List<FieldError> fieldErrors, final ApiErrors apiErrors) {
-        this.fieldErrors = fieldErrors;
-        this.apiErrors = apiErrors;
+    public InvalidFilingException(final List<FieldError> fieldErrors) {
+        this.fieldErrors = new ArrayList<>(fieldErrors);
     }
-
 
     public List<FieldError> getFieldErrors() {
         return Collections.unmodifiableList(fieldErrors);
-    }
-
-    public ApiErrors getApiErrors() {
-        return apiErrors;
     }
 }

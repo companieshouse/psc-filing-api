@@ -3,8 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.config;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingPermissible;
 import uk.gov.companieshouse.pscfiling.api.validator.PscCeasedOnNotBeforeLegislationDateValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
@@ -29,12 +28,11 @@ public class AppConfig {
     }
 
     @Bean(name = "dtoFiling")
-    public FilingValidator firstDtoFilingValidator(final PscExistsValidator pscExistsValidator,
+    public FilingPermissible constructDtoFilingPermissibleChain(final PscExistsValidator pscExistsValidator,
             final PscCeasedOnNotBeforeLegislationDateValidator pscCeasedOnNotBeforeLegislationDateValidator) {
 
-        var firstValidator = pscExistsValidator;
-        firstValidator.setNext(pscCeasedOnNotBeforeLegislationDateValidator);
+        pscExistsValidator.setNext(pscCeasedOnNotBeforeLegislationDateValidator);
 
-        return firstValidator;
+        return pscExistsValidator;
     }
 }
