@@ -6,6 +6,7 @@ import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import java.io.IOException;
 import java.text.MessageFormat;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -22,7 +23,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final ApiClientService apiClientService;
     private final Logger logger;
 
-    public TransactionServiceImpl(final ApiClientService apiClientService, Logger logger) {
+    public TransactionServiceImpl(@Qualifier("PscApiClientService") final ApiClientService apiClientService, Logger logger) {
         this.apiClientService = apiClientService;
         this.logger = logger;
     }

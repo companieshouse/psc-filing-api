@@ -6,7 +6,7 @@ import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
-@Service
+@Service("PscApiClientService")
 public class ApiClientServiceImpl implements ApiClientService {
 
     @Override

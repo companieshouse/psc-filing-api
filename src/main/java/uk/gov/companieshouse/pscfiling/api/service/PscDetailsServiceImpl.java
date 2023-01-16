@@ -2,6 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.service;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -21,7 +22,7 @@ public class PscDetailsServiceImpl implements PscDetailsService {
     private final ApiClientService apiClientService;
     private final Logger logger;
 
-    public PscDetailsServiceImpl(final ApiClientService apiClientService, Logger logger) {
+    public PscDetailsServiceImpl(@Qualifier("PscApiClientService") final ApiClientService apiClientService, Logger logger) {
         this.apiClientService = apiClientService;
         this.logger = logger;
     }
