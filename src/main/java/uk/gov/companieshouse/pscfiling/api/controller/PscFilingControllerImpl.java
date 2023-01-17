@@ -40,7 +40,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/transactions/{transId}/persons-with-significant-control/{pscType}")
+@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType}")
 public class PscFilingControllerImpl implements PscFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
@@ -72,7 +72,7 @@ public class PscFilingControllerImpl implements PscFilingController {
      */
     @Override
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<Object> createFiling(@PathVariable("transId") final String transId,
+    public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
@@ -126,7 +126,7 @@ public class PscFilingControllerImpl implements PscFilingController {
     @Override
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
     public ResponseEntity<PscIndividualDto> getFilingForReview(
-            @PathVariable("transId") final String transId,
+            @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource) {
 

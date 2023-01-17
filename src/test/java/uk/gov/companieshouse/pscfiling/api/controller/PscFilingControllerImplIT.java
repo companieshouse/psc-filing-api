@@ -35,8 +35,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponse;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
+import uk.gov.companieshouse.api.interceptor.CRUDAuthenticationInterceptor;
+import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.util.security.InvalidTokenPermissionException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
@@ -67,6 +71,12 @@ class PscFilingControllerImplIT {
     private static final String COMPANY_NUMBER = "012345678";
 
     @MockBean
+    private CRUDAuthenticationInterceptor crudAuthenticationInterceptor;
+    @MockBean
+    private TransactionInterceptor transactionInterceptor;
+    @MockBean
+    private OpenTransactionInterceptor openTransactionInterceptor;
+    @MockBean
     private TransactionService transactionService;
     @MockBean
     private PscDetailsService pscDetailsService;
@@ -90,9 +100,12 @@ class PscFilingControllerImplIT {
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.add("ERIC-Access-Token", PASSTHROUGH_HEADER);
+        when(crudAuthenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
 
     @Test

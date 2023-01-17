@@ -24,7 +24,7 @@ public interface PscFilingController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @PostMapping
-    default ResponseEntity<Object> createFiling(@PathVariable("transId") final String transId,
+    default ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestBody @Valid @NotNull final PscIndividualDto dto, final BindingResult result,
             final HttpServletRequest request) {
@@ -40,7 +40,7 @@ public interface PscFilingController {
      */
     @GetMapping
     default ResponseEntity<PscIndividualDto> getFilingForReview(
-            @PathVariable("transId") String transId,
+            @PathVariable("transactionId") String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResource") String filingResource) {
         throw new NotImplementedException();

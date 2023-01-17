@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 public interface ValidationStatusController {
 
     @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
-    default ValidationStatusResponse validate(@PathVariable("transId") String transId,
+    default ValidationStatusResponse validate(@PathVariable("transactionId") String transId,
                                               @PathVariable("filingResourceId") String filingResource,
                                               final HttpServletRequest request) {
 

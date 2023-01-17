@@ -2,13 +2,13 @@ package uk.gov.companieshouse.pscfiling.api.service;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
@@ -22,7 +22,7 @@ public class PscDetailsServiceImpl implements PscDetailsService {
     private final ApiClientService apiClientService;
     private final Logger logger;
 
-    public PscDetailsServiceImpl(@Qualifier("PscApiClientService") final ApiClientService apiClientService, Logger logger) {
+    public PscDetailsServiceImpl(final ApiClientService apiClientService, Logger logger) {
         this.apiClientService = apiClientService;
         this.logger = logger;
     }
@@ -51,7 +51,7 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                     + pscType.getValue()
                     + "/"
                     + pscId;
-            return apiClientService.getOauthAuthenticatedClient(ericPassThroughHeader)
+            return apiClientService.getApiClient(ericPassThroughHeader)
                     .pscs()
                     .getIndividual(uri)
                     .execute()

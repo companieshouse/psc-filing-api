@@ -25,6 +25,7 @@ import uk.gov.companieshouse.api.handler.psc.request.PscIndividualGet;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
@@ -70,7 +71,7 @@ class PscDetailsServiceImplTest {
                 "/" +
                 PSC_ID)).thenReturn(pscIndividualGet);
         when(apiClient.pscs()).thenReturn(pscsResourceHandler);
-        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenReturn(
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(
                 apiClient);
         when(transaction.getCompanyNumber()).thenReturn(COMPANY_NUMBER);
 
@@ -81,7 +82,7 @@ class PscDetailsServiceImplTest {
 
     @Test
     void getPscDetailsWhenIoException() throws IOException {
-        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(
                 new IOException("get test case"));
 
         final var thrown = assertThrows(PscServiceException.class,
@@ -94,7 +95,7 @@ class PscDetailsServiceImplTest {
     void getPscDetailsWhenNotFound() throws IOException {
         final var exception = new ApiErrorResponseException(
                 new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_NOT_FOUND, "test case", new HttpHeaders()));
-        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(FilingResourceNotFoundException.class,
                 () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
@@ -106,7 +107,7 @@ class PscDetailsServiceImplTest {
     void getPscDetailsWhenErrorRetrieving() throws IOException {
         final var exception = new ApiErrorResponseException(
             new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test case", new HttpHeaders()));
-        when(apiClientService.getOauthAuthenticatedClient(PASSTHROUGH_HEADER)).thenThrow(exception);
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(PscServiceException.class,
             () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));

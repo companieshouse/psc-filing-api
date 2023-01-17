@@ -2,6 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -17,6 +18,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.api.interceptor.CRUDAuthenticationInterceptor;
+import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
@@ -37,6 +41,12 @@ class FilingDataControllerImplIT {
     private static final String CEASED_ON = "2022-10-05";
     private static final String REGISTER_ENTRY = "2022-10-05";
     @MockBean
+    private CRUDAuthenticationInterceptor crudAuthenticationInterceptor;
+    @MockBean
+    private TransactionInterceptor transactionInterceptor;
+    @MockBean
+    private OpenTransactionInterceptor openTransactionInterceptor;
+    @MockBean
     private FilingDataService filingDataService;
     @MockBean
     private PscFilingService pscFilingService;
@@ -51,12 +61,15 @@ class FilingDataControllerImplIT {
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.add("ERIC-Access-Token", PASSTHROUGH_HEADER);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
         transaction.setCompanyNumber("012345678");
+        when(crudAuthenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
 
     @Test
