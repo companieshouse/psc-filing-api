@@ -21,7 +21,7 @@ public class PscCeasedOnNotBeforeLegislationDateValidator extends BaseFilingVali
             final Transaction transaction, final PscTypeConstants pscType,
             final String passThroughHeader) {
 
-        if (!PSC_LEGISLATION_DATE.isBefore(dto.getCeasedOn())) {
+        if (PSC_LEGISLATION_DATE.isAfter(dto.getCeasedOn())) {
             errors.add(new FieldError("object", "ceased_on", dto.getCeasedOn(), false,
                     new String[]{null, "notBeforeLegislationDate.ceased_on"}, null,
                     MessageFormat.format("Date must not be before legislation date {0}",

@@ -15,11 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
-import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -67,8 +64,9 @@ class PscExistsValidatorTest {
     @Test
     void validateWhenPscDoesNotExist() {
 
-        var apiError = new ApiError("PSC Details not found for " + PSC_ID + ": 404 Not Found", null,
-                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
+        var fieldError = new FieldError("object", "reference_psc_id", PSC_ID, false,
+                new String[]{null, "notFound.reference_psc_id"}, null,
+                "PSC Details not found for " + PSC_ID + ": 404 Not Found");
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType,
                 passthroughHeader)).thenThrow(new FilingResourceNotFoundException(
@@ -76,7 +74,7 @@ class PscExistsValidatorTest {
 
         testValidator.validate(dto, errors, transaction, pscType, passthroughHeader);
 
-        assertThat(errors.stream().findFirst().orElseThrow(), equalTo(apiError));
-        assertThat(errors, contains(apiError));
+        assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
+        assertThat(errors, contains(fieldError));
     }
 }
