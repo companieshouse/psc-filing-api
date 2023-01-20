@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
-import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
-
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -167,7 +165,7 @@ public class PscFilingControllerImpl implements PscFilingController {
                 .build().toUri();
 
         final var validateUri = UriComponentsBuilder
-                .fromUriString(PREFIX_PRIVATE + "/" + request.getRequestURI()
+                .fromUriString(request.getRequestURI()
                 .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
                 .pathSegment(objectId.toHexString())
                 .pathSegment(VALIDATION_STATUS)
