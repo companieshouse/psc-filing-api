@@ -56,7 +56,8 @@ class PscExistsValidatorTest {
 
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
 
-        testValidator.validate(dto, errors, transaction, pscType, passthroughHeader);
+        testValidator.validate(
+                new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors, is(empty()));
     }
@@ -66,13 +67,14 @@ class PscExistsValidatorTest {
 
         var fieldError = new FieldError("object", "reference_psc_id", PSC_ID, false,
                 new String[]{null, "notFound.reference_psc_id"}, null,
-                "PSC Details not found for " + PSC_ID + ": 404 Not Found");
+                "PSC with that reference ID was not found");
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType,
                 passthroughHeader)).thenThrow(new FilingResourceNotFoundException(
                 "PSC Details not found for " + PSC_ID + ": 404 Not Found", errorResponseException));
 
-        testValidator.validate(dto, errors, transaction, pscType, passthroughHeader);
+        testValidator.validate(
+                new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));

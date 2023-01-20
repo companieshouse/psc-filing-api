@@ -1,26 +1,19 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
-import java.util.List;
 import java.util.Optional;
-import org.springframework.validation.FieldError;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
-public class BaseFilingValidator implements FilingPermissible {
+public class BaseFilingValidator implements FilingValid {
 
-    private FilingPermissible nextValidator;
+    private FilingValid nextValidator;
 
     @Override
-    public void validate(PscIndividualDto dto, List<FieldError> errors, Transaction transaction,
-            PscTypeConstants pscType, String passthroughHeader) {
+    public void validate(final FilingValidationContext validationContext) {
 
-        Optional.ofNullable(nextValidator)
-                .ifPresent(v -> v.validate(dto, errors, transaction, pscType, passthroughHeader));
+        Optional.ofNullable(nextValidator).ifPresent(v -> v.validate(validationContext));
     }
 
     @Override
-    public void setNext(FilingPermissible filingValidator) {
+    public void setNext(final FilingValid filingValidator) {
         this.nextValidator = filingValidator;
     }
 }
