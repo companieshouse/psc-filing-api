@@ -57,7 +57,7 @@ class ValidationStatusControllerImplFlagUndefinedIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get("/private/transactions/{transId}/persons-with-significant"
+        mockMvc.perform(get("/transactions/{transId}/persons-with-significant"
                         + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID)
                         .headers(httpHeaders))
                 .andDo(print())

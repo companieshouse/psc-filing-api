@@ -20,13 +20,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/private/transactions/{transId}/persons-with-significant-control/")
+@RequestMapping("/transactions/{transId}/persons-with-significant-control/")
 public class ValidationStatusControllerImpl implements ValidationStatusController {
     public static final String TRANSACTION_NOT_SUPPORTED_ERROR =
             "Transaction not supported: FEATURE_FLAG_TRANSACTIONS_CLOSABLE=false";
     private final PscFilingService pscFilingService;
     private final Logger logger;
-    private boolean isTransactionsCloseableEnabled;
+    private final boolean isTransactionsCloseableEnabled;
 
     public ValidationStatusControllerImpl(PscFilingService pscFilingService,
             @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled, Logger logger) {
@@ -74,7 +74,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         return validationStatus;
     }
 
-    //TODO - proper validation needs to be implemented - as this is a temporary fudge
+    //TODO - proper validation needs to be implemented - as this is a temporary solution
     private boolean calculateIsValid() {
         return true;
     }
