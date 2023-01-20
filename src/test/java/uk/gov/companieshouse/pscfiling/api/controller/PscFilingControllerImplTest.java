@@ -3,10 +3,11 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscfiling.api.controller.PscFilingControllerImpl.VALIDATION_STATUS;
@@ -17,6 +18,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,20 +35,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.error.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
+import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,9 +59,8 @@ class PscFilingControllerImplTest {
     private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
     private static final String PASSTHROUGH_HEADER = "passthrough";
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
-    private static final URI REQUEST_URI = URI.create("/transactions/"
-            + TRANS_ID
-            + "/persons-with-significant-control/");
+    private static final URI REQUEST_URI =
+            URI.create("/transactions/" + TRANS_ID + "/persons-with-significant-control/");
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
 
     private PscFilingController testController;
@@ -66,8 +68,6 @@ class PscFilingControllerImplTest {
     private PscFilingService pscFilingService;
     @Mock
     private TransactionService transactionService;
-    @Mock
-    private PscDetailsService pscDetailsService;
     @Mock
     private Clock clock;
     @Mock
@@ -82,17 +82,25 @@ class PscFilingControllerImplTest {
     private HttpServletRequest request;
     @Mock
     private Transaction transaction;
+    @Mock
+    private PscExistsValidator pscExistsValidator;
+    @Mock
+    private FilingForPscTypeValidChain filingForPscTypeValidChain;
+    @Mock
+    private FilingValidationService filingValidationService;
 
     private PscIndividualFiling filing;
-    private PscApi pscDetails;
     private Links links;
     private Map<String, Resource> resourceMap;
+    private List<FieldError> validationErrors;
+    private String[] bindingErrorCodes;
+    private FieldError fieldErrorWithRejectedValue;
 
     @BeforeEach
     void setUp() {
         testController =
-                new PscFilingControllerImpl(transactionService, pscDetailsService, pscFilingService,
-                        filingMapper, clock, logger) {
+                new PscFilingControllerImpl(transactionService, pscFilingService, filingMapper,
+                        filingValidationService, clock, logger) {
                 };
         filing = PscIndividualFiling.builder()
                 .referencePscId(PSC_ID)
@@ -107,7 +115,11 @@ class PscFilingControllerImplTest {
                 privateBuilder.pathSegment(FILING_ID).pathSegment("validation_status")
                         .build().toUri());
         resourceMap = createResources();
-        pscDetails = new PscApi();
+        validationErrors = new ArrayList<>();
+        bindingErrorCodes = new String[]{"code1", "code2.name", "code3"};
+        fieldErrorWithRejectedValue =
+                new FieldError("object", "field", "rejectedValue", false, bindingErrorCodes, null,
+                        "errorWithRejectedValue");
     }
 
     @ParameterizedTest(name = "[{index}] null binding result={0}")
@@ -117,7 +129,6 @@ class PscFilingControllerImplTest {
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(filingMapper.map(dto)).thenReturn(filing);
 
         final var withFilingId = PscIndividualFiling.builder(filing).id(FILING_ID)
@@ -126,8 +137,6 @@ class PscFilingControllerImplTest {
                 .build();
         when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
         when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
-                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -137,19 +146,21 @@ class PscFilingControllerImplTest {
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        final var context =
+                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                        PASSTHROUGH_HEADER);
+        verify(filingValidationService).validate(context);
+        assertThat(validationErrors, is(empty()));
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
 
     @Test
     void createFilingWhenRequestHasBindingError() {
-        final var codes = new String[]{"code1", "code2.name", "code3"};
-        final var fieldErrorWithRejectedValue =
-                new FieldError("object", "field", "rejectedValue", false, codes, null,
-                        "errorWithRejectedValue");
-        final var errorList = List.of(fieldErrorWithRejectedValue);
-
-        when(result.hasErrors()).thenReturn(true);
-        when(result.getFieldErrors()).thenReturn(errorList);
+        when(result.getFieldErrors()).thenReturn(List.of(fieldErrorWithRejectedValue));
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
+                PASSTHROUGH_HEADER);
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                transaction);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
@@ -158,25 +169,25 @@ class PscFilingControllerImplTest {
     }
 
     @Test
-    void createFilingWhenPscDetailsNotFound() {
+    void createFilingWhenRequestHasValidationError() {
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(dto.getReferencePscId()).thenReturn(PSC_ID);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE, PASSTHROUGH_HEADER))
-                .thenThrow(new FilingResourceNotFoundException("PSC not found test"));
+        when(result.getFieldErrors()).thenReturn(new ArrayList<>());
+
+        final var context =
+                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                        PASSTHROUGH_HEADER);
+
+        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors().add(
+                fieldErrorWithRejectedValue))).when(filingValidationService)
+                .validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
 
-        assertThat(exception.getFieldErrors(), hasSize(1));
-
-        final var fieldError = exception.getFieldErrors().get(0);
-
-        assertThat(fieldError.getField(), is("reference_psc_id"));
-        assertThat(fieldError.getRejectedValue(), is(equalTo(PSC_ID)));
-        assertThat(fieldError.getDefaultMessage(), is("PSC not found test"));
+        assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }
 
     private Map<String, Resource> createResources() {

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,17 @@ class ApiErrorsTest {
     }
 
     @Test
+    void addAll() {
+        final var error1 = new ApiError("error1", null, null, "test");
+        final var error2 = new ApiError("error2", null, null, "test");
+        final var errors = List.of(error1, error2);
+
+        testErrors.addAll(errors);
+
+        assertThat(testErrors.getErrors(), contains(error1, error2));
+    }
+
+    @Test
     void hasErrors() {
         final var error = new ApiError();
 
@@ -76,7 +88,7 @@ class ApiErrorsTest {
 
     @Test
     @DisplayName("contains(): null arg not allowed")
-    void containsNull() {
+    void containsWhenNull() {
         assertThrows(NullPointerException.class, () -> testErrors.contains(null));
     }
 
