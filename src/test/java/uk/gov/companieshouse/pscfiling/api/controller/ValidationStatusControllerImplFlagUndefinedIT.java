@@ -4,11 +4,13 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,5 +66,17 @@ class ValidationStatusControllerImplFlagUndefinedIT {
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("{\"is_valid\":%s}", false)));
     }
+
+    @Test
+    @DisplayName("Test related to bug PSC-118")
+    void expectNotFoundResponseWhenPathInvalid() throws Exception {
+        mockMvc.perform(get("/transactions/{transId}/persons-with-significant"
+                        + "-control/{filingResourceId}/validation", TRANS_ID, FILING_ID)
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
+
 
 }

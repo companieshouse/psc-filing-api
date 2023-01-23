@@ -38,7 +38,9 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/transactions/{transId}/persons-with-significant-control/{pscType}")
+@RequestMapping(
+        "/transactions/{transId}/persons-with-significant-control/{pscType:"
+                + "(?:individual|corporate-entity|legal-person)}")
 public class PscFilingControllerImpl implements PscFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;

@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -108,6 +109,18 @@ class PscFilingControllerImplIT {
         transaction.setId(TRANS_ID);
         transaction.setCompanyNumber(COMPANY_NUMBER);
 
+    }
+
+    @Test
+    @DisplayName("Test related to bug PSC-118")
+    void expectNotFoundResponseWhenPscTypeInvalid() throws Exception {
+        final var body = "{" + PSC07_FRAGMENT + "}";
+
+        mockMvc.perform(post("/transactions/{id}/persons-with-significant-control/invalid",
+                        TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$").doesNotExist());
     }
 
     @Test
