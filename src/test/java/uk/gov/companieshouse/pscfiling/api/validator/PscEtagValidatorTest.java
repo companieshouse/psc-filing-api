@@ -15,10 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
@@ -34,8 +32,6 @@ class PscEtagValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
-    @Mock
-    private ApiErrorResponseException errorResponseException;
 
     PscEtagValidator testValidator;
     private PscTypeConstants pscType;
@@ -47,20 +43,19 @@ class PscEtagValidatorTest {
 
     @BeforeEach
     void setUp() {
-
         errors = new ArrayList<>();
         pscType = PscTypeConstants.INDIVIDUAL;
         passthroughHeader = "passthroughHeader";
+
+        when(dto.getReferencePscId()).thenReturn(PSC_ID);
+        when(dto.getReferenceEtag()).thenReturn(ETAG);
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader )).thenReturn(pscApi);
 
         testValidator = new PscEtagValidator(pscDetailsService);
     }
 
     @Test
     void validateWhenEtagMatches() {
-
-        when(dto.getReferencePscId()).thenReturn(PSC_ID);
-        when(dto.getReferenceEtag()).thenReturn(ETAG);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader )).thenReturn(pscApi);
         when(pscApi.getEtag()).thenReturn(ETAG);
 
         testValidator.validate(
@@ -71,13 +66,9 @@ class PscEtagValidatorTest {
 
     @Test
     void validateWhenEtagDoesNotMatch() {
-
         var fieldError = new FieldError("object", "reference_etag", ETAG, false,
                 new String[]{null, "notMatch.reference_etag"}, null,
                 "Etag for PSC does not match latest value");
-        when(dto.getReferencePscId()).thenReturn(PSC_ID);
-        when(dto.getReferenceEtag()).thenReturn(ETAG);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader )).thenReturn(pscApi);
         when(pscApi.getEtag()).thenReturn("some other etag value");
 
         testValidator.validate(

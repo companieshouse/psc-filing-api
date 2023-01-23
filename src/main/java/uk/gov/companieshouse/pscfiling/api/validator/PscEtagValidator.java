@@ -4,12 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 /**
- * A previous validator must have checked that the PSC exists
+ * A previous validator must have checked that the PSC exists.
  */
 @Component
 public class PscEtagValidator extends BaseFilingValidator implements FilingValid {
@@ -23,8 +21,7 @@ public class PscEtagValidator extends BaseFilingValidator implements FilingValid
     @Override
     public void validate(final FilingValidationContext validationContext) {
 
-        final PscApi pscDetails;
-        pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
+        final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
                 validationContext.getDto().getReferencePscId(), validationContext.getPscType(),
                 validationContext.getPassthroughHeader());
 
