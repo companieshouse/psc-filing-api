@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.validator.CeasedOnDateValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @ExtendWith(MockitoExtension.class)
@@ -16,6 +17,8 @@ class ValidatorConfigTest {
     private ValidatorConfig testConfig;
     @Mock
     private PscExistsValidator pscExistsValidator;
+    @Mock
+    private CeasedOnDateValidator ceasedOnDateValidator;
 
 
     @BeforeEach
@@ -25,7 +28,7 @@ class ValidatorConfigTest {
 
     @Test
     void filingForIndividualValid() {
-        final var valid = testConfig.filingForIndividualValid(pscExistsValidator);
+        final var valid = testConfig.filingForIndividualValid(pscExistsValidator, ceasedOnDateValidator);
 
         assertThat(valid.getPscType(), is(PscTypeConstants.INDIVIDUAL));
         assertThat(valid.getFirst(), is(pscExistsValidator));
