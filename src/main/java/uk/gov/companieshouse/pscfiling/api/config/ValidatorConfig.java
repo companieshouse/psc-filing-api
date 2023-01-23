@@ -6,13 +6,15 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.PscIsActiveValidator;
 
 @Configuration
 public class ValidatorConfig {
 
     @Bean
     public FilingForPscTypeValid filingForIndividualValid(
-            final PscExistsValidator pscExistsValidator) {
+        final PscExistsValidator pscExistsValidator, PscIsActiveValidator pscIsActiveValidator) {
+        pscExistsValidator.setNext(pscIsActiveValidator);
         return new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, pscExistsValidator);
     }
 
