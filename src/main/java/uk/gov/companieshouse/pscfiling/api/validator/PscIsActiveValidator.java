@@ -9,7 +9,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 @Component
 public class PscIsActiveValidator extends BaseFilingValidator implements FilingValid {
 
-    private PscDetailsService pscDetailsService;
+    private final PscDetailsService pscDetailsService;
 
     public PscIsActiveValidator(PscDetailsService pscDetailsService) {
         this.pscDetailsService = pscDetailsService;
@@ -26,7 +26,7 @@ public class PscIsActiveValidator extends BaseFilingValidator implements FilingV
         if (Optional.ofNullable(pscDetails.getCeasedOn()).isPresent()) {
             validationContext.getErrors()
                 .add(new FieldError("object", "ceased_on", validationContext.getDto().getCeasedOn(),
-                    false, new String[]{null, "notMatch.ceased_on"}, null,
+                    false, new String[]{null, "date.ceased_on"}, null,
                     "PSC is not active as a ceased on date is present"));
         }
 

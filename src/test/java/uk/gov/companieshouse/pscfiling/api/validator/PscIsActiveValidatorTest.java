@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -69,7 +68,7 @@ class PscIsActiveValidatorTest {
     void validateWhenPSCisNotActive() {
 
         var fieldError = new FieldError("object", "ceased_on", CEASED_ON, false,
-            new String[]{null, "notMatch.ceased_on"}, null,
+            new String[]{null, "date.ceased_on"}, null,
             "PSC is not active as a ceased on date is present");
 
         when(dto.getCeasedOn()).thenReturn(CEASED_ON);
