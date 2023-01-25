@@ -9,6 +9,7 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.PscEtagValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscIsActiveValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.PscRegisterEntryDateValidator;
 
 @Configuration
 public class ValidatorConfig {
@@ -17,11 +18,12 @@ public class ValidatorConfig {
     public FilingForPscTypeValid filingForIndividualValid(final PscExistsValidator pscExistsValidator,
                                                           final PscEtagValidator pscEtagValidator,
                                                           final CeasedOnDateValidator ceasedOnDateValidator,
+                                                          final PscRegisterEntryDateValidator pscRegisterEntryDateValidator,
                                                           final PscIsActiveValidator pscIsActiveValidator) {
         pscExistsValidator.setNext(pscEtagValidator);
         pscEtagValidator.setNext(ceasedOnDateValidator);
-        ceasedOnDateValidator.setNext(pscIsActiveValidator);
-
+        ceasedOnDateValidator.setNext(pscRegisterEntryDateValidator);
+        pscRegisterEntryDateValidator.setNext(pscIsActiveValidator);
         return new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, pscExistsValidator);
     }
 }
