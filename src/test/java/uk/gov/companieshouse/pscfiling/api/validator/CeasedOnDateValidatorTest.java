@@ -5,14 +5,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.jupiter.params.ParameterizedTest.ARGUMENTS_WITH_NAMES_PLACEHOLDER;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
@@ -32,8 +37,6 @@ class CeasedOnDateValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
-    @Mock
-    private ApiErrorResponseException errorResponseException;
 
     CeasedOnDateValidator testValidator;
     private PscTypeConstants pscType;
@@ -41,8 +44,8 @@ class CeasedOnDateValidatorTest {
     private String passthroughHeader;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
-    private final LocalDate date = LocalDate.of(2020, 5, 10);
-    private final LocalDate dayAfterDate = LocalDate.of(2020, 5, 11);
+    private static final LocalDate DATE = LocalDate.of(2020, 5, 10);
+    private static final LocalDate DAY_AFTER_DATE = LocalDate.of(2020, 5, 11);
 
     @BeforeEach
     void setUp() {
@@ -55,20 +58,20 @@ class CeasedOnDateValidatorTest {
         testValidator = new CeasedOnDateValidator(pscDetailsService);
     }
 
-    @Test
-    void validateWhenCeasedOnAfterNotifiedOn() {
-        when(dto.getCeasedOn()).thenReturn(dayAfterDate);
-        when(pscApi.getNotifiedOn()).thenReturn(date);
-
-        testValidator.validate(new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
-
-        assertThat(errors, is(empty()));
+    public static Stream<Arguments> provideDates() {
+        return Stream.of(
+                Arguments.of(DAY_AFTER_DATE, DATE),
+                Arguments.of(DATE, DATE),
+                Arguments.of(null, DATE));
     }
 
-    @Test
-    void validateWhenCeasedOnSameAsNotifiedOn() {
-        when(dto.getCeasedOn()).thenReturn(date);
-        when(pscApi.getNotifiedOn()).thenReturn(date);
+    @ParameterizedTest(name = ARGUMENTS_WITH_NAMES_PLACEHOLDER)
+    @MethodSource({"provideDates"})
+    void validateCeasedOnAndNotifiedOnDates(final LocalDate ceasedOn, final LocalDate notifiedOn) {
+        when(dto.getCeasedOn()).thenReturn(ceasedOn);
+        if (ceasedOn != null) {
+            when(pscApi.getNotifiedOn()).thenReturn(notifiedOn);
+        }
 
         testValidator.validate(new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -77,10 +80,10 @@ class CeasedOnDateValidatorTest {
 
     @Test
     void validateWhenCeasedOnBeforeNotifiedOn() {
-        var fieldError = new FieldError("object", "ceased_on", date, false, new String[]{null, "date.ceased_on"},
+        var fieldError = new FieldError("object", "ceased_on", DATE, false, new String[]{null, "date.ceased_on"},
                 null,"Ceased on date is before the date the PSC was notified on");
-        when(dto.getCeasedOn()).thenReturn(date);
-        when(pscApi.getNotifiedOn()).thenReturn(dayAfterDate);
+        when(dto.getCeasedOn()).thenReturn(DATE);
+        when(pscApi.getNotifiedOn()).thenReturn(DAY_AFTER_DATE);
 
         testValidator.validate(new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
