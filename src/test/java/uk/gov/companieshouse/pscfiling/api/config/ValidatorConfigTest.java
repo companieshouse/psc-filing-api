@@ -12,6 +12,7 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.validator.CeasedOnDateValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscEtagValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.PscIsActiveValidator;
 
 @ExtendWith(MockitoExtension.class)
 class ValidatorConfigTest {
@@ -22,6 +23,8 @@ class ValidatorConfigTest {
     private PscEtagValidator pscEtagValidator;
     @Mock
     private CeasedOnDateValidator ceasedOnDateValidator;
+    @Mock
+    private PscIsActiveValidator pscIsActiveValidator;
 
     @BeforeEach
     void setUp() {
@@ -30,7 +33,7 @@ class ValidatorConfigTest {
 
     @Test
     void filingForIndividualValid() {
-        final var valid = testConfig.filingForIndividualValid(pscExistsValidator, pscEtagValidator, ceasedOnDateValidator);
+        final var valid = testConfig.filingForIndividualValid(pscExistsValidator, pscEtagValidator, ceasedOnDateValidator, pscIsActiveValidator);
 
         assertThat(valid.getPscType(), is(PscTypeConstants.INDIVIDUAL));
         assertThat(valid.getFirst(), is(pscExistsValidator));

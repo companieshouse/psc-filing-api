@@ -8,16 +8,20 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.PscEtagValidator;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
+import uk.gov.companieshouse.pscfiling.api.validator.PscIsActiveValidator;
 
 @Configuration
 public class ValidatorConfig {
 
     @Bean
     public FilingForPscTypeValid filingForIndividualValid(final PscExistsValidator pscExistsValidator,
-                                final PscEtagValidator pscEtagValidator,
-                                final CeasedOnDateValidator ceasedOnDateValidator) {
+                                                          final PscEtagValidator pscEtagValidator,
+                                                          final CeasedOnDateValidator ceasedOnDateValidator,
+                                                          final PscIsActiveValidator pscIsActiveValidator) {
         pscExistsValidator.setNext(pscEtagValidator);
         pscEtagValidator.setNext(ceasedOnDateValidator);
+        ceasedOnDateValidator.setNext(pscIsActiveValidator);
+
         return new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, pscExistsValidator);
     }
 }

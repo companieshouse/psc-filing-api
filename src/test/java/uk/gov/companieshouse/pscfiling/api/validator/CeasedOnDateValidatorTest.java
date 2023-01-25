@@ -41,8 +41,8 @@ class CeasedOnDateValidatorTest {
     private String passthroughHeader;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
-    private LocalDate date = LocalDate.of(2020, 5, 10);
-    private LocalDate dayAfterDate = LocalDate.of(2020, 5, 11);
+    private final LocalDate date = LocalDate.of(2020, 5, 10);
+    private final LocalDate dayAfterDate = LocalDate.of(2020, 5, 11);
 
     @BeforeEach
     void setUp() {
