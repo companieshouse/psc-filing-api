@@ -49,9 +49,9 @@ public class FilingDataServiceImpl implements FilingDataService {
 
     private FilingApi populateFilingData(FilingApi filing, String filingId, Transaction transaction, String passthroughHeader) {
 
-        var transactionId = transaction.getId();
-        var pscFilingOpt = pscFilingService.get(filingId, transactionId);
-        var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
+        final var transactionId = transaction.getId();
+        final var pscFilingOpt = pscFilingService.get(filingId, transactionId);
+        final var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
                 String.format("Psc individual not found when generating filing for %s", filingId)));
 
         final var pscDetails =

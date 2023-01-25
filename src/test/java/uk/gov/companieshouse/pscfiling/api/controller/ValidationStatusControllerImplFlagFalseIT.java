@@ -1,10 +1,13 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.pscfiling.api.controller.ValidationStatusControllerImpl.TRANSACTION_NOT_SUPPORTED_ERROR;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -18,8 +21,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 //Using Spring Web MVC
 @Tag("web")
@@ -31,6 +38,14 @@ class ValidationStatusControllerImplFlagFalseIT {
 
     @MockBean
     private PscFilingService pscFilingService;
+    @MockBean
+    private TransactionService transactionService;
+    @MockBean
+    private FilingValidationService filingValidationService;
+    @MockBean
+    private PscIndividualMapper filingMapper;
+    @MockBean
+    private ErrorMapper errorMapper;
     @MockBean
     private Logger logger;
     private HttpHeaders httpHeaders;
@@ -63,7 +78,9 @@ class ValidationStatusControllerImplFlagFalseIT {
                 .andDo(print())
                 //status code is '200' as this is expected behaviour
                 .andExpect(status().isOk())
-                .andExpect(content().json(String.format("{\"is_valid\":%s}", false)));
+                .andExpect(jsonPath("$.is_valid", is(false)))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].error", is(TRANSACTION_NOT_SUPPORTED_ERROR)));
     }
 
 }
