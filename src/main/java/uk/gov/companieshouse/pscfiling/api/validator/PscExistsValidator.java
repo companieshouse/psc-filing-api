@@ -8,7 +8,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 @Component
 public class PscExistsValidator extends BaseFilingValidator implements FilingValid {
 
-    private PscDetailsService pscDetailsService;
+    private final PscDetailsService pscDetailsService;
 
     public PscExistsValidator(PscDetailsService pscDetailsService) {
         this.pscDetailsService = pscDetailsService;

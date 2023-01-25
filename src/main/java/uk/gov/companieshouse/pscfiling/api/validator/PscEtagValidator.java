@@ -12,7 +12,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 @Component
 public class PscEtagValidator extends BaseFilingValidator implements FilingValid {
 
-    private PscDetailsService pscDetailsService;
+    private final PscDetailsService pscDetailsService;
 
     public PscEtagValidator(PscDetailsService pscDetailsService) {
         this.pscDetailsService = pscDetailsService;

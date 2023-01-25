@@ -8,7 +8,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 @Component
 public class CeasedOnDateValidator extends BaseFilingValidator implements FilingValid {
 
-    private PscDetailsService pscDetailsService;
+    private final PscDetailsService pscDetailsService;
 
     public CeasedOnDateValidator(PscDetailsService pscDetailsService) {
         this.pscDetailsService = pscDetailsService;
