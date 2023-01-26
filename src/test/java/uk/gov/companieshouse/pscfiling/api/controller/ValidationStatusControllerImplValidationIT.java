@@ -210,4 +210,28 @@ class ValidationStatusControllerImplValidationIT {
                 .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));
     }
 
+    @Test
+    void validateWhenPscNotActive() throws Exception {
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(transactionService.getTransaction(TRANS_ID, PASS_THROUGH_HEADER)).thenReturn(
+                transaction);
+        when(pscDetailsService.getPscDetails(transaction, "id", PscTypeConstants.INDIVIDUAL,
+                PASS_THROUGH_HEADER)).thenReturn(pscDetails);
+        when(pscDetails.getEtag()).thenReturn(ETAG);
+        when(pscDetails.getNotifiedOn()).thenReturn(DATE);
+        when(pscDetails.getCeasedOn()).thenReturn(DATE);
+
+        mockMvc.perform(get("/transactions/{transId}/persons-with-significant"
+                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+                        httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.is_valid", is(false)))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].error", is("PSC is not active as a ceased on date is present")))
+                .andExpect(jsonPath("$.errors[0].location", is("$.ceased_on")))
+                .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
+                .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));
+    }
+
 }
