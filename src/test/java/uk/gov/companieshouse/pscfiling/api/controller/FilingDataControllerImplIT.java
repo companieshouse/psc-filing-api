@@ -32,20 +32,10 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
 @WebMvcTest(controllers = FilingDataControllerImpl.class)
-class FilingDataControllerImplIT {
-    private static final String TRANS_ID = "4f56fdf78b357bfc";
-    private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
-    private static final String PASSTHROUGH_HEADER = "passthrough";
-    private static final String REF_PSC_ID = "12345";
+class FilingDataControllerImplIT extends BaseControllerIT {
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON = "2022-10-05";
     private static final String REGISTER_ENTRY = "2022-10-05";
-    @MockBean
-    private CRUDAuthenticationInterceptor crudAuthenticationInterceptor;
-    @MockBean
-    private TransactionInterceptor transactionInterceptor;
-    @MockBean
-    private OpenTransactionInterceptor openTransactionInterceptor;
     @MockBean
     private FilingDataService filingDataService;
     @MockBean
@@ -55,21 +45,16 @@ class FilingDataControllerImplIT {
     @MockBean
     private TransactionService transactionService;
     private Transaction transaction;
-    private HttpHeaders httpHeaders;
 
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
-        httpHeaders.add("ERIC-Access-Token", PASSTHROUGH_HEADER);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
         transaction.setCompanyNumber("012345678");
-        when(crudAuthenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        super.setUp();
     }
 
     @Test
@@ -77,7 +62,7 @@ class FilingDataControllerImplIT {
         final var filingApi = new FilingApi();
         filingApi.setKind(FilingKind.PSC_CESSATION.getValue());
         final Map<String, Object> dataMap =
-                Map.of("referenceEtag", REF_ETAG, "referencePscId", REF_PSC_ID, "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
+                Map.of("referenceEtag", REF_ETAG, "referencePscId", PSC_ID, "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
         filingApi.setData(dataMap);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);

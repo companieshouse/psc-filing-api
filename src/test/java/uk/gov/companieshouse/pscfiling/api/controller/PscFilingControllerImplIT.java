@@ -55,27 +55,8 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
 @WebMvcTest(controllers = PscFilingControllerImpl.class)
-class PscFilingControllerImplIT {
-    private static final String TRANS_ID = "4f56fdf78b357bfc";
-    private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
-    private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
-    private static final String PASSTHROUGH_HEADER = "passthrough";
-    private static final String PSC07_FRAGMENT = "\"reference_etag\": \"etag\","
-            + "\"reference_psc_id\": \"id\","
-            + "\"ceased_on\": \"2022-09-13\","
-            + "\"register_entry_date\": \"2022-09-09\"";
-    private static final String EMPTY_QUOTED_JSON = "\"\"";
-    private static final String MALFORMED_JSON = "{";
-    private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
-    private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
-    private static final String COMPANY_NUMBER = "012345678";
+class PscFilingControllerImplIT extends BaseControllerIT {
 
-    @MockBean
-    private CRUDAuthenticationInterceptor crudAuthenticationInterceptor;
-    @MockBean
-    private TransactionInterceptor transactionInterceptor;
-    @MockBean
-    private OpenTransactionInterceptor openTransactionInterceptor;
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -91,8 +72,6 @@ class PscFilingControllerImplIT {
     @MockBean
     private Logger logger;
 
-    private HttpHeaders httpHeaders;
-
     @Mock
     private ApiErrorResponseException errorResponseException;
 
@@ -100,12 +79,8 @@ class PscFilingControllerImplIT {
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
-        httpHeaders.add("ERIC-Access-Token", PASSTHROUGH_HEADER);
-        when(crudAuthenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+    void setup() throws Exception {
+        super.setUp();
     }
 
     @Test
