@@ -62,7 +62,10 @@ class CeasedOnDateValidatorTest {
         return Stream.of(
                 Arguments.of(DAY_AFTER_DATE, DATE),
                 Arguments.of(DATE, DATE),
-                Arguments.of(null, DATE));
+                Arguments.of(null, DATE),
+                Arguments.of(DATE, null),
+                Arguments.of(null, null))
+                ;
     }
 
     @ParameterizedTest(name = ARGUMENTS_WITH_NAMES_PLACEHOLDER)
@@ -81,13 +84,12 @@ class CeasedOnDateValidatorTest {
     @Test
     void validateWhenCeasedOnBeforeNotifiedOn() {
         var fieldError = new FieldError("object", "ceased_on", DATE, false, new String[]{null, "date.ceased_on"},
-                null,"Ceased on date is before the date the PSC was notified on");
+                null,"Ceased on date cannot be before the date the PSC was notified on");
         when(dto.getCeasedOn()).thenReturn(DATE);
         when(pscApi.getNotifiedOn()).thenReturn(DAY_AFTER_DATE);
 
         testValidator.validate(new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
-        assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));
     }
 
