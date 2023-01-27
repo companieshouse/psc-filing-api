@@ -24,6 +24,7 @@ public class ValidatorConfig {
         pscEtagValidator.setNext(ceasedOnDateValidator);
         ceasedOnDateValidator.setNext(pscRegisterEntryDateValidator);
         pscRegisterEntryDateValidator.setNext(pscIsActiveValidator);
+
         return new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, pscExistsValidator);
     }
 }
