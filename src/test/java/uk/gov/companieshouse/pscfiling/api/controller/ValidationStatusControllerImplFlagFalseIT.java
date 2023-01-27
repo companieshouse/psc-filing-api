@@ -1,11 +1,14 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.pscfiling.api.controller.ValidationStatusControllerImpl.TRANSACTION_NOT_SUPPORTED_ERROR;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -22,64 +25,56 @@ import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 //Using Spring Web MVC
 @Tag("web")
 @WebMvcTest(controllers = ValidationStatusControllerImpl.class, properties = {"feature.flag.transactions.closable=false"})
-class ValidationStatusControllerImplFlagFalseIT {
-    private static final String TRANS_ID = "4f56fdf78b357bfc";
-    private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
-    private static final String PASS_THROUGH_HEADER = "passthrough";
-
-    @MockBean
-    private CRUDAuthenticationInterceptor crudAuthenticationInterceptor;
-    @MockBean
-    private TransactionInterceptor transactionInterceptor;
-    @MockBean
-    private OpenTransactionInterceptor openTransactionInterceptor;
+class ValidationStatusControllerImplFlagFalseIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
+    private FilingValidationService filingValidationService;
+    @MockBean
+    private PscIndividualMapper filingMapper;
+    @MockBean
+    private ErrorMapper errorMapper;
+    @MockBean
     private Logger logger;
-    private HttpHeaders httpHeaders;
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
-        httpHeaders.add("ERIC-Access-Token", PASS_THROUGH_HEADER);
-        when(crudAuthenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        super.setUp();
     }
 
     @Test
     void validateWhenFeatureFlagIsFalse() throws Exception {
-        final var transaction = new Transaction();
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag("etag")
-                .referencePscId("id")
-                .ceasedOn(LocalDate.of(2022, 9, 13))
+                .referencePscId(PSC_ID)
+                .ceasedOn(CEASED_ON_DATE)
                 .build();
-
-        transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get("/private/transactions/{transactionId}/persons-with-significant"
+        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
                         + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID)
                         .headers(httpHeaders))
                 .andDo(print())
                 //status code is '200' as this is expected behaviour
                 .andExpect(status().isOk())
-                .andExpect(content().json(String.format("{\"is_valid\":%s}", false)));
+                .andExpect(jsonPath("$.is_valid", is(false)))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].error", is(TRANSACTION_NOT_SUPPORTED_ERROR)));
     }
 
 }

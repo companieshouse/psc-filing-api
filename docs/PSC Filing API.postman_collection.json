@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "b0d70e74-1341-44f9-9768-7e157ca10e7c",
+		"_postman_id": "4af9a786-ab0b-4a93-85fd-09ee1f17ceaa",
 		"name": "PSC Filing API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "2395471"
+		"_exporter_id": "23916189"
 	},
 	"item": [
 		{
@@ -660,12 +660,11 @@
 					}
 				],
 				"url": {
-					"raw": "{{base_url}}/private/transactions/{{transaction_id}}/persons-with-significant-control/{{filing_resource_id}}/validation_status",
+					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/{{filing_resource_id}}/validation_status",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
-						"private",
 						"transactions",
 						"{{transaction_id}}",
 						"persons-with-significant-control",
