@@ -17,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
@@ -28,9 +27,6 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 @Tag("web")
 @WebMvcTest(controllers = FilingDataControllerImpl.class)
 class FilingDataControllerImplIT extends BaseControllerIT {
-    private static final String REF_ETAG = "6789";
-    private static final String CEASED_ON = "2022-10-05";
-    private static final String REGISTER_ENTRY = "2022-10-05";
     @MockBean
     private FilingDataService filingDataService;
     @MockBean
@@ -39,16 +35,15 @@ class FilingDataControllerImplIT extends BaseControllerIT {
     private Logger logger;
     @MockBean
     private TransactionService transactionService;
-    private Transaction transaction;
-
     @Autowired
     private MockMvc mockMvc;
 
+    protected static final String URL_PSC_FILINGS =
+            "/private/transactions/{id}/persons-with-significant-control/individual/{filingId"
+                    + "}/filings";
+
     @BeforeEach
     void setUp() throws Exception {
-        transaction = new Transaction();
-        transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
         super.setUp();
     }
 
@@ -57,19 +52,21 @@ class FilingDataControllerImplIT extends BaseControllerIT {
         final var filingApi = new FilingApi();
         filingApi.setKind(FilingKind.PSC_CESSATION.getValue());
         final Map<String, Object> dataMap =
-                Map.of("referenceEtag", REF_ETAG, "referencePscId", PSC_ID, "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
+                Map.of("referenceEtag", ETAG, "referencePscId", PSC_ID, "filingResourceId",
+                        CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
         filingApi.setData(dataMap);
 
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
-        when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                transaction);
+        when(filingDataService.generatePscFiling(FILING_ID, transaction,
+                PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
-        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/individual/{filingId}/filings", TRANS_ID, FILING_ID)
-            .headers(httpHeaders))
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(1)))
-            .andExpect(jsonPath("$[0].data", is(dataMap)))
-            .andExpect(jsonPath("$[0].kind", is(FilingKind.PSC_CESSATION.getValue())));
+        mockMvc.perform(get(URL_PSC_FILINGS, TRANS_ID, FILING_ID).headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].data", is(dataMap)))
+                .andExpect(jsonPath("$[0].kind", is(FilingKind.PSC_CESSATION.getValue())));
     }
 
     @Test
@@ -80,8 +77,7 @@ class FilingDataControllerImplIT extends BaseControllerIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
 
-        mockMvc.perform(get("/private/transactions/{id}/persons-with-significant-control/individual/{filingId}/filings", TRANS_ID, FILING_ID)
-                .headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC_FILINGS, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason(is("Resource not found")))

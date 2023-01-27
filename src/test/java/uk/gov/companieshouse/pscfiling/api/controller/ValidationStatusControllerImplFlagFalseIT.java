@@ -29,6 +29,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 @Tag("web")
 @WebMvcTest(controllers = ValidationStatusControllerImpl.class, properties = {"feature.flag.transactions.closable=false"})
 class ValidationStatusControllerImplFlagFalseIT extends BaseControllerIT {
+
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -51,17 +52,14 @@ class ValidationStatusControllerImplFlagFalseIT extends BaseControllerIT {
 
     @Test
     void validateWhenFeatureFlagIsFalse() throws Exception {
-        final var filing = PscIndividualFiling.builder()
-                .referenceEtag("etag")
+        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID)
-                        .headers(httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 //status code is '200' as this is expected behaviour
                 .andExpect(status().isOk())

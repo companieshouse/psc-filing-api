@@ -53,15 +53,14 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     @Test
     void validateWhenFeatureFlagIsUndefined() throws Exception {
         final var filing = PscIndividualFiling.builder()
-                .referenceEtag("etag")
+                .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID)
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
                         .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
