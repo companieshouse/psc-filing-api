@@ -52,7 +52,6 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
     private static final String SELF_FRAGMENT =
             "/transactions/" + TRANS_ID + "/persons-with-significant-control/";
-    private static final String ETAG = "e7101610f832de81c8d2f27904d6b1de2be82ff6";
 
     @MockBean
     private PscFilingService pscFilingService;
@@ -95,8 +94,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.minusDays(1));
         when(pscDetails.getEtag()).thenReturn(ETAG);
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -113,8 +111,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PASSTHROUGH_HEADER)).thenThrow(
                 new FilingResourceNotFoundException("stub PSC not found", null));
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -135,8 +132,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getEtag()).thenReturn("different-etag");
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -158,8 +154,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getEtag()).thenReturn(ETAG);
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.plusDays(1));
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -183,8 +178,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PscIndividualFiling.builder(filing).registerEntryDate(CEASED_ON_DATE.minusDays(1)).build();
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(invalid));
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -207,8 +201,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.minusDays(1));
         when(pscDetails.getCeasedOn()).thenReturn(CEASED_ON_DATE);
 
-        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID).headers(
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
