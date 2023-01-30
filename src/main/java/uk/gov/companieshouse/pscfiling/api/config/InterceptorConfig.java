@@ -9,20 +9,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
-import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String TRANSACTIONS = "/transactions/**";
-    static final String[] TRANSACTIONS_LIST = {TRANSACTIONS, "/private/**"};
+    static final String[] TRANSACTIONS_LIST = {"/transactions/**"};
     public static final String PSC_FILING_API = "psc-filing-api";
 
-    @Autowired
-    private TransactionService transactionService;
-    @Autowired
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+
+    @Autowired
+    public void setTokenPermissionsInterceptor(TokenPermissionsInterceptor tokenPermissionsInterceptor) {
+        this.tokenPermissionsInterceptor = tokenPermissionsInterceptor;
+    }
 
     /**
      * Set up the interceptors to run against endpoints when the endpoints are called
@@ -47,7 +47,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 
     private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS);
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS_LIST);
 
     }
 
