@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
@@ -20,6 +21,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Autowired
     private TransactionService transactionService;
+    @Autowired
+    private TokenPermissionsInterceptor tokenPermissionsInterceptor;
 
     /**
      * Set up the interceptors to run against endpoints when the endpoints are called
@@ -30,6 +33,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         addTransactionInterceptor(registry);
         addOpenTransactionInterceptor(registry);
+        addTokenPermissionsInterceptor(registry);
     }
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
@@ -40,6 +44,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
                 .addPathPatterns(TRANSACTIONS_LIST);
+    }
+
+    private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS);
+
     }
 
     @Bean
