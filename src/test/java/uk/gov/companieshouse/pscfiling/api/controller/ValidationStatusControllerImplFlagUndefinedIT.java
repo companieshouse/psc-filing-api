@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.pscfiling.api.controller.ValidationStatusControllerImpl.TRANSACTION_NOT_SUPPORTED_ERROR;
 
-import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,9 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
@@ -32,15 +29,11 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 //Using Spring Web MVC
 @Tag("web")
 @WebMvcTest(controllers = ValidationStatusControllerImpl.class)
-class ValidationStatusControllerImplFlagUndefinedIT {
-    private static final String TRANS_ID = "4f56fdf78b357bfc";
-    private static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
-    private static final String PASS_THROUGH_HEADER = "passthrough";
-
-    @MockBean
-    private PscFilingService pscFilingService;
+class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
+    @MockBean
+    private PscFilingService pscFilingService;
     @MockBean
     private FilingValidationService filingValidationService;
     @MockBean
@@ -49,32 +42,25 @@ class ValidationStatusControllerImplFlagUndefinedIT {
     private ErrorMapper errorMapper;
     @MockBean
     private Logger logger;
-    private HttpHeaders httpHeaders;
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setUp() {
-        httpHeaders = new HttpHeaders();
-        httpHeaders.add("ERIC-Access-Token", PASS_THROUGH_HEADER);
+    void setUp() throws Exception {
+        super.setUp();
     }
 
     @Test
     void validateWhenFeatureFlagIsUndefined() throws Exception {
-        final var transaction = new Transaction();
         final var filing = PscIndividualFiling.builder()
-                .referenceEtag("etag")
-                .referencePscId("id")
-                .ceasedOn(LocalDate.of(2022, 9, 13))
+                .referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(CEASED_ON_DATE)
                 .build();
-
-        transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get("/transactions/{transId}/persons-with-significant"
-                        + "-control/{filingResourceId}/validation_status", TRANS_ID, FILING_ID)
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
                         .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -86,7 +72,7 @@ class ValidationStatusControllerImplFlagUndefinedIT {
     @Test
     @DisplayName("Test related to bug PSC-118")
     void expectNotFoundResponseWhenPathInvalid() throws Exception {
-        mockMvc.perform(get("/transactions/{transId}/persons-with-significant"
+        mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
                         + "-control/{filingResourceId}/validation", TRANS_ID, FILING_ID)
                         .headers(httpHeaders))
                 .andDo(print())

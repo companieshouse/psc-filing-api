@@ -19,7 +19,7 @@ public interface FilingDataController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @GetMapping
-    default List<FilingApi> getFilingsData(@PathVariable("transId") String transId,
+    default List<FilingApi> getFilingsData(@PathVariable("transactionId") String transId,
                                            @PathVariable("pscType") PscTypeConstants pscType,
                                            @PathVariable("filingResource") String filingResource, HttpServletRequest request){
         throw new NotImplementedException();

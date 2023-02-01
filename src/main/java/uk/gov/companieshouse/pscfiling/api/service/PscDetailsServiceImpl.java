@@ -8,6 +8,7 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
@@ -50,7 +51,7 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                     + pscType.getValue()
                     + "/"
                     + pscId;
-            return apiClientService.getOauthAuthenticatedClient(ericPassThroughHeader)
+            return apiClientService.getApiClient(ericPassThroughHeader)
                     .pscs()
                     .getIndividual(uri)
                     .execute()

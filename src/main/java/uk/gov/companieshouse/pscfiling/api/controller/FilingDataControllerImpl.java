@@ -15,7 +15,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/private/transactions/{transId}/persons-with-significant-control/{pscType}")
+@RequestMapping("/private/transactions/{transactionId}/persons-with-significant-control/{pscType}")
 public class FilingDataControllerImpl implements FilingDataController {
     private final FilingDataService filingDataService;
     private final TransactionService transactionService;
@@ -40,14 +40,14 @@ public class FilingDataControllerImpl implements FilingDataController {
      */
     @Override
     @GetMapping(value = "/{filingResourceId}/filings", produces = {"application/json"})
-    public List<FilingApi> getFilingsData(@PathVariable("transId") final String transId,
+    public List<FilingApi> getFilingsData(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
             final HttpServletRequest request) {
         final var logMap = LogHelper.createLogMap(transId, filingResource);
 
         logger.debugRequest(request,
-                "GET /private/transactions/{transId}/persons-with-significant-control/{filingId}/filings", logMap);
+                "GET /private/transactions/{transactionId}/persons-with-significant-control/{filingId}/filings", logMap);
 
         final var passthroughHeader =
             request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());

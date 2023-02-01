@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
@@ -44,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         try {
             final var uri = "/transactions/" + transactionId;
             final var transaction =
-                    apiClientService.getOauthAuthenticatedClient(ericPassThroughHeader)
+                    apiClientService.getApiClient(ericPassThroughHeader)
                             .transactions()
                             .get(uri)
                             .execute()
@@ -81,7 +82,7 @@ public class TransactionServiceImpl implements TransactionService {
             logger.debugContext(transaction.getId(), "Updating transaction", logMap);
             final var uri = PREFIX_PRIVATE + "/transactions/" + transaction.getId();
             final var resp =
-                    apiClientService.getInternalOauthAuthenticatedClient(ericPassThroughHeader)
+                    apiClientService.getInternalApiClient(ericPassThroughHeader)
                             .privateTransaction()
                             .patch(uri, transaction)
                             .execute();

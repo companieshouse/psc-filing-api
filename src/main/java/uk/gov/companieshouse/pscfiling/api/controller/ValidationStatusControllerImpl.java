@@ -30,7 +30,7 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/transactions/{transId}/persons-with-significant-control/")
+@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/")
 public class ValidationStatusControllerImpl implements ValidationStatusController {
     public static final String TRANSACTION_NOT_SUPPORTED_ERROR =
             "Transaction not supported: FEATURE_FLAG_TRANSACTIONS_CLOSABLE=false";
@@ -63,7 +63,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
-    public ValidationStatusResponse validate(@PathVariable("transId") final String transId,
+    public ValidationStatusResponse validate(@PathVariable("transactionId") final String transId,
             @PathVariable("filingResourceId") final String filingResource,
             final HttpServletRequest request) {
 

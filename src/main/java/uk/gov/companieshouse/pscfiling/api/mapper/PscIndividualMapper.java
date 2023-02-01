@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
 
 @Mapper(componentModel = "spring")//, uses = NameElementsMapper.class)
 public interface PscIndividualMapper {

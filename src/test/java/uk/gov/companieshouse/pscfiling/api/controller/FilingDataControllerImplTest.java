@@ -17,64 +17,63 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataControllerImplTest {
-
-    public static final String TRANS_ID = "117524-754816-491724";
-    public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
-    public static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
-    private static final String PASSTHROUGH_HEADER = "passthrough";
-    private Transaction transaction;
-
-    @Mock
-    private PscIndividualFiling pscIndividualFiling;
-
+class FilingDataControllerImplTest extends BaseControllerIT {
     @Mock
     private FilingDataService filingDataService;
     @Mock
     private TransactionService transactionService;
-
     @Mock
     private Logger logger;
-
     @Mock
     private HttpServletRequest request;
 
     private FilingDataControllerImpl testController;
+    private Transaction filingsTransaction;
 
     @BeforeEach
-    void setUp() {
-        testController = new FilingDataControllerImpl(filingDataService, transactionService, logger);
-        transaction = new Transaction();
-        transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
+    void setUp() throws Exception {
+        testController =
+                new FilingDataControllerImpl(filingDataService, transactionService, logger);
+        filingsTransaction = new Transaction();
+        filingsTransaction.setId(TRANS_ID);
+        filingsTransaction.setCompanyNumber(COMPANY_NUMBER);
     }
 
     @Test
     void getFilingsData() {
         var filingApi = new FilingApi();
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(PASSTHROUGH_HEADER);
-        when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
+                PASSTHROUGH_HEADER);
+        when(filingDataService.generatePscFiling(FILING_ID, filingsTransaction,
+                PASSTHROUGH_HEADER)).thenReturn(filingApi);
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                filingsTransaction);
 
-        final var filingsList= testController.getFilingsData(TRANS_ID, PSC_TYPE, FILING_ID, request);
+        final var filingsList =
+                testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL, FILING_ID,
+                        request);
 
         assertThat(filingsList, Matchers.contains(filingApi));
     }
 
     @Test
     void getFilingsDataWhenNotFound() {
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(transaction);
-        when(filingDataService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER)).thenThrow(new FilingResourceNotFoundException("Test Resource not found"));
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
+                PASSTHROUGH_HEADER);
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+                filingsTransaction);
+        when(filingDataService.generatePscFiling(FILING_ID, filingsTransaction,
+                PASSTHROUGH_HEADER)).thenThrow(
+                new FilingResourceNotFoundException("Test Resource not found"));
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
-                () -> testController.getFilingsData(TRANS_ID, PSC_TYPE, FILING_ID, request));
+                () -> testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL,
+                        FILING_ID, request));
         assertThat(exception.getMessage(), is("Test Resource not found"));
     }
 }
