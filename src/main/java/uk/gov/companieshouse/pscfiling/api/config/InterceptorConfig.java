@@ -62,5 +62,3 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 
 }
-
-

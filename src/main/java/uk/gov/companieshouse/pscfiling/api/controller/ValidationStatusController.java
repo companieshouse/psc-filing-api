@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusResponse;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
-import javax.servlet.http.HttpServletRequest;
 
 public interface ValidationStatusController {
 
