@@ -32,6 +32,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
@@ -117,6 +118,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .collect(Collectors.toList());
 
         logError(request, "Invalid filing data", ex, errorList);
+        return new ApiErrors(errorList);
+    }
+
+    @ExceptionHandler(ConflictingFilingException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public ApiErrors handleConflictingFilingException(final ConflictingFilingException ex,
+                                                  WebRequest request) {
+        final var fieldErrors = ex.getFieldErrors();
+
+        final var errorList = fieldErrors.stream()
+                .map(e -> buildRequestBodyError(e.getDefaultMessage(), getJsonPath(e),
+                        e.getRejectedValue()))
+                .collect(Collectors.toList());
+
+        logError(request, "Conflicting filing data", ex, errorList);
         return new ApiErrors(errorList);
     }
 
