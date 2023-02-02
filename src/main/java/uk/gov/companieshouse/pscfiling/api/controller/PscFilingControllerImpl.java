@@ -27,7 +27,9 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
@@ -75,7 +77,9 @@ public class PscFilingControllerImpl implements PscFilingController {
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
     public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestBody @Valid @NotNull final PscIndividualDto dto,
+            @RequestBody @Valid @NotNull  @PathVariable("pscType" (PscTypeConstants.INDIVIDUAL) ? PscIndividualDto: PscWithIdentificationDto) final dto,
+
+           //@RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
         final var logMap = LogHelper.createLogMap(transId);
 
