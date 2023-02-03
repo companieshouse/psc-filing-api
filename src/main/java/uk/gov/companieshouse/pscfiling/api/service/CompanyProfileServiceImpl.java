@@ -28,7 +28,7 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
 
         try {
             final String uri = "/company/" + transaction.getCompanyNumber();
-            final CompanyProfileApi companyProfile = apiClientService.getInternalApiClient(ericPassThroughHeader)
+            final CompanyProfileApi companyProfile = apiClientService.getApiClient(ericPassThroughHeader)
                             .company()
                             .get(uri)
                             .execute()

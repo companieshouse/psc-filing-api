@@ -35,6 +35,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
@@ -252,6 +254,28 @@ class RestExceptionHandlerTest {
         assertThat(apiErrors.getErrors(), contains(expectedError, expectedErrorWithRejectedValue));
     }
 
+    @Test
+    void handleConflictingFilingException() {
+        final var fieldError = new FieldError("object", "field", "error");
+        final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
+        final var fieldErrorWithRejectedValue =
+                new FieldError("object", "field", "rejectedValue", false, codes, null,
+                        "errorWithRejectedValue");
+        final var exception =
+                new ConflictingFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
+
+        final var apiErrors = testExceptionHandler.handleConflictingFilingException(exception, request);
+
+        final var expectedError = new ApiError("error", null, "json-path", "ch:validation");
+        final var expectedErrorWithRejectedValue =
+                new ApiError("errorWithRejectedValue", "$.address_line_1", "json-path",
+                        "ch:validation");
+
+        expectedErrorWithRejectedValue.addErrorValue("rejected", "rejectedValue");
+
+        assertThat(apiErrors.getErrors(), contains(expectedError, expectedErrorWithRejectedValue));
+    }
+
     @ParameterizedTest(name = "[{index}]: cause={0}")
     @MethodSource("causeProvider")
     void handleServiceException(final Exception exception) {
@@ -308,7 +332,8 @@ class RestExceptionHandlerTest {
     private static Stream<Arguments> causeProvider() {
         final var cause = new ArithmeticException("DIV/0");
 
-        return Stream.of(Arguments.of(new PscServiceException("PSCServiceException", cause),
-                new TransactionServiceException("TransactionServiceException", cause)));
+        return Stream.of(Arguments.of(new PscServiceException("PSCServiceException", cause)),
+                Arguments.of(new TransactionServiceException("TransactionServiceException", cause)),
+                Arguments.of(new CompanyProfileServiceException("CompanyProfileServiceException", cause)));
     }
 }
