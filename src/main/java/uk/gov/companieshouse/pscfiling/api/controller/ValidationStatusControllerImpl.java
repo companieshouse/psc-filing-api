@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
@@ -36,7 +36,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
             "Transaction not supported: FEATURE_FLAG_TRANSACTIONS_CLOSABLE=false";
     private static final Pattern SELF_URI_PSC_TYPE_PATTERN = Pattern.compile("/persons-with-significant-control/(?<pscType>individual|corporate-entity|legal-person)/");
 
-    private final PscFilingService pscFilingService;
+    private final PscIndividualFilingService pscIndividualFilingService;
     private final TransactionService transactionService;
     private final FilingValidationService filingValidationService;
     private final PscIndividualMapper filingMapper;
@@ -44,11 +44,11 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     private final Logger logger;
     private final boolean isTransactionsCloseableEnabled;
 
-    public ValidationStatusControllerImpl(final PscFilingService pscFilingService,
+    public ValidationStatusControllerImpl(final PscIndividualFilingService pscIndividualFilingService,
             final TransactionService transactionService, final FilingValidationService filingValidationService,
             final PscIndividualMapper filingMapper, final ErrorMapper errorMapper, @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled,
             Logger logger) {
-        this.pscFilingService = pscFilingService;
+        this.pscIndividualFilingService = pscIndividualFilingService;
         this.transactionService = transactionService;
         this.filingValidationService = filingValidationService;
         this.filingMapper = filingMapper;
@@ -75,7 +75,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
 
-        final var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
+        final var maybePscIndividualFiling = pscIndividualFilingService.get(filingResource, transId);
 
         return maybePscIndividualFiling.map(pscFiling -> isValid(pscFiling, transId, passthroughHeader))
                 .orElseThrow(() -> new FilingResourceNotFoundException(

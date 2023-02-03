@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
-public class PscFilingWithIdentification implements PscCommunal {
+public class PscWithIdentificationFiling implements PscCommunal {
 
     @Id
     private String id;
@@ -22,7 +22,7 @@ public class PscFilingWithIdentification implements PscCommunal {
     private String name;
 
 
-    private PscFilingWithIdentification(final PscCommon.Builder commonBuilder) {
+    private PscWithIdentificationFiling(final PscCommon.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
         pscCommon = commonBuilder.build();
     }
@@ -117,7 +117,7 @@ public class PscFilingWithIdentification implements PscCommunal {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final PscFilingWithIdentification that = (PscFilingWithIdentification) o;
+        final PscWithIdentificationFiling that = (PscWithIdentificationFiling) o;
         return Objects.equals(getId(), that.getId())
                 && Objects.equals(pscCommon, that.pscCommon)
                 && Objects.equals(getIdentification(), that.getIdentification())
@@ -131,7 +131,7 @@ public class PscFilingWithIdentification implements PscCommunal {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", PscFilingWithIdentification.class.getSimpleName() + "[",
+        return new StringJoiner(", ", PscWithIdentificationFiling.class.getSimpleName() + "[",
                 "]").add("id='" + id + "'")
                 .add(pscCommon.toString())
                 .add("identification=" + identification)
@@ -146,7 +146,7 @@ public class PscFilingWithIdentification implements PscCommunal {
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<PscFilingWithIdentification>> buildSteps;
+        private final List<Consumer<PscWithIdentificationFiling>> buildSteps;
         private final PscCommon.Builder commonBuilder = PscCommon.builder();
 
         public Builder() {
@@ -243,9 +243,9 @@ public class PscFilingWithIdentification implements PscCommunal {
             return this;
         }
 
-        public PscFilingWithIdentification build() {
+        public PscWithIdentificationFiling build() {
 
-            final var data = new PscFilingWithIdentification(commonBuilder);
+            final var data = new PscWithIdentificationFiling(commonBuilder);
             buildSteps.forEach(step -> step.accept(data));
 
             return data;

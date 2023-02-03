@@ -44,7 +44,7 @@ class FilingDataServiceImplTest {
     public static final String OTHER_FORENAMES = "TOM";
     public static final String LASTNAME = "BLOGGS";
     @Mock
-    private PscFilingService pscFilingService;
+    private PscIndividualFilingService pscIndividualFilingService;
     @Mock
     private PscIndividualMapper pscIndividualMapper;
     @Mock
@@ -62,7 +62,7 @@ class FilingDataServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new FilingDataServiceImpl(pscFilingService, pscIndividualMapper,
+        testService = new FilingDataServiceImpl(pscIndividualFilingService, pscIndividualMapper,
             pscDetailsService, filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
@@ -88,7 +88,7 @@ class FilingDataServiceImplTest {
                 .ceasedOn(CEASED_ON)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
         when(pscIndividualMapper.mapFiling(pscFiling)).thenReturn(filingData);
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
@@ -115,7 +115,7 @@ class FilingDataServiceImplTest {
 
     @Test
     void generatePscIndividualFilingWhenNotFound() {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER));

@@ -31,7 +31,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
@@ -42,18 +42,18 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 public class PscIndividualFilingControllerImpl implements PscIndividualFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
-    private final PscFilingService pscFilingService;
+    private final PscIndividualFilingService pscIndividualFilingService;
     private final PscIndividualMapper filingMapper;
     private final FilingValidationService validatorService;
     private final Clock clock;
     private final Logger logger;
 
     public PscIndividualFilingControllerImpl(final TransactionService transactionService,
-            final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
+            final PscIndividualFilingService pscIndividualFilingService, final PscIndividualMapper filingMapper,
             final FilingValidationService validatorService, final Clock clock,
             final Logger logger) {
         this.transactionService = transactionService;
-        this.pscFilingService = pscFilingService;
+        this.pscIndividualFilingService = pscIndividualFilingService;
         this.filingMapper = filingMapper;
         this.validatorService = validatorService;
         this.clock = clock;
@@ -119,7 +119,7 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource) {
 
-        final var maybePSCFiling = pscFilingService.get(filingResource, transId);
+        final var maybePSCFiling = pscIndividualFilingService.get(filingResource, transId);
 
         final var maybeDto = maybePSCFiling.map(filingMapper::map);
 
@@ -144,11 +144,11 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
 
     private Links saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
                                       final HttpServletRequest request, final Map<String, Object> logMap) {
-        final var saved = pscFilingService.save(entity, transId);
+        final var saved = pscIndividualFilingService.save(entity, transId);
         final var links = buildLinks(saved, request);
         final var updated = PscIndividualFiling.builder(saved).links(links)
                 .build();
-        final var resaved = pscFilingService.save(updated, transId);
+        final var resaved = pscIndividualFilingService.save(updated, transId);
 
         logMap.put("filing_id", resaved.getId());
         logger.infoContext(transId, "Filing saved", logMap);

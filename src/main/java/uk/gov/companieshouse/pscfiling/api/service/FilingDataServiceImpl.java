@@ -20,18 +20,18 @@ import uk.gov.companieshouse.pscfiling.api.utils.MapHelper;
 @Service
 public class FilingDataServiceImpl implements FilingDataService {
 
-    private final PscFilingService pscFilingService;
+    private final PscIndividualFilingService pscIndividualFilingService;
     private final PscIndividualMapper pscIndividualMapper;
     private final PscDetailsService pscDetailsService;
     private final FilingDataConfig filingDataConfig;
     private final Logger logger;
 
-    public FilingDataServiceImpl(PscFilingService pscFilingService,
+    public FilingDataServiceImpl(PscIndividualFilingService pscIndividualFilingService,
                                  PscIndividualMapper filingMapper,
                                  PscDetailsService pscDetailsService,
                                  FilingDataConfig filingDataConfig,
                                  Logger logger) {
-        this.pscFilingService = pscFilingService;
+        this.pscIndividualFilingService = pscIndividualFilingService;
         this.pscIndividualMapper = filingMapper;
         this.pscDetailsService = pscDetailsService;
         this.filingDataConfig = filingDataConfig;
@@ -50,7 +50,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     private FilingApi populateFilingData(FilingApi filing, String filingId, Transaction transaction, String passthroughHeader) {
 
         final var transactionId = transaction.getId();
-        final var pscFilingOpt = pscFilingService.get(filingId, transactionId);
+        final var pscFilingOpt = pscIndividualFilingService.get(filingId, transactionId);
         final var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
                 String.format("Psc individual not found when generating filing for %s", filingId)));
 

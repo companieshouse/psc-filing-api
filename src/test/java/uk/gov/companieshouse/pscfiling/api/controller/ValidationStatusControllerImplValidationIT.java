@@ -33,7 +33,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationServiceImpl;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("app")
@@ -54,7 +54,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
             "/transactions/" + TRANS_ID + "/persons-with-significant-control/";
 
     @MockBean
-    private PscFilingService pscFilingService;
+    private PscIndividualFilingService pscIndividualFilingService;
     @MockBean
     private PscDetailsService pscDetailsService;
     @MockBean
@@ -86,7 +86,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenDataValid() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -104,7 +104,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenPscDetailsNotFound() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -125,7 +125,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenPscEtagNotMatched() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -146,7 +146,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenCeasedOnBeforePscNotifiedOn() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -176,7 +176,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.minusDays(1));
         PscIndividualFiling invalid =
                 PscIndividualFiling.builder(filing).registerEntryDate(CEASED_ON_DATE.minusDays(1)).build();
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(invalid));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(invalid));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))
@@ -192,7 +192,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenPscNotActive() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,

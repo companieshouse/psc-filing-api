@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 //Using Spring Web MVC
@@ -33,7 +33,7 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
-    private PscFilingService pscFilingService;
+    private PscIndividualFilingService pscIndividualFilingService;
     @MockBean
     private FilingValidationService filingValidationService;
     @MockBean
@@ -58,7 +58,7 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
                 .ceasedOn(CEASED_ON_DATE)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
                         .headers(httpHeaders))

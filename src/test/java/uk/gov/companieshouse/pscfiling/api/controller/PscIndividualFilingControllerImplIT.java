@@ -47,7 +47,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
@@ -65,7 +65,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private PscApi pscDetails;
     @MockBean
-    private PscFilingService pscFilingService;
+    private PscIndividualFilingService pscIndividualFilingService;
     @MockBean
     private PscIndividualMapper filingMapper;
     @MockBean
@@ -120,7 +120,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
+        when(pscIndividualFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
                         PscIndividualFiling.builder(filing).id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
                 .thenAnswer(i -> PscIndividualFiling.builder(i.getArgument(0))
@@ -430,7 +430,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .registerEntryDate(CEASED_ON_DATE)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         when(filingMapper.map(filing)).thenReturn(dto);
 
@@ -446,7 +446,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
                         get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))

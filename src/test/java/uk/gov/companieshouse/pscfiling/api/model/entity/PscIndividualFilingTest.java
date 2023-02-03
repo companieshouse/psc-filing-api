@@ -161,7 +161,7 @@ class PscIndividualFilingTest {
     @Test
     @DisplayName("WithIdentification toString")
     void testWithIdentificationToString() throws JsonProcessingException {
-        final var filing = PscFilingWithIdentification.builder()
+        final var filing = uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling.builder()
                 .id("id")
                 .address(address)
                 .addressSameAsRegisteredOfficeAddress(true)
@@ -180,7 +180,7 @@ class PscIndividualFilingTest {
                 .identification(identification)
                 .name("name")
                 .build();
-        final String expected = "PscFilingWithIdentification[id='id', "
+        final String expected = "PscWithIdentificationFiling[id='id', "
                 + "address=Address[addressLine1='line1', "
                 + "addressLine2='line2', careOf='careOf', country='country', "
                 + "locality='locality', poBox='poBox', postalCode='postalCode', "

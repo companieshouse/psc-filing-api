@@ -13,17 +13,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
-class PscFilingServiceImplTest {
+class PscIndividualFilingServiceImplTest {
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     public static final String TRANS_ID = "12345-54321-76666";
-    private PscFilingService testService;
+    private PscIndividualFilingService testService;
 
     @Mock
-    private PscFilingRepository repository;
+    private PscIndividualFilingRepository repository;
     @Mock
     private PscIndividualFiling filing;
     @Mock
@@ -33,7 +33,7 @@ class PscFilingServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new PscFilingServiceImpl(repository, logger);
+        testService = new PscIndividualFilingServiceImpl(repository, logger);
     }
 
     @Test

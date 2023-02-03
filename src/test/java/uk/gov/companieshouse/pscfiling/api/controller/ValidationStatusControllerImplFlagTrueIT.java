@@ -19,7 +19,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.IntegrationTestConfig;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationServiceImpl;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("app")
@@ -30,7 +30,7 @@ class ValidationStatusControllerImplFlagTrueIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
-    private PscFilingService pscFilingService;
+    private PscIndividualFilingService pscIndividualFilingService;
     @MockBean
     private PscDetailsService pscDetailsService;
     @MockBean
@@ -45,7 +45,7 @@ class ValidationStatusControllerImplFlagTrueIT extends BaseControllerIT {
 
     @Test
     void validateWhenFilingNotFound() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
                         httpHeaders))

@@ -4,24 +4,24 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 /**
- * Store/retrieve PSC Filing entities using the persistence layer.
+ * Store/retrieves a PSC Individual Filing entities using the persistence layer.
  */
 @Service
-public class PscFilingServiceImpl implements PscFilingService {
-    private final PscFilingRepository repository;
+public class PscIndividualFilingServiceImpl implements PscIndividualFilingService {
+    private final PscIndividualFilingRepository repository;
     private final Logger logger;
 
-    public PscFilingServiceImpl(final PscFilingRepository repository, Logger logger) {
+    public PscIndividualFilingServiceImpl(final PscIndividualFilingRepository repository, Logger logger) {
         this.repository = repository;
         this.logger = logger;
     }
 
     /**
-     * Store an PSCFiling entity in persistence layer.
+     * Store a PSCIndividualFiling entity in persistence layer.
      *
      * @param filing        the PSCIndividualFiling entity to store
      * @param transactionId the associated Transaction ID
@@ -37,7 +37,7 @@ public class PscFilingServiceImpl implements PscFilingService {
     }
 
     /**
-     * Retrieve a stored PSCFiling entity by Filing ID.
+     * Retrieve a stored PSCIndividualFiling entity by Filing ID.
      *
      * @param pscFilingId the Filing ID
      * @param transactionId   the associated Transaction ID
