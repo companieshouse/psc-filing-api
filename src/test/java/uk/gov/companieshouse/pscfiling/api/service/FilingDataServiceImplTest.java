@@ -24,7 +24,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundExcep
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
@@ -71,7 +71,7 @@ class FilingDataServiceImplTest {
 
     @Test
     void generatePscIndividualFilingWhenFound() {
-        final var filingData = FilingDataDto.builder()
+        final var filingData = IndividualFilingDataDto.builder()
             .title(TITLE)
             .firstName(FIRSTNAME)
             .otherForenames(OTHER_FORENAMES)

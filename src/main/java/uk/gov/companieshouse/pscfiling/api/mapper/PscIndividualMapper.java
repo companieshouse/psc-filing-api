@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDataDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -28,7 +28,7 @@ public interface PscIndividualMapper {
     @Mapping(target = "firstName", source = "nameElements.forename")
     @Mapping(target = "otherForenames", source = "nameElements.otherForenames")
     @Mapping(target = "lastName", source = "nameElements.surname")
-    FilingDataDto mapFiling(final PscIndividualFiling entity);
+    IndividualFilingDataDto mapFiling(final PscIndividualFiling entity);
 
     @Mapping(target = "dateOfBirth", source = "dateOfBirth")
     default String isoDateOfBirth(Date3Tuple tuple) {

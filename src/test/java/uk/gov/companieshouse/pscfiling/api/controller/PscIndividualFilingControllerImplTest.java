@@ -10,7 +10,7 @@ import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscfiling.api.controller.PscFilingControllerImpl.VALIDATION_STATUS;
+import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 import java.net.URI;
@@ -53,7 +53,7 @@ import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
-class PscFilingControllerImplTest {
+class PscIndividualFilingControllerImplTest {
     public static final String TRANS_ID = "117524-754816-491724";
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
@@ -63,7 +63,7 @@ class PscFilingControllerImplTest {
             URI.create("/transactions/" + TRANS_ID + "/persons-with-significant-control/");
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
 
-    private PscFilingController testController;
+    private PscIndividualFilingController testController;
     @Mock
     private PscFilingService pscFilingService;
     @Mock
@@ -99,7 +99,7 @@ class PscFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController =
-                new PscFilingControllerImpl(transactionService, pscFilingService, filingMapper,
+                new PscIndividualFilingControllerImpl(transactionService, pscFilingService, filingMapper,
                         filingValidationService, clock, logger) {
                 };
         filing = PscIndividualFiling.builder()

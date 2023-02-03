@@ -25,9 +25,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscWithIdentificationMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
@@ -40,20 +39,19 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping(
-        "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
-                + "(?:individual|corporate-entity|legal-person)}")
-public class PscFilingControllerImpl implements PscFilingController {
+@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType: "
+        + "(?:corporate-entity|legal-person)}")
+public class PscWithIdentificationFilingControllerImp implements PscWithIdentificationFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
     private final PscFilingService pscFilingService;
-    private final PscIndividualMapper filingMapper;
     private final FilingValidationService validatorService;
     private final Clock clock;
     private final Logger logger;
+    private final PscWithIdentificationMapper filingMapper;
 
-    public PscFilingControllerImpl(final TransactionService transactionService,
-            final PscFilingService pscFilingService, final PscIndividualMapper filingMapper,
+    public PscWithIdentificationFilingControllerImp(final TransactionService transactionService,
+            final PscFilingService pscFilingService, final PscWithIdentificationMapper filingMapper,
             final FilingValidationService validatorService, final Clock clock,
             final Logger logger) {
         this.transactionService = transactionService;
@@ -77,16 +75,15 @@ public class PscFilingControllerImpl implements PscFilingController {
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
     public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestBody @Valid @NotNull  @PathVariable("pscType" (PscTypeConstants.INDIVIDUAL) ? PscIndividualDto: PscWithIdentificationDto) final dto,
-
-           //@RequestBody @Valid @NotNull final PscIndividualDto dto,
+            @RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
         final var logMap = LogHelper.createLogMap(transId);
 
         logger.debugRequest(request, "POST", logMap);
 
         final var validationErrors = Optional.ofNullable(bindingResult)
-                .map(Errors::getFieldErrors).map(ArrayList::new)
+                .map(Errors::getFieldErrors)
+                .map(ArrayList::new)
                 .orElseGet(ArrayList::new);
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
@@ -120,7 +117,7 @@ public class PscFilingControllerImpl implements PscFilingController {
      */
     @Override
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
-    public ResponseEntity<PscIndividualDto> getFilingForReview(
+    public ResponseEntity<PscWithIdentificationDto> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource) {
@@ -149,7 +146,7 @@ public class PscFilingControllerImpl implements PscFilingController {
     }
 
     private Links saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
-                                      final HttpServletRequest request, final Map<String, Object> logMap) {
+            final HttpServletRequest request, final Map<String, Object> logMap) {
         final var saved = pscFilingService.save(entity, transId);
         final var links = buildLinks(saved, request);
         final var updated = PscIndividualFiling.builder(saved).links(links)
@@ -162,20 +159,22 @@ public class PscFilingControllerImpl implements PscFilingController {
         return links;
     }
 
-    // TODO Refactor this to handle PSC types other than Individual, in both the arguments and the path build
-    private Links buildLinks(final PscIndividualFiling savedFiling, final HttpServletRequest request) {
+    // TODO Refactor this to handle PSC types other than Individual, in both the arguments
+    //  and the path build
+    private Links buildLinks(final PscIndividualFiling savedFiling,
+            final HttpServletRequest request) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
-        final var selfUri = UriComponentsBuilder
-                .fromUriString(request.getRequestURI())
+        final var selfUri = UriComponentsBuilder.fromUriString(request.getRequestURI())
                 .pathSegment(objectId.toHexString())
-                .build().toUri();
+                .build()
+                .toUri();
 
-        final var validateUri = UriComponentsBuilder
-                .fromUriString(request.getRequestURI()
-                .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
+        final var validateUri = UriComponentsBuilder.fromUriString(request.getRequestURI()
+                        .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
                 .pathSegment(objectId.toHexString())
                 .pathSegment(VALIDATION_STATUS)
-                .build().toUri();
+                .build()
+                .toUri();
 
         return new Links(selfUri, validateUri);
     }

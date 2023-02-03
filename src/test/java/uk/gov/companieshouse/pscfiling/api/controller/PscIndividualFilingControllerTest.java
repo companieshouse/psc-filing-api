@@ -13,9 +13,9 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
 @ExtendWith(MockitoExtension.class)
-class PscFilingControllerTest {
+class PscIndividualFilingControllerTest {
 
-    private final PscFilingController testController = new PscFilingController() {
+    private final PscIndividualFilingController testController = new PscIndividualFilingController() {
     };
     @Mock
     private PscIndividualDto dto;

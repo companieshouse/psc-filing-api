@@ -20,7 +20,9 @@ public class Identification {
         // prevent direct instantiation
     }
 
-    public String getCountryRegistered() { return countryRegistered; }
+    public String getCountryRegistered() {
+        return countryRegistered;
+    }
 
     public String getLegalAuthority() {
         return legalAuthority;

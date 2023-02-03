@@ -54,8 +54,8 @@ import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
 @Import(PscExistsValidator.class)
-@WebMvcTest(controllers = PscFilingControllerImpl.class)
-class PscFilingControllerImplIT extends BaseControllerIT {
+@WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
+class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -142,7 +142,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
         final var expectedError = createExpectedValidationError(
                 "Required request body is missing: public org.springframework.http"
                         + ".ResponseEntity<java.lang.Object> uk.gov.companieshouse.pscfiling.api"
-                        + ".controller.PscFilingControllerImpl.createFiling(java.lang.String,uk"
+                        + ".controller.PscIndividualFilingControllerImpl.createFiling(java.lang.String,uk"
                         + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
                         + ".companieshouse.pscfiling.api.model.dto.PscIndividualDto,org"
                         + ".springframework.validation.BindingResult,javax.servlet.http"
