@@ -8,12 +8,8 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
-public class IndividualFilingValidationContext {
+public class IndividualFilingValidationContext extends AbstractFilingValidationContext {
     private final PscIndividualDto dto;
-    private final List<FieldError> errors;
-    private final Transaction transaction;
-    private final PscTypeConstants pscType;
-    private final String passthroughHeader;
 
     /**
      * @param dto the DTO to validate
@@ -25,53 +21,29 @@ public class IndividualFilingValidationContext {
     public IndividualFilingValidationContext(final PscIndividualDto dto, final List<FieldError> errors,
             final Transaction transaction, final PscTypeConstants pscType,
             final String passthroughHeader) {
+        super(errors, transaction, pscType, passthroughHeader);
         this.dto = Objects.requireNonNull(dto);
-        this.errors = Objects.requireNonNull(errors);
-        this.transaction = Objects.requireNonNull(transaction);
-        this.pscType = Objects.requireNonNull(pscType);
-        this.passthroughHeader = passthroughHeader;
     }
 
     public PscIndividualDto getDto() {
         return dto;
     }
 
-    public List<FieldError> getErrors() {
-        return errors;
-    }
-
-    public Transaction getTransaction() {
-        return transaction;
-    }
-
-    public PscTypeConstants getPscType() {
-        return pscType;
-    }
-
-    public String getPassthroughHeader() {
-        return passthroughHeader;
-    }
-
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final IndividualFilingValidationContext that = (IndividualFilingValidationContext) o;
-        return Objects.equals(getDto(), that.getDto())
-                && Objects.equals(getErrors(), that.getErrors())
-                && Objects.equals(getTransaction(), that.getTransaction())
-                && getPscType() == that.getPscType()
-                && Objects.equals(getPassthroughHeader(), that.getPassthroughHeader());
+        IndividualFilingValidationContext that = (IndividualFilingValidationContext) o;
+        return getDto().equals(that.getDto());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDto(), getErrors(), getTransaction(), getPscType(),
-                getPassthroughHeader());
+        return Objects.hash(getDto());
     }
 
     @Override

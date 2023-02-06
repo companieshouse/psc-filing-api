@@ -6,7 +6,6 @@ import java.util.StringJoiner;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 
 public class WithIdentificationFilingValidationContext {

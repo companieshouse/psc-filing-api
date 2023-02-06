@@ -22,6 +22,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscWithIdentificationMapper;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
@@ -46,7 +47,11 @@ class FilingDataServiceImplTest {
     @Mock
     private PscIndividualFilingService pscIndividualFilingService;
     @Mock
+    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
+    @Mock
     private PscIndividualMapper pscIndividualMapper;
+    @Mock
+    private PscWithIdentificationMapper pscWithIdentificationMapper;
     @Mock
     private PscDetailsService pscDetailsService;
     @Mock
@@ -62,7 +67,8 @@ class FilingDataServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new FilingDataServiceImpl(pscIndividualFilingService, pscIndividualMapper,
+        testService = new FilingDataServiceImpl(pscIndividualFilingService,
+            pscWithIdentificationFilingService, pscIndividualMapper, pscWithIdentificationMapper,
             pscDetailsService, filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);

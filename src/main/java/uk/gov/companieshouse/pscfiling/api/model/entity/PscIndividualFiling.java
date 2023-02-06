@@ -61,6 +61,11 @@ public class PscIndividualFiling implements PscCommunal {
     }
 
     @Override
+    public String getName() {
+        return pscCommon.getName();
+    }
+
+    @Override
     public Instant getCreatedAt() {
         return pscCommon.getCreatedAt();
     }
@@ -218,6 +223,7 @@ public class PscIndividualFiling implements PscCommunal {
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
+                    .name(other.getName())
                     .countryOfResidence(other.getCountryOfResidence())
                     .createdAt(other.getCreatedAt())
                     .dateOfBirth(other.getDateOfBirth())
@@ -261,6 +267,12 @@ public class PscIndividualFiling implements PscCommunal {
         public Builder ceasedOn(final LocalDate value) {
 
             commonBuilder.ceasedOn(value);
+            return this;
+        }
+
+        public Builder name(final String value) {
+
+            commonBuilder.name(value);
             return this;
         }
 

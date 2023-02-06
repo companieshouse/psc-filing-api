@@ -24,25 +24,24 @@ public class FilingValidationServiceImpl implements FilingValidationService {
     }
 
     @Override
-    public void validate(final IndividualFilingValidationContext context) {
-        Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
+    public void validate(final IndividualFilingValidationContext individualContext) {
+        Optional.ofNullable(filingValidByPscType.get(individualContext.getPscType()))
                 .map(FilingForPscTypeValid::getFirst)
-                .ifPresentOrElse(v -> v.validate(context), () -> {
+                .ifPresentOrElse(v -> v.validate(individualContext), () -> {
                     throw new UnsupportedOperationException(
                             MessageFormat.format("Validation not defined for PSC type ''{0}''",
-                                    context.getPscType()));
+                                individualContext.getPscType()));
                 });
     }
 
-    //TODO
     @Override
-    public void validate(final WithIdentificationFilingValidationContext context) {
-        Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
+    public void validate(final WithIdentificationFilingValidationContext withIdentificationContext) {
+        Optional.ofNullable(filingValidByPscType.get(withIdentificationContext.getPscType()))
                 .map(FilingForPscTypeValid::getFirst)
-                .ifPresentOrElse(v -> v.validate(context), () -> {
+                .ifPresentOrElse(v -> v.validate(withIdentificationContext), () -> {
                     throw new UnsupportedOperationException(
                             MessageFormat.format("Validation not defined for PSC type ''{0}''",
-                                    context.getPscType()));
+                                withIdentificationContext.getPscType()));
                 });
 
     }

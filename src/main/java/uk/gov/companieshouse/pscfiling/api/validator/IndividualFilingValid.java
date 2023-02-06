@@ -6,5 +6,5 @@ public interface IndividualFilingValid {
      */
     void validate(final IndividualFilingValidationContext validationContext);
 
-    void setNext(IndividualFilingValid individualFilingValidator);
+    void setNext(final IndividualFilingValid individualFilingValidator);
 }

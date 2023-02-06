@@ -21,12 +21,7 @@ public class PscWithIdentificationFiling implements PscCommunal {
     private String id;
     @Unwrapped.Empty
     private PscCommon pscCommon;
-    private String countryOfResidence;
-    private Date3Tuple dateOfBirth;
-    private NameElements nameElements;
-    private String nationality;
-    private Address residentialAddress;
-    private Boolean residentialAddressSameAsCorrespondenceAddress;
+    private Identification identification;
     private LocalDate statementActionDate;
     private String statementType;
 
@@ -58,6 +53,11 @@ public class PscWithIdentificationFiling implements PscCommunal {
     @Override
     public LocalDate getCeasedOn() {
         return pscCommon.getCeasedOn();
+    }
+
+    @Override
+    public String getName() {
+        return pscCommon.getName();
     }
 
     @Override
@@ -115,28 +115,8 @@ public class PscWithIdentificationFiling implements PscCommunal {
         return pscCommon.getUpdatedAt();
     }
 
-    public String getCountryOfResidence() {
-        return countryOfResidence;
-    }
-
-    public Date3Tuple getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public NameElements getNameElements() {
-        return nameElements;
-    }
-
-    public String getNationality() {
-        return nationality;
-    }
-
-    public Address getResidentialAddress() {
-        return residentialAddress;
-    }
-
-    public Boolean getResidentialAddressSameAsCorrespondenceAddress() {
-        return residentialAddressSameAsCorrespondenceAddress;
+    public Identification getIdentification() {
+        return identification;
     }
 
     public LocalDate getStatementActionDate() {
@@ -158,23 +138,15 @@ public class PscWithIdentificationFiling implements PscCommunal {
         final PscWithIdentificationFiling that = (PscWithIdentificationFiling) o;
         return Objects.equals(getId(), that.getId())
                 && Objects.equals(pscCommon, that.pscCommon)
-                && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
-                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
-                && Objects.equals(getNameElements(), that.getNameElements())
-                && Objects.equals(getNationality(), that.getNationality())
-                && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
-                && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
-                that.getResidentialAddressSameAsCorrespondenceAddress())
+                && Objects.equals(getIdentification(), that.getIdentification())
                 && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
                 && Objects.equals(getStatementType(), that.getStatementType());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), pscCommon, getCountryOfResidence(), getDateOfBirth(),
-                getNameElements(), getNationality(), getResidentialAddress(),
-                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
-                getStatementType());
+        return Objects.hash(getId(), pscCommon, getIdentification(),
+                getStatementActionDate(), getStatementType());
     }
 
     @Override
@@ -182,13 +154,7 @@ public class PscWithIdentificationFiling implements PscCommunal {
         return new StringJoiner(", ", PscWithIdentificationFiling.class.getSimpleName() + "[", "]").add(
                         "id='" + id + "'")
                 .add(pscCommon.toString())
-                .add("countryOfResidence='" + countryOfResidence + "'")
-                .add("dateOfBirth=" + dateOfBirth)
-                .add("nameElements=" + nameElements)
-                .add("nationality='" + nationality + "'")
-                .add("residentialAddress=" + residentialAddress)
-                .add("residentialAddressSameAsCorrespondenceAddress="
-                        + residentialAddressSameAsCorrespondenceAddress)
+                .add("identification='" + identification + "'")
                 .add("statementActionDate=" + statementActionDate)
                 .add("statementType='" + statementType + "'")
                 .toString();
@@ -218,23 +184,18 @@ public class PscWithIdentificationFiling implements PscCommunal {
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
-                    .countryOfResidence(other.getCountryOfResidence())
+                    .name(other.getName())
+                    .identification(other.getIdentification())
                     .createdAt(other.getCreatedAt())
-                    .dateOfBirth(other.getDateOfBirth())
                     .registerEntryDate(other.getRegisterEntryDate())
                     .etag(other.getEtag())
                     .kind(other.getKind())
                     .links(other.getLinks())
-                    .nameElements(other.getNameElements())
                     .naturesOfControl(other.getNaturesOfControl())
-                    .nationality(other.getNationality())
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
                     .referencePscListEtag(other.getReferencePscListEtag())
-                    .residentialAddress(other.getResidentialAddress())
-                    .residentialAddressSameAsCorrespondenceAddress(
-                            other.getResidentialAddressSameAsCorrespondenceAddress())
                     .statementActionDate(other.getStatementActionDate())
                     .statementType(other.getStatementType())
                     .updatedAt(other.getUpdatedAt());
@@ -264,23 +225,21 @@ public class PscWithIdentificationFiling implements PscCommunal {
             return this;
         }
 
-        public Builder countryOfResidence(final String value) {
+        public Builder name(final String value) {
 
-            buildSteps.add(data -> data.countryOfResidence = value);
+            commonBuilder.name(value);
+            return this;
+        }
+
+        public Builder identification(final Identification value) {
+
+            buildSteps.add(data -> data.identification = value);
             return this;
         }
 
         public Builder createdAt(final Instant value) {
 
             commonBuilder.createdAt(value);
-            return this;
-        }
-
-        public Builder dateOfBirth(final Date3Tuple value) {
-
-            buildSteps.add(data -> data.dateOfBirth = Optional.ofNullable(value)
-                    .map(v -> new Date3Tuple(v.getDay(), v.getMonth(), v.getYear()))
-                    .orElse(null));
             return this;
         }
 
@@ -302,24 +261,9 @@ public class PscWithIdentificationFiling implements PscCommunal {
             return this;
         }
 
-        public Builder nameElements(final NameElements value) {
-
-            buildSteps.add(data -> data.nameElements = Optional.ofNullable(value)
-                    .map(v -> new NameElements(v.getForename(), v.getOtherForenames(),
-                            v.getSurname(), v.getTitle()))
-                    .orElse(null));
-            return this;
-        }
-
         public Builder naturesOfControl(final List<String> value) {
 
             commonBuilder.naturesOfControl(value);
-            return this;
-        }
-
-        public Builder nationality(final String value) {
-
-            buildSteps.add(data -> data.nationality = value);
             return this;
         }
 
@@ -350,21 +294,6 @@ public class PscWithIdentificationFiling implements PscCommunal {
         public Builder registerEntryDate(final LocalDate value) {
 
             commonBuilder.registerEntryDate(value);
-            return this;
-        }
-
-        public Builder residentialAddress(final Address value) {
-
-            buildSteps.add(data -> data.residentialAddress = Optional.ofNullable(value)
-                    .map(v -> Address.builder(v)
-                            .build())
-                    .orElse(null));
-            return this;
-        }
-
-        public Builder residentialAddressSameAsCorrespondenceAddress(final Boolean value) {
-
-            buildSteps.add(data -> data.residentialAddressSameAsCorrespondenceAddress = value);
             return this;
         }
 

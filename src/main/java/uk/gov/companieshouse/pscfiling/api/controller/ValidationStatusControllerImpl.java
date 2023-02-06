@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.WithIdentificationFilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -133,12 +135,20 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         // TODO: When Transaction Interceptor is implemented, transaction will be in HTTP request
         final var transaction =
                 transactionService.getTransaction(transId, passthroughHeader);
-        final var context = new IndividualFilingValidationContext(dto, errors, transaction,
+
+        if (Objects.equals(pscType.getValue(), PscTypeConstants.INDIVIDUAL.getValue())) {
+            final var context = new IndividualFilingValidationContext(dto, errors, transaction,
                 pscType, passthroughHeader);
 
-        filingValidationService.validate(context);
+            filingValidationService.validate(context);
+            return errorMapper.map(context.getErrors());
+        } else {
+            final var context = new WithIdentificationFilingValidationContext(dto, errors, transaction,
+                pscType, passthroughHeader);
 
-        return errorMapper.map(context.getErrors());
+            filingValidationService.validate(context);
+            return errorMapper.map(context.getErrors());
+        }
     }
 
 }
