@@ -74,7 +74,7 @@ class CeasedOnDateValidatorTest {
             when(pscApi.getNotifiedOn()).thenReturn(notifiedOn);
         }
 
-        testValidator.validate(new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+        testValidator.validate(new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors, is(empty()));
     }
@@ -86,7 +86,7 @@ class CeasedOnDateValidatorTest {
         when(dto.getCeasedOn()).thenReturn(DATE);
         when(pscApi.getNotifiedOn()).thenReturn(DAY_AFTER_DATE);
 
-        testValidator.validate(new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+        testValidator.validate(new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors, contains(fieldError));
     }

@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -10,17 +10,31 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
+@Document(collection = "psc_submissions")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscWithIdentificationFiling implements PscCommunal {
 
     @Id
     private String id;
     @Unwrapped.Empty
-    private final PscCommon pscCommon;
-    private Identification identification;
-    private String name;
+    private PscCommon pscCommon;
+    private String countryOfResidence;
+    private Date3Tuple dateOfBirth;
+    private NameElements nameElements;
+    private String nationality;
+    private Address residentialAddress;
+    private Boolean residentialAddressSameAsCorrespondenceAddress;
+    private LocalDate statementActionDate;
+    private String statementType;
 
+    public PscWithIdentificationFiling() {
+        // required by Spring JPA
+        pscCommon = PscCommon.builder()
+                .build();
+    }
 
     private PscWithIdentificationFiling(final PscCommon.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
@@ -101,12 +115,36 @@ public class PscWithIdentificationFiling implements PscCommunal {
         return pscCommon.getUpdatedAt();
     }
 
-    public Identification getIdentification() {
-        return identification;
+    public String getCountryOfResidence() {
+        return countryOfResidence;
     }
 
-    public String getName() {
-        return name;
+    public Date3Tuple getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public NameElements getNameElements() {
+        return nameElements;
+    }
+
+    public String getNationality() {
+        return nationality;
+    }
+
+    public Address getResidentialAddress() {
+        return residentialAddress;
+    }
+
+    public Boolean getResidentialAddressSameAsCorrespondenceAddress() {
+        return residentialAddressSameAsCorrespondenceAddress;
+    }
+
+    public LocalDate getStatementActionDate() {
+        return statementActionDate;
+    }
+
+    public String getStatementType() {
+        return statementType;
     }
 
     @Override
@@ -120,22 +158,39 @@ public class PscWithIdentificationFiling implements PscCommunal {
         final PscWithIdentificationFiling that = (PscWithIdentificationFiling) o;
         return Objects.equals(getId(), that.getId())
                 && Objects.equals(pscCommon, that.pscCommon)
-                && Objects.equals(getIdentification(), that.getIdentification())
-                && Objects.equals(getName(), that.getName());
+                && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
+                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
+                && Objects.equals(getNameElements(), that.getNameElements())
+                && Objects.equals(getNationality(), that.getNationality())
+                && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
+                && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
+                that.getResidentialAddressSameAsCorrespondenceAddress())
+                && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
+                && Objects.equals(getStatementType(), that.getStatementType());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), pscCommon, getIdentification(), getName());
+        return Objects.hash(getId(), pscCommon, getCountryOfResidence(), getDateOfBirth(),
+                getNameElements(), getNationality(), getResidentialAddress(),
+                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
+                getStatementType());
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", PscWithIdentificationFiling.class.getSimpleName() + "[",
-                "]").add("id='" + id + "'")
+        return new StringJoiner(", ", PscWithIdentificationFiling.class.getSimpleName() + "[", "]").add(
+                        "id='" + id + "'")
                 .add(pscCommon.toString())
-                .add("identification=" + identification)
-                .add("name='" + name + "'")
+                .add("countryOfResidence='" + countryOfResidence + "'")
+                .add("dateOfBirth=" + dateOfBirth)
+                .add("nameElements=" + nameElements)
+                .add("nationality='" + nationality + "'")
+                .add("residentialAddress=" + residentialAddress)
+                .add("residentialAddressSameAsCorrespondenceAddress="
+                        + residentialAddressSameAsCorrespondenceAddress)
+                .add("statementActionDate=" + statementActionDate)
+                .add("statementType='" + statementType + "'")
                 .toString();
     }
 
@@ -143,14 +198,46 @@ public class PscWithIdentificationFiling implements PscCommunal {
         return new Builder();
     }
 
-    @JsonPOJOBuilder(withPrefix = "")
+    public static Builder builder(final PscWithIdentificationFiling other) {
+        return new Builder(other);
+    }
+
     public static class Builder {
 
         private final List<Consumer<PscWithIdentificationFiling>> buildSteps;
         private final PscCommon.Builder commonBuilder = PscCommon.builder();
 
-        public Builder() {
-            this.buildSteps = new ArrayList<>();
+        private Builder() {
+            buildSteps = new ArrayList<>();
+        }
+
+        public Builder(final PscWithIdentificationFiling other) {
+            this();
+            this.id(other.getId())
+                    .address(other.getAddress())
+                    .addressSameAsRegisteredOfficeAddress(
+                            other.getAddressSameAsRegisteredOfficeAddress())
+                    .ceasedOn(other.getCeasedOn())
+                    .countryOfResidence(other.getCountryOfResidence())
+                    .createdAt(other.getCreatedAt())
+                    .dateOfBirth(other.getDateOfBirth())
+                    .registerEntryDate(other.getRegisterEntryDate())
+                    .etag(other.getEtag())
+                    .kind(other.getKind())
+                    .links(other.getLinks())
+                    .nameElements(other.getNameElements())
+                    .naturesOfControl(other.getNaturesOfControl())
+                    .nationality(other.getNationality())
+                    .notifiedOn(other.getNotifiedOn())
+                    .referenceEtag(other.getReferenceEtag())
+                    .referencePscId(other.getReferencePscId())
+                    .referencePscListEtag(other.getReferencePscListEtag())
+                    .residentialAddress(other.getResidentialAddress())
+                    .residentialAddressSameAsCorrespondenceAddress(
+                            other.getResidentialAddressSameAsCorrespondenceAddress())
+                    .statementActionDate(other.getStatementActionDate())
+                    .statementType(other.getStatementType())
+                    .updatedAt(other.getUpdatedAt());
         }
 
         public Builder id(final String value) {
@@ -160,96 +247,150 @@ public class PscWithIdentificationFiling implements PscCommunal {
         }
 
         public Builder address(final Address value) {
+
             commonBuilder.address(value);
             return this;
         }
 
         public Builder addressSameAsRegisteredOfficeAddress(final Boolean value) {
+
             commonBuilder.addressSameAsRegisteredOfficeAddress(value);
             return this;
         }
 
         public Builder ceasedOn(final LocalDate value) {
+
             commonBuilder.ceasedOn(value);
             return this;
         }
 
+        public Builder countryOfResidence(final String value) {
+
+            buildSteps.add(data -> data.countryOfResidence = value);
+            return this;
+        }
+
         public Builder createdAt(final Instant value) {
+
             commonBuilder.createdAt(value);
             return this;
         }
 
+        public Builder dateOfBirth(final Date3Tuple value) {
+
+            buildSteps.add(data -> data.dateOfBirth = Optional.ofNullable(value)
+                    .map(v -> new Date3Tuple(v.getDay(), v.getMonth(), v.getYear()))
+                    .orElse(null));
+            return this;
+        }
+
         public Builder etag(final String value) {
+
             commonBuilder.etag(value);
             return this;
         }
 
         public Builder kind(final String value) {
+
             commonBuilder.kind(value);
             return this;
         }
 
         public Builder links(final Links value) {
+
             commonBuilder.links(value);
             return this;
         }
 
+        public Builder nameElements(final NameElements value) {
+
+            buildSteps.add(data -> data.nameElements = Optional.ofNullable(value)
+                    .map(v -> new NameElements(v.getForename(), v.getOtherForenames(),
+                            v.getSurname(), v.getTitle()))
+                    .orElse(null));
+            return this;
+        }
+
         public Builder naturesOfControl(final List<String> value) {
+
             commonBuilder.naturesOfControl(value);
             return this;
         }
 
+        public Builder nationality(final String value) {
+
+            buildSteps.add(data -> data.nationality = value);
+            return this;
+        }
+
         public Builder notifiedOn(final LocalDate value) {
+
             commonBuilder.notifiedOn(value);
             return this;
         }
 
-
         public Builder referenceEtag(final String value) {
+
             commonBuilder.referenceEtag(value);
             return this;
         }
 
         public Builder referencePscId(final String value) {
+
             commonBuilder.referencePscId(value);
             return this;
         }
 
         public Builder referencePscListEtag(final String value) {
+
             commonBuilder.referencePscListEtag(value);
             return this;
         }
 
         public Builder registerEntryDate(final LocalDate value) {
+
             commonBuilder.registerEntryDate(value);
             return this;
         }
 
-        public Builder updatedAt(final Instant value) {
-            commonBuilder.updatedAt(value);
-            return this;
-        }
+        public Builder residentialAddress(final Address value) {
 
-        public Builder identification(final Identification value) {
-            buildSteps.add(data -> data.identification = Optional.ofNullable(value)
-                    .map(v -> Identification.builder(v)
+            buildSteps.add(data -> data.residentialAddress = Optional.ofNullable(value)
+                    .map(v -> Address.builder(v)
                             .build())
                     .orElse(null));
             return this;
         }
 
-        public Builder name(final String value) {
-            buildSteps.add(data -> data.name = value);
+        public Builder residentialAddressSameAsCorrespondenceAddress(final Boolean value) {
+
+            buildSteps.add(data -> data.residentialAddressSameAsCorrespondenceAddress = value);
+            return this;
+        }
+
+        public Builder statementActionDate(final LocalDate value) {
+
+            buildSteps.add(data -> data.statementActionDate = value);
+            return this;
+        }
+
+        public Builder statementType(final String value) {
+
+            buildSteps.add(data -> data.statementType = value);
+            return this;
+        }
+
+        public Builder updatedAt(final Instant value) {
+
+            commonBuilder.updatedAt(value);
             return this;
         }
 
         public PscWithIdentificationFiling build() {
-
             final var data = new PscWithIdentificationFiling(commonBuilder);
-            buildSteps.forEach(step -> step.accept(data));
+            buildSteps.forEach(s -> s.accept(data));
 
             return data;
         }
-
     }
 }

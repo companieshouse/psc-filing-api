@@ -8,7 +8,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
-public class FilingValidationContext {
+public class IndividualFilingValidationContext {
     private final PscIndividualDto dto;
     private final List<FieldError> errors;
     private final Transaction transaction;
@@ -22,7 +22,7 @@ public class FilingValidationContext {
      * @param pscType the PSC type
      * @param passthroughHeader the request passthrough header
      */
-    public FilingValidationContext(final PscIndividualDto dto, final List<FieldError> errors,
+    public IndividualFilingValidationContext(final PscIndividualDto dto, final List<FieldError> errors,
             final Transaction transaction, final PscTypeConstants pscType,
             final String passthroughHeader) {
         this.dto = Objects.requireNonNull(dto);
@@ -60,7 +60,7 @@ public class FilingValidationContext {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final FilingValidationContext that = (FilingValidationContext) o;
+        final IndividualFilingValidationContext that = (IndividualFilingValidationContext) o;
         return Objects.equals(getDto(), that.getDto())
                 && Objects.equals(getErrors(), that.getErrors())
                 && Objects.equals(getTransaction(), that.getTransaction())
@@ -76,7 +76,7 @@ public class FilingValidationContext {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", FilingValidationContext.class.getSimpleName() + "[", "]").add(
+        return new StringJoiner(", ", IndividualFilingValidationContext.class.getSimpleName() + "[", "]").add(
                         "dto=" + dto)
                 .add("errors=" + errors)
                 .add("transaction=" + transaction)

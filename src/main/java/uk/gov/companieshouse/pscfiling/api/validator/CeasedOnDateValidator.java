@@ -6,7 +6,8 @@ import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 @Component
-public class CeasedOnDateValidator extends BaseFilingValidator implements FilingValid {
+public class CeasedOnDateValidator extends BaseIndividualFilingValidator
+        implements IndividualFilingValid {
 
     private final PscDetailsService pscDetailsService;
 
@@ -15,7 +16,7 @@ public class CeasedOnDateValidator extends BaseFilingValidator implements Filing
     }
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public void validate(final IndividualFilingValidationContext validationContext) {
 
         final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
                 validationContext.getDto().getReferencePscId(), validationContext.getPscType(),

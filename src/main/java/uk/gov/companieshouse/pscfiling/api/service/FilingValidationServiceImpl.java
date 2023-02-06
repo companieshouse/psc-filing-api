@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.WithIdentificationFilingValidationContext;
 
 @Service
 public class FilingValidationServiceImpl implements FilingValidationService {
@@ -23,7 +24,7 @@ public class FilingValidationServiceImpl implements FilingValidationService {
     }
 
     @Override
-    public void validate(final FilingValidationContext context) {
+    public void validate(final IndividualFilingValidationContext context) {
         Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
                 .map(FilingForPscTypeValid::getFirst)
                 .ifPresentOrElse(v -> v.validate(context), () -> {
@@ -32,4 +33,18 @@ public class FilingValidationServiceImpl implements FilingValidationService {
                                     context.getPscType()));
                 });
     }
+
+    //TODO
+    @Override
+    public void validate(final WithIdentificationFilingValidationContext context) {
+        Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
+                .map(FilingForPscTypeValid::getFirst)
+                .ifPresentOrElse(v -> v.validate(context), () -> {
+                    throw new UnsupportedOperationException(
+                            MessageFormat.format("Validation not defined for PSC type ''{0}''",
+                                    context.getPscType()));
+                });
+
+    }
+
 }

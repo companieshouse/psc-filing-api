@@ -26,7 +26,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -133,7 +133,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         // TODO: When Transaction Interceptor is implemented, transaction will be in HTTP request
         final var transaction =
                 transactionService.getTransaction(transId, passthroughHeader);
-        final var context = new FilingValidationContext(dto, errors, transaction,
+        final var context = new IndividualFilingValidationContext(dto, errors, transaction,
                 pscType, passthroughHeader);
 
         filingValidationService.validate(context);

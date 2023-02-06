@@ -6,7 +6,8 @@ import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundExcep
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 @Component
-public class PscExistsValidator extends BaseFilingValidator implements FilingValid {
+public class PscExistsValidator extends BaseIndividualFilingValidator
+        implements IndividualFilingValid {
 
     private final PscDetailsService pscDetailsService;
 
@@ -15,7 +16,7 @@ public class PscExistsValidator extends BaseFilingValidator implements FilingVal
     }
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public void validate(final IndividualFilingValidationContext validationContext) {
 
         try {
             pscDetailsService.getPscDetails(validationContext.getTransaction(), validationContext.getDto()

@@ -34,7 +34,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -88,7 +88,7 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
         logger.infoContext(transId, "transaction found", logMap);
 
         validatorService.validate(
-                new FilingValidationContext(dto, validationErrors, transaction, pscType,
+                new IndividualFilingValidationContext(dto, validationErrors, transaction, pscType,
                         passthroughHeader));
         if (!validationErrors.isEmpty()) {
             throw new InvalidFilingException(validationErrors);
@@ -156,7 +156,6 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
         return links;
     }
 
-    // TODO Refactor this to handle PSC types other than Individual, in both the arguments and the path build
     private Links buildLinks(final PscIndividualFiling savedFiling, final HttpServletRequest request) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
         final var selfUri = UriComponentsBuilder

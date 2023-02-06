@@ -49,7 +49,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
@@ -189,9 +189,9 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 new FieldError("object", "reference_psc_id", PSC_ID, false, bindingErrorCodes, null,
                         "PSC with that reference ID was not found");
 
-        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors()
+        doAnswer(answerVoid((IndividualFilingValidationContext c) -> c.getErrors()
                 .add(fieldErrorWithRejectedValue))).when(filingValidationService)
-                .validate(any(FilingValidationContext.class));
+                .validate(any(IndividualFilingValidationContext.class));
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)

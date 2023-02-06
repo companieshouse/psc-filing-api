@@ -4,10 +4,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 
 @Component
-public class PscRegisterEntryDateValidator extends BaseFilingValidator implements FilingValid {
+public class PscRegisterEntryDateValidator extends BaseIndividualFilingValidator
+        implements IndividualFilingValid {
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public void validate(final IndividualFilingValidationContext validationContext) {
 
         final var registerEntryDate = validationContext.getDto().getRegisterEntryDate();
         final var ceasedOnDate = validationContext.getDto().getCeasedOn();

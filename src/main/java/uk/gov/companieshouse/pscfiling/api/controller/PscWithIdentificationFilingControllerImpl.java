@@ -32,17 +32,17 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.WithIdentificationFilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
 @RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType: "
         + "(?:corporate-entity|legal-person)}")
-public class PscWithIdentificationFilingControllerImp implements PscWithIdentificationFilingController {
+public class PscWithIdentificationFilingControllerImpl implements PscWithIdentificationFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
     private final PscWithIdentificationFilingService pscWithIdentificationFilingService;
@@ -51,7 +51,7 @@ public class PscWithIdentificationFilingControllerImp implements PscWithIdentifi
     private final Logger logger;
     private final PscWithIdentificationMapper filingMapper;
 
-    public PscWithIdentificationFilingControllerImp(final TransactionService transactionService,
+    public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
             final PscWithIdentificationFilingService pscWithIdentificationFilingService, final PscWithIdentificationMapper filingMapper,
             final FilingValidationService validatorService, final Clock clock,
             final Logger logger) {
@@ -92,7 +92,7 @@ public class PscWithIdentificationFilingControllerImp implements PscWithIdentifi
         logger.infoContext(transId, "transaction found", logMap);
 
         validatorService.validate(
-                new FilingValidationContext(dto, validationErrors, transaction, pscType,
+                new WithIdentificationFilingValidationContext(dto, validationErrors, transaction, pscType,
                         passthroughHeader));
         if (!validationErrors.isEmpty()) {
             throw new InvalidFilingException(validationErrors);
@@ -123,7 +123,7 @@ public class PscWithIdentificationFilingControllerImp implements PscWithIdentifi
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource) {
 
-        final var maybePSCFiling = pscIndividualFilingService.get(filingResource, transId);
+        final var maybePSCFiling = pscWithIdentificationFilingService.get(filingResource, transId);
 
         final var maybeDto = maybePSCFiling.map(filingMapper::map);
 
@@ -150,7 +150,7 @@ public class PscWithIdentificationFilingControllerImp implements PscWithIdentifi
             final HttpServletRequest request, final Map<String, Object> logMap) {
         final var saved = pscWithIdentificationFilingService.save(entity, transId);
         final var links = buildLinks(saved, request);
-        final var updated = PscIndividualFiling.builder(saved).links(links)
+        final var updated = PscWithIdentificationFiling.builder(saved).links(links)
                 .build();
         final var resaved = pscWithIdentificationFilingService.save(updated, transId);
 
@@ -160,9 +160,8 @@ public class PscWithIdentificationFilingControllerImp implements PscWithIdentifi
         return links;
     }
 
-    // TODO Refactor this to handle PSC types other than Individual, in both the arguments
-    //  and the path build
-    private Links buildLinks(final PscIndividualFiling savedFiling,
+    // TODO Refactor this to handle PSC Types Corporate (RLE) and Legal Entity
+    private Links buildLinks(final PscWithIdentificationFiling savedFiling,
             final HttpServletRequest request) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
         final var selfUri = UriComponentsBuilder.fromUriString(request.getRequestURI())
@@ -171,7 +170,7 @@ public class PscWithIdentificationFilingControllerImp implements PscWithIdentifi
                 .toUri();
 
         final var validateUri = UriComponentsBuilder.fromUriString(request.getRequestURI()
-                        .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
+                        .replace(StringUtils.join("/", PscTypeConstants.CORPORATE_ENTITY.getValue()), ""))
                 .pathSegment(objectId.toHexString())
                 .pathSegment(VALIDATION_STATUS)
                 .build()

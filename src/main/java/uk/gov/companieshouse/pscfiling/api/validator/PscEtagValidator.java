@@ -10,7 +10,8 @@ import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
  * A previous validator must have checked that the PSC exists.
  */
 @Component
-public class PscEtagValidator extends BaseFilingValidator implements FilingValid {
+public class PscEtagValidator extends BaseIndividualFilingValidator
+        implements IndividualFilingValid {
 
     private final PscDetailsService pscDetailsService;
 
@@ -19,7 +20,7 @@ public class PscEtagValidator extends BaseFilingValidator implements FilingValid
     }
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public void validate(final IndividualFilingValidationContext validationContext) {
 
         final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
                 validationContext.getDto().getReferencePscId(), validationContext.getPscType(),

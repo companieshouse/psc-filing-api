@@ -48,7 +48,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
@@ -145,7 +145,7 @@ class PscIndividualFilingControllerImplTest {
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
         final var context =
-                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                new IndividualFilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
         verify(filingValidationService).validate(context);
         assertThat(validationErrors, is(empty()));
@@ -175,10 +175,10 @@ class PscIndividualFilingControllerImplTest {
         when(result.getFieldErrors()).thenReturn(new ArrayList<>());
 
         final var context =
-                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                new IndividualFilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
 
-        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors().add(
+        doAnswer(answerVoid((IndividualFilingValidationContext c) -> c.getErrors().add(
                 fieldErrorWithRejectedValue))).when(filingValidationService)
                 .validate(context);
 

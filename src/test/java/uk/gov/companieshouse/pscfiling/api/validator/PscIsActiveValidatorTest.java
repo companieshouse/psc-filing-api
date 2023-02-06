@@ -58,7 +58,7 @@ class PscIsActiveValidatorTest {
 
         when(pscApi.getCeasedOn()).thenReturn(null);
         testValidator.validate(
-            new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+            new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors, is(empty()));
     }
@@ -74,7 +74,7 @@ class PscIsActiveValidatorTest {
         when(pscApi.getCeasedOn()).thenReturn(CEASED_ON);
 
         testValidator.validate(
-            new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+            new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));

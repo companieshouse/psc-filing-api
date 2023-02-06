@@ -19,9 +19,9 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
 @ExtendWith(MockitoExtension.class)
-class FilingValidationContextTest {
+class IndividualIndividualFilingValidationContextTest {
     private static final String PASSTHROUGH_HEADER = "passthrough";
-    private FilingValidationContext testContext;
+    private IndividualFilingValidationContext testContext;
     @Mock
     private PscIndividualDto dto;
     @Mock
@@ -32,33 +32,33 @@ class FilingValidationContextTest {
     void setUp() {
         errors = new ArrayList<>();
         testContext =
-                new FilingValidationContext(dto, errors, transaction, PscTypeConstants.INDIVIDUAL,
+                new IndividualFilingValidationContext(dto, errors, transaction, PscTypeConstants.INDIVIDUAL,
                         PASSTHROUGH_HEADER);
     }
 
     @Test
     void constructorWhenDtoNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(null, errors, transaction,
+                () -> new IndividualFilingValidationContext(null, errors, transaction,
                         PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
     }
 
     @Test
     void constructorWhenErrorsNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(dto, null, transaction,
+                () -> new IndividualFilingValidationContext(dto, null, transaction,
                         PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
     }
 
     void constructorWhenTransactionNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(dto, errors, null,
+                () -> new IndividualFilingValidationContext(dto, errors, null,
                         PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
     }
 
     void constructorWhenPscTypeNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(dto, errors, transaction,
+                () -> new IndividualFilingValidationContext(dto, errors, transaction,
                         null, PASSTHROUGH_HEADER));
     }
 
@@ -89,13 +89,13 @@ class FilingValidationContextTest {
 
     @Test
     void testEquals() {
-        EqualsVerifier.forClass(FilingValidationContext.class).usingGetClass().verify();
+        EqualsVerifier.forClass(IndividualFilingValidationContext.class).usingGetClass().verify();
     }
 
     @Test
     void testToString() {
         assertThat(testContext.toString(),
-                is("FilingValidationContext[dto=dto, errors=[], transaction=transaction, "
+                is("IndividualFilingValidationContext[dto=dto, errors=[], transaction=transaction, "
                         + "pscType=INDIVIDUAL, passthroughHeader='passthrough']"));
     }
 }
