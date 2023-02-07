@@ -3,55 +3,82 @@ package uk.gov.companieshouse.pscfiling.api.interceptor;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.HandlerInterceptor;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.service.CompanyProfileService;
+import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @Component
 public class CompanyInterceptor implements HandlerInterceptor {
 
-    public static final String COMPANY_HAS_SUPER_SECURE_PSCS_MESSAGE =
-            "As a result of protection under section 790ZG of the Companies Act 2006 this form cannot be filed online" +
-                    ". You can only file this form on paper, refer to the information pack that was sent on " +
-                    "application of the protection.";
+    @Value("${super.secure.message}")
+    public String companyHasSuperSecurePscsMessage;
     private static final List<String> ALLOWED_COMPANY_TYPES =
             List.of("private-unlimited", "ltd", "plc", "old-public-company",
                     "private-limited-guarant-nsc-limited-exemption", "private-limited-guarant-nsc",
                     "private-unlimited-nsc", "private-limited-shares-section-30-exemption");
-    public static final String COMPANY_TYPE_NOT_ALLLOWED_MESSSAGE = "PSC form cannot be filed for this company type: ";
+    @Value("${company.type.not.allowed.message}")
+    public String companyTypeNotAlllowedMesssage;
     private static final List<String> COMPANY_STATUS_NOT_ALLOWED = List.of("dissolved", "converted-closed");
-    public static final String COMPANY_STATUS_NOT_ALLOWED_MESSAGE = "Form cannot be filed for a company that is ";
+    @Value("${company.status.not.allowed.message}")
+    public String companyStatusNotAllowedMessage;
 
     CompanyProfileService companyProfileService;
+    private final Logger logger;
 
-    public CompanyInterceptor(CompanyProfileService companyProfileService) {
+    public CompanyInterceptor(CompanyProfileService companyProfileService, Logger logger) {
         this.companyProfileService = companyProfileService;
+        this.logger = logger;
+    }
+
+    public void setCompanyHasSuperSecurePscsMessage(String companyHasSuperSecurePscsMessage) {
+        this.companyHasSuperSecurePscsMessage = companyHasSuperSecurePscsMessage;
+    }
+
+    public void setCompanyTypeNotAlllowedMesssage(String companyTypeNotAlllowedMesssage) {
+        this.companyTypeNotAlllowedMesssage = companyTypeNotAlllowedMesssage;
+    }
+
+    public void setCompanyStatusNotAllowedMessage(String companyStatusNotAllowedMessage) {
+        this.companyStatusNotAllowedMessage = companyStatusNotAllowedMessage;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        Transaction transaction = (Transaction) request.getAttribute(AttributeName.TRANSACTION.getValue());
+        var transaction = (Transaction) request.getAttribute(AttributeName.TRANSACTION.getValue());
         final var passthroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+
+        final var logMap = LogHelper.createLogMap(transaction.getId());
+        logger.info("Company Interceptor", logMap);
 
         CompanyProfileApi companyProfile = companyProfileService.getCompanyProfile(transaction, passthroughHeader);
 
         if (companyProfile != null) {
             if (companyProfile.hasSuperSecurePscs()) {
-                sendValidationError(COMPANY_HAS_SUPER_SECURE_PSCS_MESSAGE);
+                logger.info("Company has Super Secure PSCs");
+                sendValidationError(companyHasSuperSecurePscsMessage);
             }
 
             if (!ALLOWED_COMPANY_TYPES.contains(companyProfile.getType())) {
-                sendValidationError(COMPANY_TYPE_NOT_ALLLOWED_MESSSAGE + companyProfile.getType());
+                logMap.put("company_number", transaction.getCompanyNumber());
+                logMap.put("company_type", companyProfile.getType());
+                logger.info("Company Type not allowed", logMap);
+                sendValidationError(companyTypeNotAlllowedMesssage + companyProfile.getType());
             }
 
             if (COMPANY_STATUS_NOT_ALLOWED.contains(companyProfile.getCompanyStatus())) {
-                sendValidationError(COMPANY_STATUS_NOT_ALLOWED_MESSAGE + companyProfile.getCompanyStatus());
+                logMap.put("company_number", transaction.getCompanyNumber());
+                logMap.put("company_status", companyProfile.getCompanyStatus());
+                logger.info("Company status not allowed", logMap);
+                sendValidationError(companyStatusNotAllowedMessage + companyProfile.getCompanyStatus());
             }
         }
         return true;

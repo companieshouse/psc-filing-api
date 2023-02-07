@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
@@ -13,6 +14,7 @@ import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
+@PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
     static final String[] TRANSACTIONS_LIST = {"/transactions/**"};

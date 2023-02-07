@@ -5,9 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor.COMPANY_HAS_SUPER_SECURE_PSCS_MESSAGE;
-import static uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor.COMPANY_STATUS_NOT_ALLOWED_MESSAGE;
-import static uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor.COMPANY_TYPE_NOT_ALLLOWED_MESSSAGE;
 
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +18,7 @@ import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.service.CompanyProfileService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -38,6 +36,8 @@ class CompanyInterceptorTest {
     @Mock
     private CompanyProfileService companyProfileService;
     @Mock
+    Logger logger;
+    @Mock
     private Transaction transaction;
 
     private CompanyProfileApi companyProfileApi;
@@ -45,7 +45,10 @@ class CompanyInterceptorTest {
 
     @BeforeEach
     void setUp() {
-        testCompanyInterceptor = new CompanyInterceptor(companyProfileService);
+        testCompanyInterceptor = new CompanyInterceptor(companyProfileService, logger);
+        testCompanyInterceptor.setCompanyHasSuperSecurePscsMessage("message");
+        testCompanyInterceptor.setCompanyTypeNotAlllowedMesssage("message");
+        testCompanyInterceptor.setCompanyStatusNotAllowedMessage("message");
         companyProfileApi = new CompanyProfileApi();
         companyProfileApi.setHasSuperSecurePscs(Boolean.FALSE);
         companyProfileApi.setType("ltd");
@@ -67,7 +70,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setHasSuperSecurePscs(Boolean.TRUE);
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, COMPANY_HAS_SUPER_SECURE_PSCS_MESSAGE);
+                null, "message");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -81,7 +84,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setType("not-proper");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, COMPANY_TYPE_NOT_ALLLOWED_MESSSAGE + companyProfileApi.getType());
+                null, "message" + companyProfileApi.getType());
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -95,7 +98,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setCompanyStatus("dissolved");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, COMPANY_STATUS_NOT_ALLOWED_MESSAGE + companyProfileApi.getCompanyStatus());
+                null, "message" + companyProfileApi.getCompanyStatus());
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
