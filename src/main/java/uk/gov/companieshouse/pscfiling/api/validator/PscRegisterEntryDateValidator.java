@@ -8,7 +8,7 @@ public class PscRegisterEntryDateValidator extends BaseIndividualFilingValidator
         implements IndividualFilingValid {
 
     @Override
-    public void validate(final IndividualFilingValidationContext validationContext) {
+    public void validate(final FilingValidationContext validationContext) {
 
         final var registerEntryDate = validationContext.getDto().getRegisterEntryDate();
         final var ceasedOnDate = validationContext.getDto().getCeasedOn();

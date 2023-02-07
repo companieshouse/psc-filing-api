@@ -29,14 +29,12 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscWithIdentificationMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
-import uk.gov.companieshouse.pscfiling.api.validator.WithIdentificationFilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -92,7 +90,7 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
         logger.infoContext(transId, "transaction found", logMap);
 
         validatorService.validate(
-                new WithIdentificationFilingValidationContext(dto, validationErrors, transaction, pscType,
+                new FilingValidationContext<>(dto, validationErrors, transaction, pscType,
                         passthroughHeader));
         if (!validationErrors.isEmpty()) {
             throw new InvalidFilingException(validationErrors);

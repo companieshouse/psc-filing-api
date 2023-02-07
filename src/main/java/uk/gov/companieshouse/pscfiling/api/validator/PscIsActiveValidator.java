@@ -17,7 +17,7 @@ public class PscIsActiveValidator extends BaseIndividualFilingValidator
     }
 
     @Override
-    public void validate(final IndividualFilingValidationContext validationContext) {
+    public void validate(final FilingValidationContext validationContext) {
 
         final PscApi pscDetails;
         pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),

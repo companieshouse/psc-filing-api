@@ -57,7 +57,7 @@ class PscExistsValidatorTest {
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
 
         testValidator.validate(
-                new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+                new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors, is(empty()));
     }
@@ -74,7 +74,7 @@ class PscExistsValidatorTest {
                 "PSC Details not found for " + PSC_ID + ": 404 Not Found", errorResponseException));
 
         testValidator.validate(
-                new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+                new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));

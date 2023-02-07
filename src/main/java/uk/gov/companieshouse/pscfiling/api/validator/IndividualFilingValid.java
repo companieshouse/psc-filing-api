@@ -4,7 +4,7 @@ public interface IndividualFilingValid {
     /**
      * @param validationContext the data to be validated plus necessary details
      */
-    void validate(final IndividualFilingValidationContext validationContext);
+    void validate(final FilingValidationContext<?> validationContext);
 
     void setNext(final IndividualFilingValid individualFilingValidator);
 }

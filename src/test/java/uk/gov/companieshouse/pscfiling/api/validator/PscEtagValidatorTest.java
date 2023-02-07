@@ -59,7 +59,7 @@ class PscEtagValidatorTest {
         when(pscApi.getEtag()).thenReturn(ETAG);
 
         testValidator.validate(
-                new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+                new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors, is(empty()));
     }
@@ -72,7 +72,7 @@ class PscEtagValidatorTest {
         when(pscApi.getEtag()).thenReturn("some other etag value");
 
         testValidator.validate(
-                new IndividualFilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
+                new FilingValidationContext(dto, errors, transaction, pscType, passthroughHeader));
 
         assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));

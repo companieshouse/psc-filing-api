@@ -16,7 +16,7 @@ public class PscExistsValidator extends BaseIndividualFilingValidator
     }
 
     @Override
-    public void validate(final IndividualFilingValidationContext validationContext) {
+    public void validate(final FilingValidationContext validationContext) {
 
         try {
             pscDetailsService.getPscDetails(validationContext.getTransaction(), validationContext.getDto()

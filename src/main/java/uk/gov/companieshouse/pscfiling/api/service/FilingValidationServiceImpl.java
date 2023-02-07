@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
-import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
-import uk.gov.companieshouse.pscfiling.api.validator.WithIdentificationFilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 
 @Service
 public class FilingValidationServiceImpl implements FilingValidationService {
@@ -23,27 +23,16 @@ public class FilingValidationServiceImpl implements FilingValidationService {
                 .collect(Collectors.toMap(FilingForPscTypeValid::getPscType, Function.identity()));
     }
 
-    @Override
-    public void validate(final IndividualFilingValidationContext individualContext) {
-        Optional.ofNullable(filingValidByPscType.get(individualContext.getPscType()))
-                .map(FilingForPscTypeValid::getFirst)
-                .ifPresentOrElse(v -> v.validate(individualContext), () -> {
-                    throw new UnsupportedOperationException(
-                            MessageFormat.format("Validation not defined for PSC type ''{0}''",
-                                individualContext.getPscType()));
-                });
-    }
 
     @Override
-    public void validate(final WithIdentificationFilingValidationContext withIdentificationContext) {
-        Optional.ofNullable(filingValidByPscType.get(withIdentificationContext.getPscType()))
+    public void validate(final FilingValidationContext<?> context) {
+        Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
                 .map(FilingForPscTypeValid::getFirst)
-                .ifPresentOrElse(v -> v.validate(withIdentificationContext), () -> {
+                .ifPresentOrElse(v -> v.validate(context), () -> {
                     throw new UnsupportedOperationException(
                             MessageFormat.format("Validation not defined for PSC type ''{0}''",
-                                withIdentificationContext.getPscType()));
+                                context.getPscType()));
                 });
-
     }
 
 }

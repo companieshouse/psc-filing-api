@@ -27,8 +27,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValidationContext;
-import uk.gov.companieshouse.pscfiling.api.validator.WithIdentificationFilingValidationContext;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -137,7 +136,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
                 transactionService.getTransaction(transId, passthroughHeader);
 
         if (Objects.equals(pscType.getValue(), PscTypeConstants.INDIVIDUAL.getValue())) {
-            final var context = new IndividualFilingValidationContext(dto, errors, transaction,
+            final var context = new FilingValidationContext(dto, errors, transaction,
                 pscType, passthroughHeader);
 
             filingValidationService.validate(context);

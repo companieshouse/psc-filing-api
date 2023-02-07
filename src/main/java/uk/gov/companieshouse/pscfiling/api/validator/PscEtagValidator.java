@@ -20,7 +20,7 @@ public class PscEtagValidator extends BaseIndividualFilingValidator
     }
 
     @Override
-    public void validate(final IndividualFilingValidationContext validationContext) {
+    public void validate(final FilingValidationContext validationContext) {
 
         final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
                 validationContext.getDto().getReferencePscId(), validationContext.getPscType(),

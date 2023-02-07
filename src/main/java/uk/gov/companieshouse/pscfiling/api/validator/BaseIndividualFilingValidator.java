@@ -7,7 +7,7 @@ public class BaseIndividualFilingValidator implements IndividualFilingValid {
     private IndividualFilingValid nextValidator;
 
     @Override
-    public void validate(final IndividualFilingValidationContext validationContext) {
+    public void validate(final FilingValidationContext validationContext) {
 
         Optional.ofNullable(nextValidator).ifPresent(v -> v.validate(validationContext));
     }
