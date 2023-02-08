@@ -56,7 +56,8 @@ class InterceptorConfigTest {
         inOrder.verify(interceptorRegistry).addInterceptor(any(OpenTransactionInterceptor.class));
         inOrder.verify(interceptorRegistry).addInterceptor(companyInterceptor);
         inOrder.verify(interceptorRegistry).addInterceptor(tokenPermissionsInterceptor);
-        verify(interceptorRegistration, times(4)).addPathPatterns("/transactions/**");
+        verify(interceptorRegistration, times(4))
+                .addPathPatterns("/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}");
     }
 
 
