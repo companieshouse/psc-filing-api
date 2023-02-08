@@ -19,7 +19,8 @@ import uk.gov.companieshouse.api.util.security.Permission;
 @ComponentScan("uk.gov.companieshouse.api")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String[] TRANSACTIONS_LIST = {"/transactions/**"};
+    static final String[] TRANSACTIONS_LIST = {
+        "/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}"};
     public static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
