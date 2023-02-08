@@ -3,15 +3,15 @@ package uk.gov.companieshouse.pscfiling.api.service;
 import java.util.Optional;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
-import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 public class PscWithIdentificationFilingServiceImpl implements PscWithIdentificationFilingService {
 
-    private final PscIndividualFilingRepository repository;
+    private final PscWithIdentificationFilingRepository repository;
     private final Logger logger;
 
-    public PscWithIdentificationFilingServiceImpl(final PscIndividualFilingRepository repository,
+    public PscWithIdentificationFilingServiceImpl(final PscWithIdentificationFilingRepository repository,
             Logger logger) {
         this.repository = repository;
         this.logger = logger;

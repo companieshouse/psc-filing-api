@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +19,11 @@ import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -109,7 +107,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         return validationStatus;
     }
 
-    private ValidationStatusError[] calculateIsValid(final PscFiling pscFiling, final String transId,
+    private ValidationStatusError[] calculateIsValid(final PscFiling<?> pscFiling, final String transId,
             final String passthroughHeader) {
 
         final var self = pscFiling.getLinks().getSelf().getPath();
@@ -126,25 +124,13 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
                     new ValidationStatusError("PSC type could not be identified", "$.links.self",
                             LocationType.RESOURCE.getValue(), ErrorType.VALIDATION.getType())
             };
-
         }
 
     }
 
-    private Object getPscFiling(final PscFiling pscFiling, final PscTypeConstants pscType) {
-
-        if (Objects.equals(pscType, PscTypeConstants.INDIVIDUAL)) {
-            return (PscIndividualFiling) pscFiling.getFiling();
-        } else {
-            return (PscWithIdentificationFiling) pscFiling.getFiling();
-        }
-    }
-
-    private ValidationStatusError[] validatePscType(final PscFiling pscFiling, final String transId,
+    private ValidationStatusError[] validatePscType(final PscFiling<?> pscFiling, final String transId,
                                                     final String passthroughHeader, final PscTypeConstants pscType) {
-
-        final var dto = getPscFiling(pscFiling, pscType);
-        final var dto = filingMapper.map(filing-> getPscFiling(pscFiling, pscType));
+        PscDto dto = filingMapper.map(pscFiling);
 
         final var errors = new ArrayList<FieldError>();
         // TODO: When Transaction Interceptor is implemented, transaction will be in HTTP request

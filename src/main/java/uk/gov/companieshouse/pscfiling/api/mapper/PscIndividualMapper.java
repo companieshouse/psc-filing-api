@@ -6,14 +6,11 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
-import uk.gov.companieshouse.pscfiling.api.model.dto.WithIdentificationFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
 @Mapper(componentModel = "spring")//, uses = NameElementsMapper.class)
-public interface PscMapper {
+public interface PscIndividualMapper extends PscMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -42,22 +39,4 @@ public interface PscMapper {
             LocalDate.of(tuple.getYear(), tuple.getMonth(), tuple.getDay()));
     }
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "kind", ignore = true)
-    @Mapping(target = "etag", ignore = true)
-    @Mapping(target = "links", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "statementActionDate", ignore = true)
-    @Mapping(target = "statementType", ignore = true)
-    PscWithIdentificationFiling map(PscWithIdentificationDto dto);
-
-    PscWithIdentificationDto map(PscWithIdentificationFiling filing);
-
-    @Mapping(target = "countryRegistered", source = "identification.countryRegistered")
-    @Mapping(target = "placeRegistered", source = "identification.placeRegistered")
-    @Mapping(target = "registrationNumber", source = "identification.registrationNumber")
-    @Mapping(target = "legalAuthority", source = "identification.legalAuthority")
-    @Mapping(target = "legalForm", source = "identification.legalForm")
-    WithIdentificationFilingDataDto mapFiling(final PscWithIdentificationFiling entity);
 }

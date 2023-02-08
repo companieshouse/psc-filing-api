@@ -1,14 +1,11 @@
 package uk.gov.companieshouse.pscfiling.api.mapper;
 
-import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.WithIdentificationFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
-@Mapper(componentModel = "spring")
-public interface PscWithIdentificationMapper {
-
+public interface PscWithIdentificationMapper extends PscMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "kind", ignore = true)

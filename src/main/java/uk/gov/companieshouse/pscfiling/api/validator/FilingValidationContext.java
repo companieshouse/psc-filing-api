@@ -6,6 +6,9 @@ import java.util.StringJoiner;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 
 public class FilingValidationContext <T> {
     private final List<FieldError> errors;
@@ -31,36 +34,14 @@ public class FilingValidationContext <T> {
         this.passthroughHeader = passthroughHeader;
     }
 
-    public T getDto() {
-        return dto;
-    }
+    public PscDtoCommunal getDto() {
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        if(getPscType().getValue().equals(PscTypeConstants.INDIVIDUAL.getValue())) {
+            return (PscIndividualDto) dto;
+
+        } else {
+            return (PscWithIdentificationDto) dto;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        FilingValidationContext that = (FilingValidationContext) o;
-        return getDto().equals(that.getDto());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getDto());
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", FilingValidationContext.class.getSimpleName() + "[", "]").add(
-                        "dto=" + dto)
-                .add("errors=" + errors)
-                .add("transaction=" + transaction)
-                .add("pscType=" + pscType)
-                .add("passthroughHeader='" + passthroughHeader + "'")
-                .toString();
     }
 
     public List<FieldError> getErrors() {
@@ -77,5 +58,38 @@ public class FilingValidationContext <T> {
 
     public String getPassthroughHeader() {
         return passthroughHeader;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final FilingValidationContext<?> that = (FilingValidationContext) o;
+        return Objects.equals(getDto(), that.getDto())
+                && Objects.equals(getErrors(), that.getErrors())
+                && Objects.equals(getTransaction(), that.getTransaction())
+                && getPscType() == that.getPscType()
+                && Objects.equals(getPassthroughHeader(), that.getPassthroughHeader());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDto(), getErrors(), getTransaction(), getPscType(),
+                getPassthroughHeader());
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", FilingValidationContext.class.getSimpleName() + "[", "]").add(
+                        "dto=" + dto)
+                .add("errors=" + errors)
+                .add("transaction=" + transaction)
+                .add("pscType=" + pscType)
+                .add("passthroughHeader='" + passthroughHeader + "'")
+                .toString();
     }
 }

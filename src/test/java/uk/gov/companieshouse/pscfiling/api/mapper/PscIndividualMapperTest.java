@@ -307,7 +307,7 @@ class PscIndividualMapperTest {
     @Test
     void nullPscIndividualFilingToFilingData() {
 
-        final var filingData = testMapper.mapFiling(null);
+        final var filingData = testMapper.mapFiling((PscIndividualFiling) null);
 
         assertThat(filingData, is(nullValue()));
     }
