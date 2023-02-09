@@ -11,9 +11,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
@@ -23,7 +25,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.service.CompanyProfileService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class CompanyInterceptorTest {
 
     private static final String PASSTHROUGH_HEADER = "passthrough";
@@ -33,26 +35,24 @@ class CompanyInterceptorTest {
     private HttpServletResponse response;
     @Mock
     private Object handler;
-    @Mock
+    @MockBean
     private CompanyProfileService companyProfileService;
-    @Mock
+    @MockBean
     Logger logger;
     @Mock
     private Transaction transaction;
 
     private CompanyProfileApi companyProfileApi;
+    @Autowired
     private CompanyInterceptor testCompanyInterceptor;
 
     @BeforeEach
     void setUp() {
-        testCompanyInterceptor = new CompanyInterceptor(companyProfileService, logger);
-        testCompanyInterceptor.setCompanyHasSuperSecurePscsMessage("message");
-        testCompanyInterceptor.setCompanyTypeNotAlllowedMesssage("message");
-        testCompanyInterceptor.setCompanyStatusNotAllowedMessage("message");
         companyProfileApi = new CompanyProfileApi();
         companyProfileApi.setHasSuperSecurePscs(Boolean.FALSE);
         companyProfileApi.setType("ltd");
         companyProfileApi.setCompanyStatus("active");
+
         when(request.getAttribute(AttributeName.TRANSACTION.getValue())).thenReturn(transaction);
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(PASSTHROUGH_HEADER);
         when(companyProfileService.getCompanyProfile(transaction, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
@@ -70,7 +70,9 @@ class CompanyInterceptorTest {
         companyProfileApi.setHasSuperSecurePscs(Boolean.TRUE);
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "message");
+                null, "As a result of protection under section 790ZG of the Companies Act 2006 this form cannot be " +
+                "filed online. You can only file this form on paper, refer to the information pack that was sent on " +
+                "application of the protection.");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -84,7 +86,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setType("not-proper");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "message" + companyProfileApi.getType());
+                null, "PSC form cannot be filed for this company type: " + companyProfileApi.getType());
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -98,7 +100,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setCompanyStatus("dissolved");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "message" + companyProfileApi.getCompanyStatus());
+                null, "Form cannot be filed for a company status that is " + companyProfileApi.getCompanyStatus());
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -112,6 +114,14 @@ class CompanyInterceptorTest {
         when(companyProfileService.getCompanyProfile(transaction, PASSTHROUGH_HEADER)).thenReturn(null);
         var result = testCompanyInterceptor.preHandle(request, response, handler);
         assertTrue(result);
+    }
+
+    @Test
+    void preHandleWhenTransactionInRequestNull() {
+        when(request.getAttribute(AttributeName.TRANSACTION.getValue())).thenReturn(null);
+        final var thrown = assertThrows(NullPointerException.class,
+                () -> testCompanyInterceptor.preHandle(request, response, handler));
+        assertThat(thrown.getMessage(), is("Transaction missing from request"));
     }
 }
 

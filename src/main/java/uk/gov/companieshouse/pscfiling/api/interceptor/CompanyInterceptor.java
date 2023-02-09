@@ -1,8 +1,10 @@
 package uk.gov.companieshouse.pscfiling.api.interceptor;
 
 import java.util.List;
+import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
@@ -19,18 +21,11 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @Component
 public class CompanyInterceptor implements HandlerInterceptor {
 
-    @Value("${super.secure.message}")
-    public String companyHasSuperSecurePscsMessage;
-    private static final List<String> ALLOWED_COMPANY_TYPES =
-            List.of("private-unlimited", "ltd", "plc", "old-public-company",
-                    "private-limited-guarant-nsc-limited-exemption", "private-limited-guarant-nsc",
-                    "private-unlimited-nsc", "private-limited-shares-section-30-exemption");
-    @Value("${company.type.not.allowed.message}")
-    public String companyTypeNotAlllowedMesssage;
-    private static final List<String> COMPANY_STATUS_NOT_ALLOWED = List.of("dissolved", "converted-closed");
-    @Value("${company.status.not.allowed.message}")
-    public String companyStatusNotAllowedMessage;
-
+    private List<String> allowedCompanyTypes;
+    private List<String> companyStatusNotAllowed;
+    private String companyHasSuperSecurePscsMessage;
+    private String companyTypeNotAlllowedMesssage;
+    private String companyStatusNotAllowedMessage;
     CompanyProfileService companyProfileService;
     private final Logger logger;
 
@@ -39,21 +34,31 @@ public class CompanyInterceptor implements HandlerInterceptor {
         this.logger = logger;
     }
 
-    public void setCompanyHasSuperSecurePscsMessage(String companyHasSuperSecurePscsMessage) {
+    @Autowired
+    public void setCompanyHasSuperSecurePscsMessage(@Value("${super.secure.message:not-defined}") String companyHasSuperSecurePscsMessage) {
         this.companyHasSuperSecurePscsMessage = companyHasSuperSecurePscsMessage;
     }
-
-    public void setCompanyTypeNotAlllowedMesssage(String companyTypeNotAlllowedMesssage) {
+    @Autowired
+    public void setCompanyTypeNotAlllowedMesssage(@Value("${company.type.not.allowed.message}") String companyTypeNotAlllowedMesssage) {
         this.companyTypeNotAlllowedMesssage = companyTypeNotAlllowedMesssage;
     }
-
-    public void setCompanyStatusNotAllowedMessage(String companyStatusNotAllowedMessage) {
+    @Autowired
+    public void setCompanyStatusNotAllowedMessage(@Value("${company.status.not.allowed.message}") String companyStatusNotAllowedMessage) {
         this.companyStatusNotAllowedMessage = companyStatusNotAllowedMessage;
+    }
+    @Autowired
+    public void setAllowedCompanyTypes(@Value("#{${allowed.company.types}}") List<String> allowedCompanyTypes) {
+        this.allowedCompanyTypes = allowedCompanyTypes;
+    }
+    @Autowired
+    public void setCompanyStatusNotAllowed(@Value("#{${company.status.not.allowed}}") List<String> companyStatusNotAllowed) {
+        this.companyStatusNotAllowed = companyStatusNotAllowed;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         var transaction = (Transaction) request.getAttribute(AttributeName.TRANSACTION.getValue());
+        Objects.requireNonNull(transaction, "Transaction missing from request");
         final var passthroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
 
         final var logMap = LogHelper.createLogMap(transaction.getId());
@@ -67,14 +72,14 @@ public class CompanyInterceptor implements HandlerInterceptor {
                 sendValidationError(companyHasSuperSecurePscsMessage);
             }
 
-            if (!ALLOWED_COMPANY_TYPES.contains(companyProfile.getType())) {
+            if (!allowedCompanyTypes.contains(companyProfile.getType())) {
                 logMap.put("company_number", transaction.getCompanyNumber());
                 logMap.put("company_type", companyProfile.getType());
                 logger.info("Company Type not allowed", logMap);
                 sendValidationError(companyTypeNotAlllowedMesssage + companyProfile.getType());
             }
 
-            if (COMPANY_STATUS_NOT_ALLOWED.contains(companyProfile.getCompanyStatus())) {
+            if (companyStatusNotAllowed.contains(companyProfile.getCompanyStatus())) {
                 logMap.put("company_number", transaction.getCompanyNumber());
                 logMap.put("company_status", companyProfile.getCompanyStatus());
                 logger.info("Company status not allowed", logMap);
