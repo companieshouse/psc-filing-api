@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PscIndividualFiling extends PscFiling implements PscCommunal {
+public class PscIndividualFiling implements PscFiling {
 
     @Id
     private String id;
@@ -150,11 +150,6 @@ public class PscIndividualFiling extends PscFiling implements PscCommunal {
 
     public String getStatementType() {
         return statementType;
-    }
-
-    @Override
-    public PscIndividualFiling getFiling() {
-        return this;
     }
 
     @Override

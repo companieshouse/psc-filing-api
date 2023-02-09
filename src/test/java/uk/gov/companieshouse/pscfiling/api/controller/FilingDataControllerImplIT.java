@@ -21,7 +21,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
@@ -30,7 +30,7 @@ class FilingDataControllerImplIT extends BaseControllerIT {
     @MockBean
     private FilingDataService filingDataService;
     @MockBean
-    private PscIndividualFilingService pscIndividualFilingService;
+    private PscFilingService pscFilingService;
     @MockBean
     private Logger logger;
     @MockBean

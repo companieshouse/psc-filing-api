@@ -11,7 +11,7 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 @JsonDeserialize(builder = PscIndividualDto.Builder.class)
-public class PscIndividualDto implements PscDtoCommunal {
+public class PscIndividualDto implements PscDtoCommunal, PscDto {
 
     private final PscDtoCommunal pscDtoCommunal;
     private String countryOfResidence;

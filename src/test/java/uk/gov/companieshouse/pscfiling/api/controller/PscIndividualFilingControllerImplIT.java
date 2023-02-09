@@ -42,12 +42,12 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
@@ -65,9 +65,9 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private PscApi pscDetails;
     @MockBean
-    private PscIndividualFilingService pscIndividualFilingService;
+    private PscFilingService pscFilingService;
     @MockBean
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @MockBean
     private Clock clock;
     @MockBean
@@ -120,7 +120,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscIndividualFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
+        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
                         PscIndividualFiling.builder(filing).id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
                 .thenAnswer(i -> PscIndividualFiling.builder(i.getArgument(0))
@@ -430,7 +430,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .registerEntryDate(CEASED_ON_DATE)
                 .build();
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         when(filingMapper.map(filing)).thenReturn(dto);
 
@@ -446,7 +446,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
                         get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))

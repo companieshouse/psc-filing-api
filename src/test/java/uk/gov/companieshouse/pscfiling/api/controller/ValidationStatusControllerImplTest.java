@@ -25,13 +25,13 @@ import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
@@ -45,7 +45,7 @@ class ValidationStatusControllerImplTest {
             "/transactions/" + TRANS_ID + "/persons-with-significant-control/";
 
     @Mock
-    private PscIndividualFilingService pscIndividualFilingService;
+    private PscFilingService pscFilingService;
     @Mock
     private TransactionService transactionService;
     @Mock
@@ -55,7 +55,7 @@ class ValidationStatusControllerImplTest {
     @Mock
     private Logger logger;
     @Mock
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @Mock
     private ErrorMapper errorMapper;
     @Mock
@@ -66,7 +66,7 @@ class ValidationStatusControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController = new ValidationStatusControllerImpl(pscIndividualFilingService, transactionService,
+        testController = new ValidationStatusControllerImpl(pscFilingService, transactionService,
                 filingValidationService, filingMapper, errorMapper, true, logger);
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
@@ -74,11 +74,11 @@ class ValidationStatusControllerImplTest {
 
     @Test
     void validateWhenClosableFlagFalse() {
-        testController = new ValidationStatusControllerImpl(pscIndividualFilingService, transactionService,
+        testController = new ValidationStatusControllerImpl(pscFilingService, transactionService,
                 filingValidationService, filingMapper, errorMapper, false, logger);
         final var filing = PscIndividualFiling.builder()
                 .build();
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.validate(TRANS_ID, FILING_ID, request);
 
@@ -90,7 +90,7 @@ class ValidationStatusControllerImplTest {
 
     @Test
     void validateWhenFilingNotFound() {
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var filingResourceNotFoundException =
                 assertThrows(FilingResourceNotFoundException.class,
@@ -110,7 +110,7 @@ class ValidationStatusControllerImplTest {
         final var filing = PscIndividualFiling.builder().links(links)
                 .build();
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.validate(TRANS_ID, FILING_ID, request);
         final var expectedError =
@@ -133,7 +133,7 @@ class ValidationStatusControllerImplTest {
         final var filing = PscIndividualFiling.builder().links(links)
                 .build();
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
         final var dto = PscIndividualDto.builder().build();
         when(filingMapper.map(filing)).thenReturn(dto);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(

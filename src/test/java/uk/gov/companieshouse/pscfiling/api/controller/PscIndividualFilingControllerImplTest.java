@@ -39,13 +39,13 @@ import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
@@ -65,7 +65,7 @@ class PscIndividualFilingControllerImplTest {
 
     private PscIndividualFilingController testController;
     @Mock
-    private PscIndividualFilingService pscIndividualFilingService;
+    private PscFilingService pscFilingService;
     @Mock
     private TransactionService transactionService;
     @Mock
@@ -73,7 +73,7 @@ class PscIndividualFilingControllerImplTest {
     @Mock
     private Logger logger;
     @Mock
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @Mock
     private PscIndividualDto dto;
     @Mock
@@ -99,8 +99,7 @@ class PscIndividualFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController =
-                new PscIndividualFilingControllerImpl(transactionService,
-                        pscIndividualFilingService, filingMapper,
+                new PscIndividualFilingControllerImpl(transactionService, pscFilingService, filingMapper,
                         filingValidationService, clock, logger) {
                 };
         filing = PscIndividualFiling.builder()
@@ -133,8 +132,8 @@ class PscIndividualFilingControllerImplTest {
                 .build();
         final var withLinks = PscIndividualFiling.builder(withFilingId).links(links)
                 .build();
-        when(pscIndividualFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
-        when(pscIndividualFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -208,7 +207,7 @@ class PscIndividualFilingControllerImplTest {
 
         when(filingMapper.map(filing)).thenReturn(dto);
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
 
@@ -219,7 +218,7 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void getFilingForReviewNotFound() {
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
 

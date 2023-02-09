@@ -21,7 +21,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscWithIdentificationMapper;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -45,11 +45,11 @@ class FilingDataServiceImplTest {
     public static final String OTHER_FORENAMES = "TOM";
     public static final String LASTNAME = "BLOGGS";
     @Mock
-    private PscIndividualFilingService pscIndividualFilingService;
+    private PscFilingService pscFilingService;
     @Mock
     private PscWithIdentificationFilingService pscWithIdentificationFilingService;
     @Mock
-    private PscIndividualMapper pscIndividualMapper;
+    private PscMapper pscMapper;
     @Mock
     private PscWithIdentificationMapper pscWithIdentificationMapper;
     @Mock
@@ -67,8 +67,8 @@ class FilingDataServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new FilingDataServiceImpl(pscIndividualFilingService,
-            pscWithIdentificationFilingService, pscIndividualMapper, pscWithIdentificationMapper,
+        testService = new FilingDataServiceImpl(pscFilingService,
+            pscWithIdentificationFilingService, pscMapper, pscWithIdentificationMapper,
             pscDetailsService, filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
@@ -94,8 +94,8 @@ class FilingDataServiceImplTest {
                 .ceasedOn(CEASED_ON)
                 .build();
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
-        when(pscIndividualMapper.mapFiling(pscFiling)).thenReturn(filingData);
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscMapper.mapFiling(pscFiling)).thenReturn(filingData);
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
         var nameElementsApi = new NameElementsApi();
@@ -103,7 +103,7 @@ class FilingDataServiceImplTest {
         nameElementsApi.setForename(FIRSTNAME);
         nameElementsApi.setSurname(LASTNAME);
         when(pscApi.getNameElements()).thenReturn(nameElementsApi);
-        when(pscIndividualMapper.mapFiling(pscFiling)).thenReturn(filingData);
+        when(pscMapper.mapFiling(pscFiling)).thenReturn(filingData);
 
         final var filingApi = testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER);
 
@@ -121,7 +121,7 @@ class FilingDataServiceImplTest {
 
     @Test
     void generatePscIndividualFilingWhenNotFound() {
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER));

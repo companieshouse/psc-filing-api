@@ -5,7 +5,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.WithIdentificationFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
-public interface PscWithIdentificationMapper extends PscMapper {
+public interface PscWithIdentificationMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "kind", ignore = true)

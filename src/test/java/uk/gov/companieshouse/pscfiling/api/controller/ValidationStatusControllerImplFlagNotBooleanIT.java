@@ -19,10 +19,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 //Using Spring Web MVC
@@ -32,11 +32,11 @@ class ValidationStatusControllerImplFlagNotBooleanIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
-    private PscIndividualFilingService pscIndividualFilingService;
+    private PscFilingService pscFilingService;
     @MockBean
     private FilingValidationService filingValidationService;
     @MockBean
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @MockBean
     private ErrorMapper errorMapper;
     @MockBean
@@ -57,7 +57,7 @@ class ValidationStatusControllerImplFlagNotBooleanIT extends BaseControllerIT {
                 .ceasedOn(CEASED_ON_DATE)
                 .build();
 
-        when(pscIndividualFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())

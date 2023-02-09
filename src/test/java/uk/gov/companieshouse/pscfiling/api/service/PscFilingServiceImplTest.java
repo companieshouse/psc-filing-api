@@ -17,10 +17,10 @@ import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingReposit
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
-class PscIndividualFilingServiceImplTest {
+class PscFilingServiceImplTest {
     public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     public static final String TRANS_ID = "12345-54321-76666";
-    private PscIndividualFilingService testService;
+    private PscFilingService testService;
 
     @Mock
     private PscIndividualFilingRepository repository;
@@ -33,7 +33,7 @@ class PscIndividualFilingServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new PscIndividualFilingServiceImpl(repository, logger);
+        testService = new PscFilingServiceImpl(repository, logger);
     }
 
     @Test

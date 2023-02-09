@@ -25,7 +25,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
-class PscIndividualMapperTest {
+class PscMapperTest {
 
     public static final String SELF_URI =
             "/transactions/197315-203316-322377/persons-with-significant-control/individual"
@@ -38,11 +38,11 @@ class PscIndividualMapperTest {
     private Links links;
     private NameElements nameElements;
     private NameElementsDto nameElementsDto;
-    private PscIndividualMapper testMapper;
+    private PscMapper testMapper;
 
     @BeforeEach
     void setUp() {
-        testMapper = Mappers.getMapper(PscIndividualMapper.class);
+        testMapper = Mappers.getMapper(PscMapper.class);
         address = Address.builder()
                 .addressLine1("line1")
                 .addressLine2("line2")
