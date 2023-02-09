@@ -38,18 +38,22 @@ public class CompanyInterceptor implements HandlerInterceptor {
     public void setCompanyHasSuperSecurePscsMessage(@Value("${super.secure.message:not-defined}") String companyHasSuperSecurePscsMessage) {
         this.companyHasSuperSecurePscsMessage = companyHasSuperSecurePscsMessage;
     }
+
     @Autowired
     public void setCompanyTypeNotAlllowedMesssage(@Value("${company.type.not.allowed.message}") String companyTypeNotAlllowedMesssage) {
         this.companyTypeNotAlllowedMesssage = companyTypeNotAlllowedMesssage;
     }
+
     @Autowired
     public void setCompanyStatusNotAllowedMessage(@Value("${company.status.not.allowed.message}") String companyStatusNotAllowedMessage) {
         this.companyStatusNotAllowedMessage = companyStatusNotAllowedMessage;
     }
+
     @Autowired
     public void setAllowedCompanyTypes(@Value("#{${allowed.company.types}}") List<String> allowedCompanyTypes) {
         this.allowedCompanyTypes = allowedCompanyTypes;
     }
+
     @Autowired
     public void setCompanyStatusNotAllowed(@Value("#{${company.status.not.allowed}}") List<String> companyStatusNotAllowed) {
         this.companyStatusNotAllowed = companyStatusNotAllowed;
@@ -69,32 +73,33 @@ public class CompanyInterceptor implements HandlerInterceptor {
         if (companyProfile != null) {
             if (companyProfile.hasSuperSecurePscs()) {
                 logger.info("Company has Super Secure PSCs");
-                sendValidationError(companyHasSuperSecurePscsMessage);
+                throw new ConflictingFilingException(createValidationError(companyHasSuperSecurePscsMessage));
             }
 
             if (!allowedCompanyTypes.contains(companyProfile.getType())) {
                 logMap.put("company_number", transaction.getCompanyNumber());
                 logMap.put("company_type", companyProfile.getType());
                 logger.info("Company Type not allowed", logMap);
-                sendValidationError(companyTypeNotAlllowedMesssage + companyProfile.getType());
+                throw new ConflictingFilingException(
+                        createValidationError(companyTypeNotAlllowedMesssage + companyProfile.getType()));
             }
 
             if (companyStatusNotAllowed.contains(companyProfile.getCompanyStatus())) {
                 logMap.put("company_number", transaction.getCompanyNumber());
                 logMap.put("company_status", companyProfile.getCompanyStatus());
                 logger.info("Company status not allowed", logMap);
-                sendValidationError(companyStatusNotAllowedMessage + companyProfile.getCompanyStatus());
+                throw new ConflictingFilingException(
+                        createValidationError(companyStatusNotAllowedMessage + companyProfile.getCompanyStatus()));
             }
         }
         return true;
     }
 
-    private void sendValidationError(String errorMessage) {
+    private List<FieldError> createValidationError(String errorMessage) {
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
                 null, errorMessage);
-        List<FieldError> errors = List.of(error);
-        throw new ConflictingFilingException(errors);
+        return List.of(error);
     }
 
 }
