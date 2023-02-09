@@ -19,18 +19,16 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 
 @ExtendWith(MockitoExtension.class)
 class InterceptorConfigTest {
 
     private InterceptorConfig testConfig;
-
-    @Mock
-    private TransactionInterceptor transactionInterceptor;
-    @Mock
-    private OpenTransactionInterceptor openTransactionInterceptor;
     @Mock
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    @Mock
+    private CompanyInterceptor companyInterceptor;
     @Mock
     private InterceptorRegistry interceptorRegistry;
     @Mock
@@ -45,17 +43,20 @@ class InterceptorConfigTest {
     void addInterceptors() {
         doReturn(interceptorRegistration).when(interceptorRegistry).addInterceptor(any(TransactionInterceptor.class));
         doReturn(interceptorRegistration).when(interceptorRegistry).addInterceptor(any(OpenTransactionInterceptor.class));
+        doReturn(interceptorRegistration).when(interceptorRegistry).addInterceptor(companyInterceptor);
         doReturn(interceptorRegistration).when(interceptorRegistry).addInterceptor(tokenPermissionsInterceptor);
 
         testConfig.setTokenPermissionsInterceptor(tokenPermissionsInterceptor);
+        testConfig.setCompanyInterceptor(companyInterceptor);
         testConfig.addInterceptors(interceptorRegistry);
 
         InOrder inOrder = Mockito.inOrder(interceptorRegistry);
 
         inOrder.verify(interceptorRegistry).addInterceptor(any(TransactionInterceptor.class));
         inOrder.verify(interceptorRegistry).addInterceptor(any(OpenTransactionInterceptor.class));
+        inOrder.verify(interceptorRegistry).addInterceptor(companyInterceptor);
         inOrder.verify(interceptorRegistry).addInterceptor(tokenPermissionsInterceptor);
-        verify(interceptorRegistration, times(3))
+        verify(interceptorRegistration, times(4))
                 .addPathPatterns("/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}");
     }
 

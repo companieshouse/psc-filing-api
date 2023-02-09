@@ -32,6 +32,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
@@ -120,6 +122,22 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
+    @ExceptionHandler(ConflictingFilingException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public ApiErrors handleConflictingFilingException(final ConflictingFilingException ex,
+                                                  WebRequest request) {
+        final var fieldErrors = ex.getFieldErrors();
+
+        final var errorList = fieldErrors.stream()
+                .map(e -> buildRequestBodyError(e.getDefaultMessage(), getJsonPath(e),
+                        e.getRejectedValue()))
+                .collect(Collectors.toList());
+
+        logError(request, "Conflicting filing data", ex, errorList);
+        return new ApiErrors(errorList);
+    }
+
     @ExceptionHandler(FilingResourceNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
     public ResponseEntity<Void> handleResourceNotFoundException(
@@ -129,7 +147,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler({PscServiceException.class, TransactionServiceException.class})
+    @ExceptionHandler({PscServiceException.class, TransactionServiceException.class, CompanyProfileServiceException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiErrors handleServiceException(final Exception ex,

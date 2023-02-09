@@ -4,14 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
+@PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
     static final String[] TRANSACTIONS_LIST = {
@@ -19,10 +22,16 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    private CompanyInterceptor companyInterceptor;
 
     @Autowired
     public void setTokenPermissionsInterceptor(TokenPermissionsInterceptor tokenPermissionsInterceptor) {
         this.tokenPermissionsInterceptor = tokenPermissionsInterceptor;
+    }
+
+    @Autowired
+    public void setCompanyInterceptor(CompanyInterceptor companyInterceptor) {
+        this.companyInterceptor = companyInterceptor;
     }
 
     /**
@@ -34,6 +43,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         addTransactionInterceptor(registry);
         addOpenTransactionInterceptor(registry);
+        addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
     }
 
@@ -45,6 +55,10 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
                 .addPathPatterns(TRANSACTIONS_LIST);
+    }
+
+    private void addCompanyInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(companyInterceptor).addPathPatterns(TRANSACTIONS_LIST);
     }
 
     private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
