@@ -89,7 +89,7 @@ public class CompanyInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private static void sendValidationError(String errorMessage) {
+    private void sendValidationError(String errorMessage) {
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
                 null, errorMessage);
