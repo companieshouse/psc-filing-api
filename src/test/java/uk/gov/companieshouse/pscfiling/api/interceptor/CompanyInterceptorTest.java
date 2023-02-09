@@ -11,11 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
@@ -25,7 +23,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.service.CompanyProfileService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class CompanyInterceptorTest {
 
     private static final String PASSTHROUGH_HEADER = "passthrough";
@@ -35,15 +33,14 @@ class CompanyInterceptorTest {
     private HttpServletResponse response;
     @Mock
     private Object handler;
-    @MockBean
+    @Mock
     private CompanyProfileService companyProfileService;
-    @MockBean
+    @Mock
     Logger logger;
     @Mock
     private Transaction transaction;
 
     private CompanyProfileApi companyProfileApi;
-    @Autowired
     private CompanyInterceptor testCompanyInterceptor;
 
     @BeforeEach
@@ -53,26 +50,25 @@ class CompanyInterceptorTest {
         companyProfileApi.setType("ltd");
         companyProfileApi.setCompanyStatus("active");
 
-        when(request.getAttribute(AttributeName.TRANSACTION.getValue())).thenReturn(transaction);
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(PASSTHROUGH_HEADER);
-        when(companyProfileService.getCompanyProfile(transaction, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
+        testCompanyInterceptor = createTestInterceptor();
 
+        when(request.getAttribute(AttributeName.TRANSACTION.getValue())).thenReturn(transaction);
     }
 
     @Test
     void preHandleNoValidationErrors() {
+        expectHeaderWithCompanyProfile();
         var result = testCompanyInterceptor.preHandle(request, response, handler);
         assertTrue(result);
     }
 
     @Test
     void preHandleWhenCompanyHasSuperSecurePscs() {
+        expectHeaderWithCompanyProfile();
         companyProfileApi.setHasSuperSecurePscs(Boolean.TRUE);
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "As a result of protection under section 790ZG of the Companies Act 2006 this form cannot be " +
-                "filed online. You can only file this form on paper, refer to the information pack that was sent on " +
-                "application of the protection.");
+                null, "Super secure");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -83,6 +79,7 @@ class CompanyInterceptorTest {
 
     @Test
     void preHandleWhenCompanyTypeNotAllowed() {
+        expectHeaderWithCompanyProfile();
         companyProfileApi.setType("not-proper");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
@@ -97,6 +94,7 @@ class CompanyInterceptorTest {
 
     @Test
     void preHandleWhenCompanyStatusNotAllowed() {
+        expectHeaderWithCompanyProfile();
         companyProfileApi.setCompanyStatus("dissolved");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
@@ -111,6 +109,7 @@ class CompanyInterceptorTest {
 
     @Test
     void preHandleWhenCompanyProfileNull() {
+        expectHeaderWithCompanyProfile();
         when(companyProfileService.getCompanyProfile(transaction, PASSTHROUGH_HEADER)).thenReturn(null);
         var result = testCompanyInterceptor.preHandle(request, response, handler);
         assertTrue(result);
@@ -122,6 +121,22 @@ class CompanyInterceptorTest {
         final var thrown = assertThrows(NullPointerException.class,
                 () -> testCompanyInterceptor.preHandle(request, response, handler));
         assertThat(thrown.getMessage(), is("Transaction missing from request"));
+    }
+
+
+    private CompanyInterceptor createTestInterceptor() {
+        final var interceptor = new CompanyInterceptor(companyProfileService, logger);
+        interceptor.setCompanyHasSuperSecurePscsMessage("Super secure");
+        interceptor.setCompanyTypeNotAlllowedMesssage("PSC form cannot be filed for this company type: ");
+        interceptor.setCompanyStatusNotAllowedMessage("Form cannot be filed for a company status that is ");
+        interceptor.setCompanyStatusNotAllowed(List.of("dissolved"));
+        interceptor.setAllowedCompanyTypes(List.of("ltd"));
+        return interceptor;
+    }
+
+    private void expectHeaderWithCompanyProfile() {
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(PASSTHROUGH_HEADER);
+        when(companyProfileService.getCompanyProfile(transaction, PASSTHROUGH_HEADER)).thenReturn(companyProfileApi);
     }
 }
 
