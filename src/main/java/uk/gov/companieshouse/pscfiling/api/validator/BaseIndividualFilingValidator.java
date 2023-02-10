@@ -1,13 +1,14 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
 import java.util.Optional;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 
 public class BaseIndividualFilingValidator implements IndividualFilingValid {
 
     private IndividualFilingValid nextValidator;
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
         Optional.ofNullable(nextValidator).ifPresent(v -> v.validate(validationContext));
     }

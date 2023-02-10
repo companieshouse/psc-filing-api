@@ -3,11 +3,10 @@ package uk.gov.companieshouse.pscfiling.api.service;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscFiling;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
-import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 /**
@@ -18,7 +17,7 @@ public class PscFilingServiceImpl implements PscFilingService {
     private final PscFilingRepository repository;
     private final Logger logger;
 
-    public PscFilingServiceImpl(final PscFilingRepository repository, Logger logger) {
+    public PscFilingServiceImpl(final PscFilingRepository repository, final Logger logger) {
         this.repository = repository;
         this.logger = logger;
     }
@@ -31,7 +30,7 @@ public class PscFilingServiceImpl implements PscFilingService {
      * @return the stored entity if found
      */
     @Override
-    public Optional<PscFiling> get(String pscFilingId, String transactionId) {
+    public Optional<PscCommunal> get(final String pscFilingId, final String transactionId) {
         final var logMap = LogHelper.createLogMap(transactionId, pscFilingId);
 
         logger.debugContext(transactionId, "getting PSC filing", logMap);

@@ -15,6 +15,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import uk.gov.companieshouse.api.model.psc.NameElementsApi;
+import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.pscfiling.api.model.dto.AddressDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.Date3TupleDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.NameElementsDto;
@@ -94,7 +96,7 @@ class PscMapperTest {
                 .notifiedOn(localDate1)
                 .build();
 
-        final var filing = testMapper.map(dto);
+        final var filing = (PscIndividualFiling) testMapper.map(dto);
 
         assertThat(filing.getAddress(), is(equalTo(address)));
         assertThat(filing.getAddressSameAsRegisteredOfficeAddress(), is(true));
@@ -132,7 +134,7 @@ class PscMapperTest {
                 PscIndividualFiling.builder().naturesOfControl(Arrays.asList(null, null))
                         .build();
 
-        final var filing = testMapper.map(dto);
+        final var filing = (PscIndividualFiling) testMapper.map(dto);
 
         assertThat(filing, is(equalTo(emptyFiling)));
         assertThat(filing.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
@@ -177,7 +179,7 @@ class PscMapperTest {
                 .statementType("type1")
                 .build();
 
-        final PscIndividualDto dto = testMapper.map(filing);
+        final var dto = (PscIndividualDto) testMapper.map(filing);
 
         assertThat(dto.getAddress(), is(equalTo(addressDto)));
         assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(true));
@@ -236,7 +238,7 @@ class PscMapperTest {
         final var emptyDto = PscIndividualDto.builder().naturesOfControl(Collections.emptyList())
                 .build();
 
-        final var dto = testMapper.map(filing);
+        final var dto = (PscIndividualDto) testMapper.map(filing);
 
         assertThat(dto, is(equalTo(emptyDto)));
         assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
@@ -270,7 +272,7 @@ class PscMapperTest {
             .statementType("type1")
             .build();
 
-        final var filingData = testMapper.mapFiling(filing);
+        final var filingData = testMapper.mapFilingData(filing);
 
         assertThat(filingData.getFirstName(), is(equalTo(filing.getNameElements().getForename())));
         assertThat(filingData.getOtherForenames(), is(equalTo(filing.getNameElements().getOtherForenames())));
@@ -284,7 +286,7 @@ class PscMapperTest {
             .nameElements(new NameElements(null, null, null, null))
             .build();
 
-        final var filingData = testMapper.mapFiling(filing);
+        final var filingData = testMapper.mapFilingData(filing);
 
         assertThat(filingData.getFirstName(), is(nullValue()));
         assertThat(filingData.getOtherForenames(), is(nullValue()));
@@ -297,7 +299,7 @@ class PscMapperTest {
         final PscIndividualFiling filing = PscIndividualFiling.builder()
             .build();
 
-        final var filingData = testMapper.mapFiling(filing);
+        final var filingData = testMapper.mapFilingData(filing);
 
         assertThat(filingData.getFirstName(), is(nullValue()));
         assertThat(filingData.getOtherForenames(), is(nullValue()));
@@ -307,9 +309,58 @@ class PscMapperTest {
     @Test
     void nullPscIndividualFilingToFilingData() {
 
-        final var filingData = testMapper.mapFiling((PscIndividualFiling) null);
+        final var filingData = testMapper.mapFilingData((PscIndividualFiling) null);
 
         assertThat(filingData, is(nullValue()));
+    }
+
+    @Test
+    void mapNameElements() {
+        final NameElementsApi nameElementsApi = createNameElementsApi();
+
+        final var mapped = testMapper.map(nameElementsApi);
+
+        assertThat(mapped.getForename(), is("api forename"));
+        assertThat(mapped.getSurname(), is("api surname"));
+        assertThat(mapped.getTitle(), is("api title"));
+        assertThat(mapped.getOtherForenames(), is("api middlename"));
+    }
+
+    @Test
+    void enhance() {
+        final var pscFiling = PscIndividualFiling.builder()
+                .nameElements(createNameElements())
+                .nationality("nation")
+                .build();
+        final PscApi pscDetails = new PscApi();
+        pscDetails.setNationality("api nation");
+        pscDetails.setNameElements(createNameElementsApi());
+
+        final var mapped = testMapper.enhance(pscFiling, pscDetails);
+
+        assertThat(mapped.getNameElements().getForename(), is("api forename"));
+        assertThat(mapped.getNameElements().getSurname(), is("api surname"));
+        assertThat(mapped.getNameElements().getTitle(), is("api title"));
+        assertThat(mapped.getNameElements().getOtherForenames(), is("api middlename"));
+        assertThat(mapped.getNationality(), is("nation"));
+    }
+
+    private static NameElements createNameElements() {
+        return NameElements.builder()
+                .forename("forename")
+                .surname("surname")
+                .title("title")
+                .otherForenames("otherforenames").build();
+    }
+
+    private static NameElementsApi createNameElementsApi() {
+        final NameElementsApi nameElementsApi = new NameElementsApi();
+
+        nameElementsApi.setForename("api forename");
+        nameElementsApi.setSurname("api surname");
+        nameElementsApi.setTitle("api title");
+        nameElementsApi.setMiddleName("api middlename");
+        return nameElementsApi;
     }
 }
 

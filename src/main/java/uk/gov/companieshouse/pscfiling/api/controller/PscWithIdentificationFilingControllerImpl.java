@@ -26,9 +26,8 @@ import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscWithIdentificationMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
@@ -118,7 +117,7 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
      */
     @Override
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
-    public ResponseEntity<PscDto> getFilingForReview(
+    public ResponseEntity<PscDtoCommunal> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource) {

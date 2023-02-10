@@ -43,6 +43,7 @@ import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
@@ -165,6 +166,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void createFilingWhenPscNotFoundThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT + "}";
         final var pscServiceError =
@@ -189,7 +191,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 new FieldError("object", "reference_psc_id", PSC_ID, false, bindingErrorCodes, null,
                         "PSC with that reference ID was not found");
 
-        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors()
+        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
                 .add(fieldErrorWithRejectedValue))).when(filingValidationService)
                 .validate(any(FilingValidationContext.class));
 

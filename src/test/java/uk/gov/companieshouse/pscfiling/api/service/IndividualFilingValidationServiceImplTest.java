@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
@@ -25,7 +26,7 @@ class IndividualFilingValidationServiceImplTest {
     @Mock
     private IndividualFilingValid firstIndividualFilingValid;
     @Mock
-    private FilingValidationContext context;
+    private FilingValidationContext<PscDtoCommunal> context;
 
     @BeforeEach
     void setUp() {

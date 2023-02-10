@@ -39,13 +39,13 @@ class PscIndividualFilingTest {
     void setUp() throws URISyntaxException {
 
         address = createAddress();
-        ceasedOn = LocalDate.of(2022,11,21);
+        ceasedOn = LocalDate.of(2022, 11, 21);
         createdAt = Instant.parse("2019-11-05T00:00:00Z");
         dob1 = new Date3Tuple(12, 9, 1970);
         links = new Links(new URI("self"), new URI("valid"));
-        notifiedOn = LocalDate.of(2022,11,10);
-        registerEntryDate = LocalDate.of(2022,11,5);
-        statementActionDate = LocalDate.of(2022,10,31);
+        notifiedOn = LocalDate.of(2022, 11, 10);
+        registerEntryDate = LocalDate.of(2022, 11, 5);
+        statementActionDate = LocalDate.of(2022, 10, 31);
         identification = createIdentification();
         nameElements = createNameElements();
         updatedAt = Instant.parse("2022-11-05T00:00:00Z");
@@ -69,6 +69,7 @@ class PscIndividualFilingTest {
         assertThat(test.getCountryOfResidence(), is(equalTo("Wales")));
 
     }
+
     @Test
     void getDateOfBirth() {
         assertThat(test.getDateOfBirth(), is(equalTo(dob1)));
@@ -132,7 +133,8 @@ class PscIndividualFilingTest {
                         + "addressLine2='line2', careOf='careOf', country='country', "
                         + "locality='locality', poBox='poBox', postalCode='postalCode', "
                         + "premises='premises', region='region'], "
-                        + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
+                        + "addressSameAsRegisteredOfficeAddress=true, name=null, "
+                        + "ceasedOn=2022-11-21, "
                         + "createdAt=2019-11-05T00:00:00Z, etag='etag', kind='kind', "
                         + "links=Links[self=self, validationStatus=valid], "
                         + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
@@ -153,57 +155,6 @@ class PscIndividualFilingTest {
         mapper.registerModule(new JavaTimeModule());
 
         final var json = mapper.writeValueAsString(test);
-
-        System.out.println(json);
-
-    }
-
-    @Test
-    @DisplayName("WithIdentification toString")
-    void testWithIdentificationToString() throws JsonProcessingException {
-        final var filing = uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling.builder()
-                .id("id")
-                .address(address)
-                .addressSameAsRegisteredOfficeAddress(true)
-                .ceasedOn(ceasedOn)
-                .createdAt(createdAt)
-                .etag("etag")
-                .kind("kind")
-                .links(links)
-                .naturesOfControl(List.of("type1", "type2"))
-                .notifiedOn(notifiedOn)
-                .referenceEtag("etag")
-                .referencePscId("psc")
-                .referencePscListEtag("list")
-                .registerEntryDate(registerEntryDate)
-                .updatedAt(createdAt)
-                .identification(identification)
-                .name("name")
-                .build();
-        final String expected = "PscWithIdentificationFiling[id='id', "
-                + "address=Address[addressLine1='line1', "
-                + "addressLine2='line2', careOf='careOf', country='country', "
-                + "locality='locality', poBox='poBox', postalCode='postalCode', "
-                + "premises='premises', region='region'], "
-                + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
-                + "createdAt=2019-11-05T00:00:00Z, etag='etag', kind='kind', "
-                + "links=Links[self=self, validationStatus=valid], "
-                + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
-                + "referenceEtag='etag', referencePscId='psc', "
-                + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
-                + "updatedAt=2019-11-05T00:00:00Z, "
-                + "identification=Identification[countryRegistered='theCountry',"
-                + " legalAuthority='theAuthority', legalForm='theForm',"
-                + " placeRegistered='thePlace', registrationNumber='registration'], "
-                + "name='name']";
-
-        assertThat(filing.toString(), is(expected));
-
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-
-        final var json = mapper.writeValueAsString(filing);
 
         System.out.println(json);
 
@@ -236,7 +187,7 @@ class PscIndividualFilingTest {
 
         return identification;
     }
-    
+
     private NameElements createNameElements() {
         nameElements = NameElements.builder()
                 .forename("forename")

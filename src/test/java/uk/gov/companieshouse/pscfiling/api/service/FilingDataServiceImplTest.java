@@ -22,7 +22,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscWithIdentificationMapper;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
@@ -47,11 +46,7 @@ class FilingDataServiceImplTest {
     @Mock
     private PscFilingService pscFilingService;
     @Mock
-    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
-    @Mock
     private PscMapper pscMapper;
-    @Mock
-    private PscWithIdentificationMapper pscWithIdentificationMapper;
     @Mock
     private PscDetailsService pscDetailsService;
     @Mock
@@ -67,9 +62,8 @@ class FilingDataServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new FilingDataServiceImpl(pscFilingService,
-            pscWithIdentificationFilingService, pscMapper, pscWithIdentificationMapper,
-            pscDetailsService, filingDataConfig, logger);
+        testService = new FilingDataServiceImpl(pscFilingService, pscMapper, pscDetailsService,
+                filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
         transaction.setCompanyNumber("012345678");
@@ -78,42 +72,45 @@ class FilingDataServiceImplTest {
     @Test
     void generatePscIndividualFilingWhenFound() {
         final var filingData = IndividualFilingDataDto.builder()
-            .title(TITLE)
-            .firstName(FIRSTNAME)
-            .otherForenames(OTHER_FORENAMES)
-            .lastName(LASTNAME)
-            .ceasedOn(CEASED_ON_STR)
-            .registerEntryDate(REGISTER_ENTRY_DATE).build();
+                .title(TITLE)
+                .firstName(FIRSTNAME)
+                .otherForenames(OTHER_FORENAMES)
+                .lastName(LASTNAME)
+                .ceasedOn(CEASED_ON_STR)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
 
-        final var nameElements = NameElements.builder().title(TITLE)
-            .forename(FIRSTNAME).surname(LASTNAME).build();
+        final var nameElements =
+                NameElements.builder().title(TITLE).forename(FIRSTNAME).surname(LASTNAME)
+                        .build();
         final var pscFiling = PscIndividualFiling.builder()
                 .referencePscId(REF_PSC_ID)
                 .referenceEtag(REF_ETAG)
-                .nameElements(nameElements)
                 .ceasedOn(CEASED_ON)
                 .build();
+        final var enhancedPscFiling =
+                PscIndividualFiling.builder(pscFiling).nameElements(nameElements)
+                        .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
-        when(pscMapper.mapFiling(pscFiling)).thenReturn(filingData);
+        when(pscMapper.mapFilingData(pscFiling)).thenReturn(filingData);
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
-        var nameElementsApi = new NameElementsApi();
+        final var nameElementsApi = new NameElementsApi();
         nameElementsApi.setTitle(TITLE);
         nameElementsApi.setForename(FIRSTNAME);
         nameElementsApi.setSurname(LASTNAME);
         when(pscApi.getNameElements()).thenReturn(nameElementsApi);
-        when(pscMapper.mapFiling(pscFiling)).thenReturn(filingData);
+        when(pscMapper.enhance(pscFiling, pscApi)).thenReturn(enhancedPscFiling);
+        when(pscMapper.mapFilingData(pscFiling)).thenReturn(filingData);
 
-        final var filingApi = testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER);
+        final var filingApi =
+                testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER);
 
         final Map<String, Object> expectedMap =
-                Map.of("title", TITLE,
-                        "first_name", FIRSTNAME,
-                        "other_forenames", OTHER_FORENAMES,
-                        "last_name", LASTNAME,
-                        "ceased_on", CEASED_ON_STR,
-                        "register_entry_date",REGISTER_ENTRY_DATE );
+                Map.of("title", TITLE, "first_name", FIRSTNAME, "other_forenames", OTHER_FORENAMES,
+                        "last_name", LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date",
+                        REGISTER_ENTRY_DATE);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));

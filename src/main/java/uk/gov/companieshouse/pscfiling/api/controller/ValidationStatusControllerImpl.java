@@ -21,8 +21,8 @@ import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundExcep
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDto;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscFiling;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -78,12 +78,12 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
         final var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
-        return maybePscIndividualFiling.map(pscFiling -> isValid(pscFiling, transId, passthroughHeader))
+        return maybePscIndividualFiling.map(f -> isValid(f, transId, passthroughHeader))
                 .orElseThrow(() -> new FilingResourceNotFoundException(
                         "Filing resource not found: " + filingResource));
     }
 
-    private ValidationStatusResponse isValid(final PscFiling pscFiling, final String transId,
+    private ValidationStatusResponse isValid(final PscCommunal pscFiling, final String transId,
             final String passthroughHeader) {
 
         final var validationStatus = new ValidationStatusResponse();
@@ -106,7 +106,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         return validationStatus;
     }
 
-    private ValidationStatusError[] calculateIsValid(final PscFiling pscFiling, final String transId,
+    private ValidationStatusError[] calculateIsValid(final PscCommunal pscFiling, final String transId,
             final String passthroughHeader) {
 
         final var self = pscFiling.getLinks().getSelf().getPath();
@@ -127,15 +127,14 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
     }
 
-    private ValidationStatusError[] validatePscType(final PscFiling pscFiling, final String transId,
+    private ValidationStatusError[] validatePscType(final PscCommunal pscFiling, final String transId,
                                                     final String passthroughHeader, final PscTypeConstants pscType) {
-        PscDto dto = filingMapper.map(pscFiling);
+        final PscDtoCommunal dto = filingMapper.map(pscFiling);
 
         final var errors = new ArrayList<FieldError>();
         final var transaction =
                 transactionService.getTransaction(transId, passthroughHeader);
-
-        final FilingValidationContext<PscDto>
+        final FilingValidationContext<PscDtoCommunal>
             context = new FilingValidationContext<>(dto, errors, transaction,
             pscType, passthroughHeader);
 

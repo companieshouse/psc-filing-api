@@ -41,6 +41,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -144,7 +145,7 @@ class PscIndividualFilingControllerImplTest {
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
         final var context =
-                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
         verify(filingValidationService).validate(context);
         assertThat(validationErrors, is(empty()));
@@ -174,12 +175,11 @@ class PscIndividualFilingControllerImplTest {
         when(result.getFieldErrors()).thenReturn(new ArrayList<>());
 
         final var context =
-                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
 
-        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors().add(
-                fieldErrorWithRejectedValue))).when(filingValidationService)
-                .validate(context);
+        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
+                .add(fieldErrorWithRejectedValue))).when(filingValidationService).validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));

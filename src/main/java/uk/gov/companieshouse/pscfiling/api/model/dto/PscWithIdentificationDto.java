@@ -11,7 +11,7 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 @JsonDeserialize(builder = PscWithIdentificationDto.Builder.class)
-public class PscWithIdentificationDto implements PscDtoCommunal, PscDto{
+public class PscWithIdentificationDto implements PscDtoCommunal {
 
     private final PscDtoCommunal pscCommunal;
     private IdentificationDto identification;

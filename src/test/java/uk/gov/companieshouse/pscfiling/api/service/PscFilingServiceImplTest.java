@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,7 +23,7 @@ class PscFilingServiceImplTest {
     private PscFilingService testService;
 
     @Mock
-    private PscIndividualFilingRepository repository;
+    private PscFilingRepository repository;
     @Mock
     private PscIndividualFiling filing;
     @Mock

@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 
 public interface FilingValidationService {
@@ -9,5 +10,5 @@ public interface FilingValidationService {
      *
      * @param context the filing data to be validated, with supporting context
      */
-    void validate(FilingValidationContext<?> context);
+    <T extends PscDtoCommunal> void validate(FilingValidationContext<T> context);
 }

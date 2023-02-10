@@ -61,7 +61,7 @@ class PscRegisterEntryDateValidatorTest {
         when(dto.getRegisterEntryDate()).thenReturn(BEFORE_DATE);
 
         testValidator.validate(
-                new FilingValidationContext(dto, errors, transaction, pscType, passThroughHeader));
+                new FilingValidationContext<>(dto, errors, transaction, pscType, passThroughHeader));
 
         assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));
@@ -77,7 +77,7 @@ class PscRegisterEntryDateValidatorTest {
         when(dto.getRegisterEntryDate()).thenReturn(registerEntryDate);
 
         testValidator.validate(
-                new FilingValidationContext(dto, errors, transaction, pscType, passThroughHeader));
+                new FilingValidationContext<>(dto, errors, transaction, pscType, passThroughHeader));
 
         assertThat(errors, is(empty()));
     }

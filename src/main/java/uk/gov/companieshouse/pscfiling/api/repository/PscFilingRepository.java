@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscFiling;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 
-public interface PscFilingRepository extends MongoRepository<PscFiling, String> {
+public interface PscFilingRepository extends MongoRepository<PscCommunal, String> {
 }

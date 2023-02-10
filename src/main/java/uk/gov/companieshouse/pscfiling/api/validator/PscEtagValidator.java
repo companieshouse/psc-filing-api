@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 /**
@@ -20,7 +21,7 @@ public class PscEtagValidator extends BaseIndividualFilingValidator
     }
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
         final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
                 validationContext.getDto().getReferencePscId(), validationContext.getPscType(),

@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
@@ -15,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PscWithIdentificationFiling implements PscFiling {
+public class PscWithIdentificationFiling implements PscCommunal {
 
     @Id
     private String id;

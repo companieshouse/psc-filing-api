@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
 public interface PscIndividualFilingController {
@@ -40,7 +40,7 @@ public interface PscIndividualFilingController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @GetMapping
-    default ResponseEntity<PscDto> getFilingForReview(
+    default ResponseEntity<PscDtoCommunal> getFilingForReview(
             @PathVariable("transactionId") String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResource") String filingResource) {

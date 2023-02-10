@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PscIndividualFiling implements PscFiling {
+public class PscIndividualFiling implements PscCommunal {
 
     @Id
     private String id;
