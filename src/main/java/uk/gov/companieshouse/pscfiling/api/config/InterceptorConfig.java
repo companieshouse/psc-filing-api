@@ -20,7 +20,9 @@ import uk.gov.companieshouse.api.util.security.Permission;
 public class InterceptorConfig implements WebMvcConfigurer {
 
     static final String[] TRANSACTIONS_LIST = {
-        "/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}"};
+            "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
+                    + "(?:individual|corporate-entity|legal-person)}"
+    };
     public static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
@@ -83,8 +85,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Bean
     public PermissionsMapping pscPermissionsMapping() {
         return PermissionsMapping.builder()
-                .defaultAllOf(Permission.Value.READ)
-                .mapAllOf(HttpMethod.POST.toString(), Permission.Value.DELETE)
+                .defaultRequireAnyOf(Permission.Value.READ)
+                .mappedRequireAnyOf(HttpMethod.POST.toString(), Permission.Value.DELETE)
                 .build();
     }
 }
