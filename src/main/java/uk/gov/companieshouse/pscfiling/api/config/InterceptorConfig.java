@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -13,10 +14,12 @@ import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
+@PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
     static final String[] TRANSACTIONS_LIST = {
@@ -26,11 +29,17 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    private CompanyInterceptor companyInterceptor;
 
     @Autowired
     public void setTokenPermissionsInterceptor(
             final TokenPermissionsInterceptor tokenPermissionsInterceptor) {
         this.tokenPermissionsInterceptor = tokenPermissionsInterceptor;
+    }
+
+    @Autowired
+    public void setCompanyInterceptor(CompanyInterceptor companyInterceptor) {
+        this.companyInterceptor = companyInterceptor;
     }
 
     /**
@@ -43,19 +52,26 @@ public class InterceptorConfig implements WebMvcConfigurer {
     public void addInterceptors(@NonNull final InterceptorRegistry registry) {
         addTransactionInterceptor(registry);
         addOpenTransactionInterceptor(registry);
+        addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
         addRequestPermissionsInterceptor(registry);
     }
 
-    private void addTransactionInterceptor(final InterceptorRegistry registry) {
-        registry.addInterceptor(transactionInterceptor()).addPathPatterns(TRANSACTIONS_LIST);
+    private void addTransactionInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(transactionInterceptor())
+                .addPathPatterns(TRANSACTIONS_LIST);
     }
 
-    private void addOpenTransactionInterceptor(final InterceptorRegistry registry) {
-        registry.addInterceptor(openTransactionInterceptor()).addPathPatterns(TRANSACTIONS_LIST);
+    private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(openTransactionInterceptor())
+                .addPathPatterns(TRANSACTIONS_LIST);
     }
 
-    private void addTokenPermissionsInterceptor(final InterceptorRegistry registry) {
+    private void addCompanyInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(companyInterceptor).addPathPatterns(TRANSACTIONS_LIST);
+    }
+
+    private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS_LIST);
 
     }

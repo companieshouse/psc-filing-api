@@ -23,6 +23,7 @@ import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,11 +32,13 @@ class InterceptorConfigTest {
     private InterceptorConfig testConfig;
 
     @Mock
+    private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    @Mock
     private TransactionInterceptor transactionInterceptor;
     @Mock
-    private OpenTransactionInterceptor openTransactionInterceptor;
+    private CompanyInterceptor companyInterceptor;
     @Mock
-    private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    private OpenTransactionInterceptor openTransactionInterceptor;
     @Mock
     private InterceptorRegistry interceptorRegistry;
     @Mock
@@ -55,24 +58,27 @@ class InterceptorConfigTest {
         doReturn(interceptorRegistration).when(interceptorRegistry)
                 .addInterceptor(any(OpenTransactionInterceptor.class));
         doReturn(interceptorRegistration).when(interceptorRegistry)
+                .addInterceptor(companyInterceptor);
+        doReturn(interceptorRegistration).when(interceptorRegistry)
                 .addInterceptor(tokenPermissionsInterceptor);
         doReturn(interceptorRegistration).when(interceptorRegistry)
                 .addInterceptor(any(MappablePermissionsInterceptor.class));
 
         testConfig.setTokenPermissionsInterceptor(tokenPermissionsInterceptor);
+        testConfig.setCompanyInterceptor(companyInterceptor);
         testConfig.addInterceptors(interceptorRegistry);
 
         InOrder inOrder = Mockito.inOrder(interceptorRegistry);
 
         inOrder.verify(interceptorRegistry).addInterceptor(any(TransactionInterceptor.class));
         inOrder.verify(interceptorRegistry).addInterceptor(any(OpenTransactionInterceptor.class));
+        inOrder.verify(interceptorRegistry).addInterceptor(companyInterceptor);
         inOrder.verify(interceptorRegistry).addInterceptor(tokenPermissionsInterceptor);
         inOrder.verify(interceptorRegistry)
                 .addInterceptor(any(MappablePermissionsInterceptor.class));
-        verify(interceptorRegistration, times(4))
+        verify(interceptorRegistration, times(5))
                 .addPathPatterns("/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}");
     }
-
 
     @Test
     void openTransactionInterceptor() {

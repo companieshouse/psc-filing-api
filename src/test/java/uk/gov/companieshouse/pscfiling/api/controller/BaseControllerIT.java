@@ -12,6 +12,7 @@ import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 public class BaseControllerIT {
@@ -50,6 +51,8 @@ public class BaseControllerIT {
     protected TransactionInterceptor transactionInterceptor;
     @MockBean
     protected OpenTransactionInterceptor openTransactionInterceptor;
+    @MockBean
+    protected CompanyInterceptor companyInterceptor;
 
     void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -57,6 +60,7 @@ public class BaseControllerIT {
         setupEricTokenPermissions();
         when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(companyInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         transaction = createTestTransaction();
     }
 
