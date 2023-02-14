@@ -4,36 +4,57 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpMethod;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import uk.gov.companieshouse.api.interceptor.MappablePermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
+import uk.gov.companieshouse.api.util.security.Permission;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
+@PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String[] TRANSACTIONS_LIST = {"/transactions/**"};
+    static final String[] TRANSACTIONS_LIST = {
+            "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
+                    + "(?:individual|corporate-entity|legal-person)}"
+    };
     public static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
+    private CompanyInterceptor companyInterceptor;
 
     @Autowired
-    public void setTokenPermissionsInterceptor(TokenPermissionsInterceptor tokenPermissionsInterceptor) {
+    public void setTokenPermissionsInterceptor(
+            final TokenPermissionsInterceptor tokenPermissionsInterceptor) {
         this.tokenPermissionsInterceptor = tokenPermissionsInterceptor;
+    }
+
+    @Autowired
+    public void setCompanyInterceptor(CompanyInterceptor companyInterceptor) {
+        this.companyInterceptor = companyInterceptor;
     }
 
     /**
      * Set up the interceptors to run against endpoints when the endpoints are called
      * Interceptors are executed in order of configuration
-     * @param registry
+     *
+     * @param registry The {@link InterceptorRegistry} to configure
      */
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
+    public void addInterceptors(@NonNull final InterceptorRegistry registry) {
         addTransactionInterceptor(registry);
         addOpenTransactionInterceptor(registry);
+        addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
+        addRequestPermissionsInterceptor(registry);
     }
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
@@ -46,9 +67,18 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .addPathPatterns(TRANSACTIONS_LIST);
     }
 
+    private void addCompanyInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(companyInterceptor).addPathPatterns(TRANSACTIONS_LIST);
+    }
+
     private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS_LIST);
 
+    }
+
+    private void addRequestPermissionsInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(requestPermissionsInterceptor(pscPermissionsMapping()))
+                .addPathPatterns(TRANSACTIONS_LIST);
     }
 
     @Bean
@@ -61,4 +91,18 @@ public class InterceptorConfig implements WebMvcConfigurer {
         return new TransactionInterceptor(PSC_FILING_API);
     }
 
+    @Bean
+    public MappablePermissionsInterceptor requestPermissionsInterceptor(
+            final PermissionsMapping permissionMapping) {
+        return new MappablePermissionsInterceptor(Permission.Key.COMPANY_PSCS, true,
+                permissionMapping);
+    }
+
+    @Bean
+    public PermissionsMapping pscPermissionsMapping() {
+        return PermissionsMapping.builder()
+                .defaultRequireAnyOf(Permission.Value.READ)
+                .mappedRequireAnyOf(HttpMethod.POST.toString(), Permission.Value.DELETE)
+                .build();
+    }
 }
