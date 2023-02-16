@@ -7,6 +7,8 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 /**
@@ -14,19 +16,24 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
  */
 @Service
 public class PscFilingServiceImpl implements PscFilingService {
-    private final PscFilingRepository repository;
+    private final PscFilingRepository filingRepository;
+    private final PscIndividualFilingRepository individualFilingRepository;
+    private final PscWithIdentificationFilingRepository withIdentificationFilingRepository;
     private final Logger logger;
 
-    public PscFilingServiceImpl(final PscFilingRepository repository, final Logger logger) {
-        this.repository = repository;
+    public PscFilingServiceImpl(final PscFilingRepository filingRepository, final PscIndividualFilingRepository individualFilingRepository,
+            final PscWithIdentificationFilingRepository withIdentificationFilingRepository, final Logger logger) {
+        this.filingRepository = filingRepository;
+        this.individualFilingRepository = individualFilingRepository;
+        this.withIdentificationFilingRepository = withIdentificationFilingRepository;
         this.logger = logger;
     }
 
     /**
      * Retrieve a stored PSCFiling entity by Filing ID.
      *
-     * @param pscFilingId the Filing ID
-     * @param transactionId   the associated Transaction ID
+     * @param pscFilingId   the Filing ID
+     * @param transactionId the associated Transaction ID
      * @return the stored entity if found
      */
     @Override
@@ -35,7 +42,7 @@ public class PscFilingServiceImpl implements PscFilingService {
 
         logger.debugContext(transactionId, "getting PSC filing", logMap);
 
-        return repository.findById(pscFilingId);
+        return filingRepository.findById(pscFilingId);
     }
 
     /**
@@ -51,7 +58,7 @@ public class PscFilingServiceImpl implements PscFilingService {
 
         logger.debugContext(transactionId, "saving PSC filing", logMap);
 
-        return repository.save(filing);
+        return individualFilingRepository.save(filing);
     }
 
     /**
@@ -68,7 +75,7 @@ public class PscFilingServiceImpl implements PscFilingService {
 
         logger.debugContext(transactionId, "saving PSC filing", logMap);
 
-        return repository.save(filing);
+        return withIdentificationFilingRepository.save(filing);
     }
 
 }

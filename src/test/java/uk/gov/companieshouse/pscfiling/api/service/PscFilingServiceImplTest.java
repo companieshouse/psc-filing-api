@@ -14,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
+import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,7 +25,11 @@ class PscFilingServiceImplTest {
     private PscFilingService testService;
 
     @Mock
-    private PscFilingRepository repository;
+    private PscFilingRepository filingRepository;
+    @Mock
+    private PscIndividualFilingRepository individualFilingRepository;
+    @Mock
+    private PscWithIdentificationFilingRepository withIdentificationFilingRepository;
     @Mock
     private PscIndividualFiling filing;
     @Mock
@@ -33,20 +39,22 @@ class PscFilingServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new PscFilingServiceImpl(repository, logger);
+        testService = new PscFilingServiceImpl(filingRepository, individualFilingRepository,
+                withIdentificationFilingRepository, logger);
     }
 
     @Test
     void save() {
         testService.save(filing, TRANS_ID);
 
-        verify(repository).save(filing);
+        verify(individualFilingRepository).save(filing);
     }
 
     @Test
     void getWhenFound() {
-        var filing = PscIndividualFiling.builder().build();
-        when(repository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        final var filing = PscIndividualFiling.builder()
+                .build();
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         final var pscIndividualFiling = testService.get(FILING_ID, TRANS_ID);
 
         assertThat(pscIndividualFiling.isPresent(), is(true));
@@ -54,7 +62,7 @@ class PscFilingServiceImplTest {
 
     @Test
     void getWhenNotFound() {
-        when(repository.findById(FILING_ID)).thenReturn(Optional.empty());
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.empty());
         final var pscIndividualFiling = testService.get(FILING_ID, TRANS_ID);
 
         assertThat(pscIndividualFiling.isPresent(), is(false));
