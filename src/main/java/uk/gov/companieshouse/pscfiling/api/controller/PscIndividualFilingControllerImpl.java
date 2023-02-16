@@ -39,7 +39,9 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/individual")
+@RequestMapping(
+        "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
+                + "(?:individual)}")
 public class PscIndividualFilingControllerImpl implements PscIndividualFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
@@ -95,7 +97,7 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
             throw new InvalidFilingException(validationErrors);
         }
 
-        final var entity = (PscIndividualFiling) filingMapper.map(dto);
+        final var entity = filingMapper.map(dto);
         final var links = saveFilingWithLinks(entity, transId, request, logMap);
         final var resourceMap = buildResourceMap(links);
 

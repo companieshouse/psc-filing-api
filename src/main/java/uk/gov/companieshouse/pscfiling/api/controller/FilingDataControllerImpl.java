@@ -15,14 +15,16 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/private/transactions/{transactionId}/persons-with-significant-control/{pscType}")
+@RequestMapping(
+        "/private/transactions/{transactionId}/persons-with-significant-control/{pscType:"
+                + "(?:individual|corporate-entity|legal-person)}")
 public class FilingDataControllerImpl implements FilingDataController {
     private final FilingDataService filingDataService;
     private final TransactionService transactionService;
     private final Logger logger;
 
     public FilingDataControllerImpl(final FilingDataService filingDataService,
-                                    TransactionService transactionService, final Logger logger) {
+            final TransactionService transactionService, final Logger logger) {
         this.filingDataService = filingDataService;
         this.transactionService = transactionService;
         this.logger = logger;
@@ -47,13 +49,16 @@ public class FilingDataControllerImpl implements FilingDataController {
         final var logMap = LogHelper.createLogMap(transId, filingResource);
 
         logger.debugRequest(request,
-                "GET /private/transactions/{transactionId}/persons-with-significant-control/{filingId}/filings", logMap);
+                "GET /private/transactions/{transactionId}/persons-with-significant-control"
+                        + "/{filingId}/filings", logMap);
 
         final var passthroughHeader =
             request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
 
-        final var filingApi = filingDataService.generatePscFiling(filingResource, transaction, passthroughHeader);
+        final var filingApi =
+                filingDataService.generatePscFiling(filingResource, pscType, transaction,
+                        passthroughHeader);
 
         logMap.put("psc filing:", filingApi);
         logger.infoContext(transId, "psc filing data", logMap);

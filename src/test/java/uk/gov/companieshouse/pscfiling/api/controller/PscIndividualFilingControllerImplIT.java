@@ -45,6 +45,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundExcep
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
@@ -434,7 +435,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        when(filingMapper.map(filing)).thenReturn(dto);
+        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         mockMvc.perform(
                         get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))

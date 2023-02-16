@@ -29,6 +29,7 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -130,7 +131,7 @@ class ValidationStatusControllerImplTest {
                 .build()
                 .toUri();
         final Links links = new Links(self, null);
-        final var filing = PscIndividualFiling.builder().links(links)
+        final PscCommunal filing = PscIndividualFiling.builder().links(links)
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));

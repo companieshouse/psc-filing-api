@@ -25,8 +25,9 @@ public class BaseControllerIT {
     protected static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     protected static final LocalDate CEASED_ON_DATE = LocalDate.of(2022, 9, 13);
     protected static final LocalDate REGISTER_ENTRY_DATE = LocalDate.of(2022, 9, 14);
-    protected static final String URL_PSC_INDIVIDUAL =
-            "/transactions/{id}/persons-with-significant-control/individual";
+    protected static final String URL_PSC =
+            "/transactions/{id}/persons-with-significant-control";
+    protected static final String URL_PSC_INDIVIDUAL = URL_PSC + "/individual";
     protected static final String URL_VALIDATION_STATUS =
             "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId"
                     + "}/validation_status";

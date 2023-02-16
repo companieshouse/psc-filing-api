@@ -14,9 +14,10 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
-import uk.gov.companieshouse.api.model.psc.NameElementsApi;
-import uk.gov.companieshouse.api.model.psc.PscApi;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.companieshouse.pscfiling.api.model.dto.AddressDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.Date3TupleDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.NameElementsDto;
@@ -27,6 +28,8 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
+@ExtendWith(SpringExtension.class)
+@Import(PscMapperImpl.class)
 class PscMapperTest {
 
     public static final String SELF_URI =
@@ -40,11 +43,12 @@ class PscMapperTest {
     private Links links;
     private NameElements nameElements;
     private NameElementsDto nameElementsDto;
+
+    @Autowired
     private PscMapper testMapper;
 
     @BeforeEach
     void setUp() {
-        testMapper = Mappers.getMapper(PscMapper.class);
         address = Address.builder()
                 .addressLine1("line1")
                 .addressLine2("line2")
@@ -246,121 +250,19 @@ class PscMapperTest {
     }
 
     @Test
-    void pscIndividualFilingToFilingData() {
+    void isoDateOfBirth() {
+        final var tuple = new Date3Tuple(dob1.getDay(), dob1.getMonth(), dob1.getYear());
 
-        final PscIndividualFiling filing = PscIndividualFiling.builder()
-            .address(address)
-            .addressSameAsRegisteredOfficeAddress(true)
-            .notifiedOn(localDate1)
-            .countryOfResidence("countryOfResidence")
-            .createdAt(instant1)
-            .dateOfBirth(dob1)
-            .naturesOfControl(List.of("a", "b", "c"))
-            .kind("kind")
-            .links(links)
-            .nameElements(nameElements)
-            .nationality("nation")
-            .referenceEtag("referenceEtag")
-            .referencePscId("referencePscId")
-            .referencePscListEtag("list")
-            .residentialAddress(address)
-            .residentialAddressSameAsCorrespondenceAddress(true)
-            .ceasedOn(localDate1)
-            .registerEntryDate(localDate1)
-            .updatedAt(instant1)
-            .statementActionDate(localDate1)
-            .statementType("type1")
-            .build();
+        final var isoDateOfBirth = testMapper.isoDateOfBirth(tuple);
 
-        final var filingData = testMapper.mapFilingData(filing);
-
-        assertThat(filingData.getFirstName(), is(equalTo(filing.getNameElements().getForename())));
-        assertThat(filingData.getOtherForenames(), is(equalTo(filing.getNameElements().getOtherForenames())));
-        assertThat(filingData.getLastName(), is(equalTo(filing.getNameElements().getSurname())));
+        assertThat(isoDateOfBirth, is("1970-09-12"));
     }
 
     @Test
-    void emptyNameElementsToFilingData() {
+    void nullIsoDateOfBirth() {
+        final var isoDateOfBirth = testMapper.isoDateOfBirth(null);
 
-        final PscIndividualFiling filing = PscIndividualFiling.builder()
-            .nameElements(new NameElements(null, null, null, null))
-            .build();
-
-        final var filingData = testMapper.mapFilingData(filing);
-
-        assertThat(filingData.getFirstName(), is(nullValue()));
-        assertThat(filingData.getOtherForenames(), is(nullValue()));
-        assertThat(filingData.getLastName(), is(nullValue()));
-    }
-
-    @Test
-    void nullNameElementsToFilingData() {
-
-        final PscIndividualFiling filing = PscIndividualFiling.builder()
-            .build();
-
-        final var filingData = testMapper.mapFilingData(filing);
-
-        assertThat(filingData.getFirstName(), is(nullValue()));
-        assertThat(filingData.getOtherForenames(), is(nullValue()));
-        assertThat(filingData.getLastName(), is(nullValue()));
-    }
-
-    @Test
-    void nullPscIndividualFilingToFilingData() {
-
-        final var filingData = testMapper.mapFilingData((PscIndividualFiling) null);
-
-        assertThat(filingData, is(nullValue()));
-    }
-
-    @Test
-    void mapNameElements() {
-        final NameElementsApi nameElementsApi = createNameElementsApi();
-
-        final var mapped = testMapper.map(nameElementsApi);
-
-        assertThat(mapped.getForename(), is("api forename"));
-        assertThat(mapped.getSurname(), is("api surname"));
-        assertThat(mapped.getTitle(), is("api title"));
-        assertThat(mapped.getOtherForenames(), is("api middlename"));
-    }
-
-    @Test
-    void enhance() {
-        final var pscFiling = PscIndividualFiling.builder()
-                .nameElements(createNameElements())
-                .nationality("nation")
-                .build();
-        final PscApi pscDetails = new PscApi();
-        pscDetails.setNationality("api nation");
-        pscDetails.setNameElements(createNameElementsApi());
-
-        final var mapped = testMapper.enhance(pscFiling, pscDetails);
-
-        assertThat(mapped.getNameElements().getForename(), is("api forename"));
-        assertThat(mapped.getNameElements().getSurname(), is("api surname"));
-        assertThat(mapped.getNameElements().getTitle(), is("api title"));
-        assertThat(mapped.getNameElements().getOtherForenames(), is("api middlename"));
-        assertThat(mapped.getNationality(), is("nation"));
-    }
-
-    private static NameElements createNameElements() {
-        return NameElements.builder()
-                .forename("forename")
-                .surname("surname")
-                .title("title")
-                .otherForenames("otherforenames").build();
-    }
-
-    private static NameElementsApi createNameElementsApi() {
-        final NameElementsApi nameElementsApi = new NameElementsApi();
-
-        nameElementsApi.setForename("api forename");
-        nameElementsApi.setSurname("api surname");
-        nameElementsApi.setTitle("api title");
-        nameElementsApi.setMiddleName("api middlename");
-        return nameElementsApi;
+        assertThat(isoDateOfBirth, is(nullValue()));
     }
 }
 

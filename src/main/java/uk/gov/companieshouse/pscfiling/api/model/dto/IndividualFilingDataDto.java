@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class IndividualFilingDataDto {
+public class IndividualFilingDataDto implements FilingDtoCommunal {
 
     private String title;
     private String firstName;

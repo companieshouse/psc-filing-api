@@ -9,7 +9,7 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class WithIdentificationFilingDataDto {
+public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
 
     private String countryRegistered;
     private String placeRegistered;

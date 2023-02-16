@@ -21,11 +21,12 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.FilingDataConfig;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.FilingDataMapper;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,7 +47,7 @@ class FilingDataServiceImplTest {
     @Mock
     private PscFilingService pscFilingService;
     @Mock
-    private PscMapper pscMapper;
+    private FilingDataMapper dataMapper;
     @Mock
     private PscDetailsService pscDetailsService;
     @Mock
@@ -62,7 +63,7 @@ class FilingDataServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        testService = new FilingDataServiceImpl(pscFilingService, pscMapper, pscDetailsService,
+        testService = new FilingDataServiceImpl(pscFilingService, dataMapper, pscDetailsService,
                 filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
@@ -83,29 +84,29 @@ class FilingDataServiceImplTest {
         final var nameElements =
                 NameElements.builder().title(TITLE).forename(FIRSTNAME).surname(LASTNAME)
                         .build();
-        final var pscFiling = PscIndividualFiling.builder()
+        final PscCommunal pscFiling = PscIndividualFiling.builder()
                 .referencePscId(REF_PSC_ID)
                 .referenceEtag(REF_ETAG)
                 .ceasedOn(CEASED_ON)
                 .build();
-        final var enhancedPscFiling =
-                PscIndividualFiling.builder(pscFiling).nameElements(nameElements)
+        final PscCommunal enhancedPscFiling =
+                PscIndividualFiling.builder((PscIndividualFiling) pscFiling)
+                        .nameElements(nameElements)
                         .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
-        when(pscMapper.mapFilingData(pscFiling)).thenReturn(filingData);
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
         final var nameElementsApi = new NameElementsApi();
         nameElementsApi.setTitle(TITLE);
         nameElementsApi.setForename(FIRSTNAME);
         nameElementsApi.setSurname(LASTNAME);
-        when(pscApi.getNameElements()).thenReturn(nameElementsApi);
-        when(pscMapper.enhance(pscFiling, pscApi)).thenReturn(enhancedPscFiling);
-        when(pscMapper.mapFilingData(pscFiling)).thenReturn(filingData);
+        when(dataMapper.enhance(pscFiling, pscApi)).thenReturn(enhancedPscFiling);
+        when(dataMapper.map(enhancedPscFiling)).thenReturn(filingData);
 
         final var filingApi =
-                testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER);
+                testService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL, transaction,
+                        PASSTHROUGH_HEADER);
 
         final Map<String, Object> expectedMap =
                 Map.of("title", TITLE, "first_name", FIRSTNAME, "other_forenames", OTHER_FORENAMES,
@@ -121,7 +122,8 @@ class FilingDataServiceImplTest {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
-                () -> testService.generatePscFiling(FILING_ID, transaction, PASSTHROUGH_HEADER));
+                () -> testService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
+                        transaction, PASSTHROUGH_HEADER));
 
         assertThat(exception.getMessage(),
                 is("Psc individual not found when generating filing for " + FILING_ID));

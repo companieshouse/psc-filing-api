@@ -44,6 +44,7 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -99,10 +100,9 @@ class PscIndividualFilingControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController =
-                new PscIndividualFilingControllerImpl(transactionService, pscFilingService, filingMapper,
-                        filingValidationService, clock, logger) {
-                };
+        testController = new PscIndividualFilingControllerImpl(transactionService, pscFilingService,
+                filingMapper, filingValidationService, clock, logger) {
+        };
         filing = PscIndividualFiling.builder()
                 .referencePscId(PSC_ID)
                 .referenceEtag("etag")
@@ -138,7 +138,7 @@ class PscIndividualFilingControllerImplTest {
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PSC_TYPE, dto,
+        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
                 nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
@@ -161,7 +161,8 @@ class PscIndividualFilingControllerImplTest {
                 transaction);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
+                        result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }
@@ -182,7 +183,8 @@ class PscIndividualFilingControllerImplTest {
                 .add(fieldErrorWithRejectedValue))).when(filingValidationService).validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
+                        result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }
@@ -205,7 +207,7 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void getFilingForReviewWhenFound() {
 
-        when(filingMapper.map(filing)).thenReturn(dto);
+        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
