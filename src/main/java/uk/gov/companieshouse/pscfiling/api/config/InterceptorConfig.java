@@ -23,8 +23,7 @@ import uk.gov.companieshouse.api.util.security.Permission;
 public class InterceptorConfig implements WebMvcConfigurer {
 
     static final String[] TRANSACTIONS_LIST = {
-            "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
-                    + "(?:individual|corporate-entity|legal-person)}"
+            "/transactions/{transactionId}/persons-with-significant-control/{pscType}"
     };
     public static final String PSC_FILING_API = "psc-filing-api";
 

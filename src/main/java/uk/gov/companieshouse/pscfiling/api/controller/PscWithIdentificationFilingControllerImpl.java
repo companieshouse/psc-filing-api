@@ -40,7 +40,7 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
 @RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType: "
-        + "(?:corporate-entity|legal-person)}")
+        + "(?:corporate-entity)}")
 public class PscWithIdentificationFilingControllerImpl implements PscWithIdentificationFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
@@ -97,8 +97,9 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
             throw new InvalidFilingException(validationErrors);
         }
 
-        final var entity = (PscWithIdentificationFiling) filingMapper.map(dto);
-        final var links = saveFilingWithLinks(entity, transId, request, logMap);
+        final var entity = filingMapper.map(dto);
+        final var links = saveFilingWithLinks(entity, transId, request, logMap,
+            pscType);
         final var resourceMap = buildResourceMap(links);
 
         transaction.setResources(resourceMap);
@@ -146,9 +147,10 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
     }
 
     private Links saveFilingWithLinks(final PscWithIdentificationFiling entity, final String transId,
-            final HttpServletRequest request, final Map<String, Object> logMap) {
+                                      final HttpServletRequest request, final Map<String, Object> logMap,
+                                      PscTypeConstants pscType) {
         final var saved = pscFilingService.save(entity, transId);
-        final var links = buildLinks(saved, request);
+        final var links = buildLinks(request, saved.getId(), pscType);
         final var updated = PscWithIdentificationFiling.builder(saved).links(links)
                 .build();
         final var resaved = pscFilingService.save(updated, transId);
@@ -159,17 +161,16 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
         return links;
     }
 
-    // TODO Refactor this to handle PSC Types Corporate (RLE) and Legal Entity
-    private Links buildLinks(final PscWithIdentificationFiling savedFiling,
-            final HttpServletRequest request) {
-        final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
+    private Links buildLinks(final HttpServletRequest request, String savedFilingId,
+                             PscTypeConstants pscType) {
+        final var objectId = new ObjectId(Objects.requireNonNull(savedFilingId));
         final var selfUri = UriComponentsBuilder.fromUriString(request.getRequestURI())
                 .pathSegment(objectId.toHexString())
                 .build()
                 .toUri();
 
         final var validateUri = UriComponentsBuilder.fromUriString(request.getRequestURI()
-                        .replace(StringUtils.join("/", PscTypeConstants.CORPORATE_ENTITY.getValue()), ""))
+                        .replace(StringUtils.join("/", pscType.getValue()), ""))
                 .pathSegment(objectId.toHexString())
                 .pathSegment(VALIDATION_STATUS)
                 .build()
