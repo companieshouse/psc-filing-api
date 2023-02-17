@@ -13,14 +13,12 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
-import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 public class BaseControllerIT {
 
     protected static final String TRANS_ID = "4f56fdf78b357bfc";
     protected static final String FILING_ID = "632c8e65105b1b4a9f0d1f5e";
     protected static final String ETAG = "e7101610f832de81c8d2f27904d6b1de2be82ff6";
-    protected static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
     protected static final String PASSTHROUGH_HEADER = "passthrough";
     protected static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     protected static final LocalDate CEASED_ON_DATE = LocalDate.of(2022, 9, 13);
@@ -28,6 +26,7 @@ public class BaseControllerIT {
     protected static final String URL_PSC =
             "/transactions/{id}/persons-with-significant-control";
     protected static final String URL_PSC_INDIVIDUAL = URL_PSC + "/individual";
+    protected static final String URL_PSC_CORPORATE_ENTITY = URL_PSC + "/corporate-entity";
     protected static final String URL_VALIDATION_STATUS =
             "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId"
                     + "}/validation_status";

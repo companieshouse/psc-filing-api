@@ -35,29 +35,26 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
-@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType: "
-        + "(?:corporate-entity)}")
+@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType:"
+        + "(?:legal-person|corporate-entity)}")
 public class PscWithIdentificationFilingControllerImpl implements PscWithIdentificationFilingController {
     public static final String VALIDATION_STATUS = "validation_status";
     private final TransactionService transactionService;
     private final PscFilingService pscFilingService;
-    private final FilingValidationService validatorService;
     private final Clock clock;
     private final Logger logger;
     private final PscMapper filingMapper;
 
     public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
                                                      final PscFilingService pscFilingService, final PscMapper filingMapper,
-                                                     final FilingValidationService validatorService, final Clock clock,
+                                                     final Clock clock,
                                                      final Logger logger) {
         this.transactionService = transactionService;
         this.pscFilingService = pscFilingService;
         this.filingMapper = filingMapper;
-        this.validatorService = validatorService;
         this.clock = clock;
         this.logger = logger;
     }
@@ -90,9 +87,7 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
         final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
 
-        validatorService.validate(
-                new FilingValidationContext<>(dto, validationErrors, transaction, pscType,
-                        passthroughHeader));
+
         if (!validationErrors.isEmpty()) {
             throw new InvalidFilingException(validationErrors);
         }

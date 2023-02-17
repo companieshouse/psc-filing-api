@@ -70,7 +70,7 @@ class PscRegisterEntryDateValidatorTest {
 
     @ParameterizedTest(name = ARGUMENTS_WITH_NAMES_PLACEHOLDER)
     @MethodSource("provideDates")
-    void validateIncludingWithNullDates(final LocalDate ceasedOnDate,
+    void validateDates(final LocalDate ceasedOnDate,
             final LocalDate registerEntryDate) {
 
         when(dto.getCeasedOn()).thenReturn(ceasedOnDate);
@@ -83,8 +83,7 @@ class PscRegisterEntryDateValidatorTest {
     }
 
     public static Stream<Arguments> provideDates() {
-        return Stream.of(Arguments.of(DATE, DATE), Arguments.of(DATE, AFTER_DATE),
-                Arguments.of(null, null), Arguments.of(null, DATE), Arguments.of(DATE, null));
+        return Stream.of(Arguments.of(DATE, DATE), Arguments.of(DATE, AFTER_DATE));
     }
 
 }

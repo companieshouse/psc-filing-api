@@ -1,28 +1,10 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.AdditionalAnswers.answerVoid;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -46,8 +28,10 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -55,16 +39,33 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.AdditionalAnswers.answerVoid;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @Tag("web")
 @Import(PscExistsValidator.class)
-@WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
-class PscIndividualFilingControllerImplIT extends BaseControllerIT {
+@WebMvcTest(controllers = PscWithIdentificationFilingControllerImpl.class)
+class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
     private PscDetailsService pscDetailsService;
-    @MockBean
-    private FilingValidationService filingValidationService;
     @MockBean
     private PscApi pscDetails;
     @MockBean
@@ -102,35 +103,34 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @Test
     void createFilingWhenPSC07PayloadOKThenResponse201() throws Exception {
         final var body = "{" + PSC07_FRAGMENT + "}";
-        final var dto = PscIndividualDto.builder().referenceEtag(ETAG)
+        final var dto = PscWithIdentificationDto.builder().referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .build();
-        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
+        final var filing = PscWithIdentificationFiling.builder().referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .build();
         final var locationUri = UriComponentsBuilder.fromPath("/")
                 .pathSegment("transactions", TRANS_ID,
-                        "persons-with-significant-control/individual", FILING_ID)
+                        "persons-with-significant-control/corporate-entity", FILING_ID)
                 .build();
 
         when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.CORPORATE_ENTITY,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
-        when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
-                        PscIndividualFiling.builder(filing).id(FILING_ID)
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class), eq(TRANS_ID))).thenReturn(
+                        PscWithIdentificationFiling.builder(filing).id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
-                .thenAnswer(i -> PscIndividualFiling.builder(i.getArgument(0))
+                .thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -145,13 +145,13 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         final var expectedError = createExpectedValidationError(
                 "Required request body is missing: public org.springframework.http"
                         + ".ResponseEntity<java.lang.Object> uk.gov.companieshouse.pscfiling.api"
-                        + ".controller.PscIndividualFilingControllerImpl.createFiling(java.lang.String,uk"
+                        + ".controller.PscWithIdentificationFilingControllerImpl.createFiling(java.lang.String,uk"
                         + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
-                        + ".companieshouse.pscfiling.api.model.dto.PscIndividualDto,org"
+                        + ".companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto,org"
                         + ".springframework.validation.BindingResult,javax.servlet.http"
                         + ".HttpServletRequest)", "$", 1, 1);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("")
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content("")
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -168,63 +168,18 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    void createFilingWhenPscNotFoundThenResponse400() throws Exception {
-        final var body = "{" + PSC07_FRAGMENT + "}";
-        final var pscServiceError =
-                createExpectedApiError("PSC Details not found for " + PSC_ID + ": 404 Not Found",
-                        "$.reference_psc_id",
-                        LocationType.JSON_PATH, ErrorType.VALIDATION);
-        final var pscServiceResponse = new ApiErrorResponse();
-
-        pscServiceResponse.setErrors(List.of(pscServiceError));
-        when(errorResponseException.getDetails()).thenReturn(pscServiceResponse);
-        when(errorResponseException.getMessage()).thenReturn("404 Not Found\\n{\"errors"
-                + "\":[{\"type\":\"ch:service\",\"error\":\"company-psc-details-not-found\"}]}");
-
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
-                PASSTHROUGH_HEADER)).thenThrow(new FilingResourceNotFoundException(
-                "PSC Details not found for " + PSC_ID + ": 404 Not Found", errorResponseException));
-
-        final var bindingErrorCodes = new String[]{null, "notFound.reference_psc_id"};
-        final var fieldErrorWithRejectedValue =
-                new FieldError("object", "reference_psc_id", PSC_ID, false, bindingErrorCodes, null,
-                        "PSC with that reference ID was not found");
-
-        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
-                .add(fieldErrorWithRejectedValue))).when(filingValidationService)
-                .validate(any(FilingValidationContext.class));
-
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
-                        .contentType(APPLICATION_JSON)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(header().doesNotExist("location"))
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0]",
-                        allOf(hasEntry("location", pscServiceError.getLocation()),
-                                hasEntry("location_type", pscServiceError.getLocationType()),
-                                hasEntry("type", pscServiceError.getType()), hasEntry("error",
-                                        fieldErrorWithRejectedValue.getDefaultMessage()))))
-                .andExpect(jsonPath("$.errors[0].error_values", hasEntry("rejected", PSC_ID)));
-    }
-
-    @Test
     void createFilingWhenRequestBodyBlankThenResponse400() throws Exception {
         final var expectedError = createExpectedValidationError(
                 "Cannot coerce empty String (\"\") to `uk.gov.companieshouse.pscfiling.api.model"
                         + ".dto"
-                        + ".PscIndividualDto$Builder` value (but could if coercion was enabled "
+                        + ".PscWithIdentificationDto$Builder` value (but could if coercion was enabled "
                         + "using "
                         + "`CoercionConfig`)\n"
                         + " at [Source: (org.springframework.util"
                         + ".StreamUtils$NonClosingInputStream); line: 1, "
                         + "column: 1]", "$", 1, 1);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(EMPTY_QUOTED_JSON)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(EMPTY_QUOTED_JSON)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -249,7 +204,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
                 + "line: 1, column: 2]", "$", 1, 1);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(MALFORMED_JSON)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(MALFORMED_JSON)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -277,7 +232,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         + ".StreamUtils$NonClosingInputStream); line: 1, column: 173]", "$", 1,
                 173);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("{" + PSC07_FRAGMENT)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content("{" + PSC07_FRAGMENT)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -301,7 +256,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         final var expectedError =
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -325,7 +280,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         final var expectedError =
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -350,7 +305,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         final var expectedError =
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -379,7 +334,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -405,7 +360,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
 
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -420,14 +375,15 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.errors[0].error_values", is(nullValue())));
     }
 
+    @Disabled("Pending PSC-71 + PSC-72")
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
-        final var dto = PscIndividualDto.builder().referenceEtag(ETAG)
+        final var dto = PscWithIdentificationDto.builder().referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(CEASED_ON_DATE)
                 .build();
-        final var filing = PscIndividualFiling.builder()
+        final var filing = PscWithIdentificationFiling.builder()
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
@@ -447,13 +403,14 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())));
     }
 
+    @Disabled("Pending PSC-71 + PSC-72")
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+                        get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }

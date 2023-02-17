@@ -101,7 +101,7 @@ class PscWithIdentificationFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController = new PscWithIdentificationFilingControllerImpl(transactionService, pscFilingService,
-                filingMapper, filingValidationService, clock, logger) {
+                filingMapper, clock, logger) {
         };
         filing = PscWithIdentificationFiling.builder()
                 .referencePscId(PSC_ID)
@@ -144,11 +144,6 @@ class PscWithIdentificationFilingControllerImplTest {
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
-        final var context =
-                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
-                        PASSTHROUGH_HEADER);
-        verify(filingValidationService).validate(context);
-        assertThat(validationErrors, is(empty()));
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
 
@@ -159,28 +154,6 @@ class PscWithIdentificationFilingControllerImplTest {
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-
-        final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, dto,
-                        result, request));
-
-        assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
-    }
-
-    @Test
-    void createFilingWhenRequestHasValidationError() {
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-                PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
-        when(result.getFieldErrors()).thenReturn(new ArrayList<>());
-
-        final var context =
-                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
-                        PASSTHROUGH_HEADER);
-
-        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
-                .add(fieldErrorWithRejectedValue))).when(filingValidationService).validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, dto,

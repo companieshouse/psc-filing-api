@@ -22,8 +22,8 @@ import uk.gov.companieshouse.api.util.security.Permission;
 @PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String[] TRANSACTIONS_LIST = {
-            "/transactions/{transactionId}/persons-with-significant-control/{pscType}"
+    static final String[] INTERCEPTOR_PATHS_LIST = {
+            "/transactions/{transactionId}/persons-with-significant-control/**"
     };
     public static final String PSC_FILING_API = "psc-filing-api";
 
@@ -58,26 +58,26 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(transactionInterceptor())
-                .addPathPatterns(TRANSACTIONS_LIST);
+                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
-                .addPathPatterns(TRANSACTIONS_LIST);
+                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     private void addCompanyInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(companyInterceptor).addPathPatterns(TRANSACTIONS_LIST);
+        registry.addInterceptor(companyInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS_LIST);
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
 
     }
 
     private void addRequestPermissionsInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(requestPermissionsInterceptor(pscPermissionsMapping()))
-                .addPathPatterns(TRANSACTIONS_LIST);
+                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     @Bean
