@@ -14,8 +14,8 @@ import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
-import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
@@ -23,7 +23,8 @@ import uk.gov.companieshouse.api.util.security.Permission;
 public class InterceptorConfig implements WebMvcConfigurer {
 
     static final String[] INTERCEPTOR_PATHS_LIST = {
-            "/transactions/{transactionId}/persons-with-significant-control/**"
+            "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
+                    + "(?:individual|corporate-entity|legal-person)}"
     };
     public static final String PSC_FILING_API = "psc-filing-api";
 

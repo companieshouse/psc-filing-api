@@ -80,6 +80,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
                 .links(links)
                 .build();
     }

@@ -12,7 +12,7 @@ import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilin
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 /**
- * Store/retrieves a PSC Individual Filing entities using the persistence layer.
+ * Store/retrieve a PSC Filing entities using the persistence layer.
  */
 @Service
 public class PscFilingServiceImpl implements PscFilingService {

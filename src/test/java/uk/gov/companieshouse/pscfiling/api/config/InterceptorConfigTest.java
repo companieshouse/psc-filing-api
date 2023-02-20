@@ -77,7 +77,7 @@ class InterceptorConfigTest {
         inOrder.verify(interceptorRegistry)
                 .addInterceptor(any(MappablePermissionsInterceptor.class));
         verify(interceptorRegistration, times(5))
-                .addPathPatterns("/transactions/{transactionId}/persons-with-significant-control/**");
+                .addPathPatterns("/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}");
     }
 
     @Test
