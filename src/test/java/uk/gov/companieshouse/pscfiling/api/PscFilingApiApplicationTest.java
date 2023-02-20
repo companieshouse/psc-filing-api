@@ -9,17 +9,17 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.companieshouse.pscfiling.api.controller.PscFilingController;
+import uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingController;
 
 @Tag("app")
 @SpringBootTest
 class PscFilingApiApplicationTest {
     @Autowired
-    private PscFilingController pscFilingController;
+    private PscIndividualFilingController pscIndividualFilingController;
 
     @Test
     void contextLoads() {
-        assertThat(pscFilingController, is(not(nullValue())));
+        assertThat(pscIndividualFilingController, is(not(nullValue())));
     }
 
 }

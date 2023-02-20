@@ -14,15 +14,15 @@ import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
 import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
-import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
+import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
 @PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String[] TRANSACTIONS_LIST = {
+    static final String[] INTERCEPTOR_PATHS_LIST = {
             "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
                     + "(?:individual|corporate-entity|legal-person)}"
     };
@@ -59,26 +59,26 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(transactionInterceptor())
-                .addPathPatterns(TRANSACTIONS_LIST);
+                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
-                .addPathPatterns(TRANSACTIONS_LIST);
+                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     private void addCompanyInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(companyInterceptor).addPathPatterns(TRANSACTIONS_LIST);
+        registry.addInterceptor(companyInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(TRANSACTIONS_LIST);
+        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
 
     }
 
     private void addRequestPermissionsInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(requestPermissionsInterceptor(pscPermissionsMapping()))
-                .addPathPatterns(TRANSACTIONS_LIST);
+                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
     }
 
     @Bean

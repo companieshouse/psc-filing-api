@@ -42,8 +42,11 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
@@ -54,8 +57,8 @@ import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
 @Import(PscExistsValidator.class)
-@WebMvcTest(controllers = PscFilingControllerImpl.class)
-class PscFilingControllerImplIT extends BaseControllerIT {
+@WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
+class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -67,7 +70,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @MockBean
     private Clock clock;
     @MockBean
@@ -117,7 +120,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
         when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
         when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
@@ -142,7 +145,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
         final var expectedError = createExpectedValidationError(
                 "Required request body is missing: public org.springframework.http"
                         + ".ResponseEntity<java.lang.Object> uk.gov.companieshouse.pscfiling.api"
-                        + ".controller.PscFilingControllerImpl.createFiling(java.lang.String,uk"
+                        + ".controller.PscIndividualFilingControllerImpl.createFiling(java.lang.String,uk"
                         + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
                         + ".companieshouse.pscfiling.api.model.dto.PscIndividualDto,org"
                         + ".springframework.validation.BindingResult,javax.servlet.http"
@@ -165,6 +168,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void createFilingWhenPscNotFoundThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT + "}";
         final var pscServiceError =
@@ -180,7 +184,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PSC_TYPE,
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenThrow(new FilingResourceNotFoundException(
                 "PSC Details not found for " + PSC_ID + ": 404 Not Found", errorResponseException));
 
@@ -189,7 +193,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
                 new FieldError("object", "reference_psc_id", PSC_ID, false, bindingErrorCodes, null,
                         "PSC with that reference ID was not found");
 
-        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors()
+        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
                 .add(fieldErrorWithRejectedValue))).when(filingValidationService)
                 .validate(any(FilingValidationContext.class));
 
@@ -432,7 +436,7 @@ class PscFilingControllerImplIT extends BaseControllerIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        when(filingMapper.map(filing)).thenReturn(dto);
+        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         mockMvc.perform(
                         get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))

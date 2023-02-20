@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.model.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,19 +10,17 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+@JsonDeserialize(builder = PscWithIdentificationDto.Builder.class)
 public class PscWithIdentificationDto implements PscDtoCommunal {
 
     private final PscDtoCommunal pscCommunal;
     private IdentificationDto identification;
     private String name;
 
-
     private PscWithIdentificationDto(final PscCommonDto.Builder commonBuilder) {
         Objects.requireNonNull(commonBuilder);
         pscCommunal = commonBuilder.build();
     }
-
-
 
     @Override
     public AddressDto getAddress() {

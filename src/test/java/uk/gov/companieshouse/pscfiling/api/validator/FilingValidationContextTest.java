@@ -32,34 +32,34 @@ class FilingValidationContextTest {
     void setUp() {
         errors = new ArrayList<>();
         testContext =
-                new FilingValidationContext(dto, errors, transaction, PscTypeConstants.INDIVIDUAL,
+                new FilingValidationContext<>(dto, errors, transaction, PscTypeConstants.INDIVIDUAL,
                         PASSTHROUGH_HEADER);
     }
 
     @Test
     void constructorWhenDtoNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(null, errors, transaction,
+                () -> new FilingValidationContext<>(null, errors, transaction,
                         PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
     }
 
     @Test
     void constructorWhenErrorsNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(dto, null, transaction,
+                () -> new FilingValidationContext<>(dto, null, transaction,
                         PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
     }
 
     void constructorWhenTransactionNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(dto, errors, null,
-                        PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
+                () -> new FilingValidationContext<>(dto, errors, null, PscTypeConstants.INDIVIDUAL,
+                        PASSTHROUGH_HEADER));
     }
 
     void constructorWhenPscTypeNull() {
         assertThrows(NullPointerException.class,
-                () -> new FilingValidationContext(dto, errors, transaction,
-                        null, PASSTHROUGH_HEADER));
+                () -> new FilingValidationContext<>(dto, errors, transaction, null,
+                        PASSTHROUGH_HEADER));
     }
 
     @Test

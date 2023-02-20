@@ -20,6 +20,7 @@ import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -58,8 +59,8 @@ class FilingDataControllerImplIT extends BaseControllerIT {
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(filingDataService.generatePscFiling(FILING_ID, transaction,
-                PASSTHROUGH_HEADER)).thenReturn(filingApi);
+        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
+                transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
         mockMvc.perform(get(URL_PSC_FILINGS, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
@@ -71,8 +72,8 @@ class FilingDataControllerImplIT extends BaseControllerIT {
 
     @Test
     void getFilingsWhenNotFound() throws Exception {
-        when(filingDataService.generatePscFiling(FILING_ID, transaction,
-                PASSTHROUGH_HEADER)).thenThrow(
+        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
+                transaction, PASSTHROUGH_HEADER)).thenThrow(
                 new FilingResourceNotFoundException("for Not Found scenario", null));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);

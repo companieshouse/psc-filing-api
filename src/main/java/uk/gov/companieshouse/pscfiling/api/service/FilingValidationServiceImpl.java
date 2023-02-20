@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 
@@ -22,14 +23,16 @@ public class FilingValidationServiceImpl implements FilingValidationService {
                 .collect(Collectors.toMap(FilingForPscTypeValid::getPscType, Function.identity()));
     }
 
+
     @Override
-    public void validate(final FilingValidationContext context) {
+    public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> context) {
         Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
                 .map(FilingForPscTypeValid::getFirst)
                 .ifPresentOrElse(v -> v.validate(context), () -> {
                     throw new UnsupportedOperationException(
                             MessageFormat.format("Validation not defined for PSC type ''{0}''",
-                                    context.getPscType()));
+                                context.getPscType()));
                 });
     }
+
 }

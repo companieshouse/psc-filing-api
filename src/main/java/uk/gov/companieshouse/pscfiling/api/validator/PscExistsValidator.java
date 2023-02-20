@@ -3,10 +3,12 @@ package uk.gov.companieshouse.pscfiling.api.validator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 @Component
-public class PscExistsValidator extends BaseFilingValidator implements FilingValid {
+public class PscExistsValidator extends BaseIndividualFilingValidator
+        implements IndividualFilingValid {
 
     private final PscDetailsService pscDetailsService;
 
@@ -15,7 +17,7 @@ public class PscExistsValidator extends BaseFilingValidator implements FilingVal
     }
 
     @Override
-    public void validate(final FilingValidationContext validationContext) {
+    public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
         try {
             pscDetailsService.getPscDetails(validationContext.getTransaction(), validationContext.getDto()

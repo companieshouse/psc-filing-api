@@ -20,7 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -37,7 +37,7 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     @MockBean
     private FilingValidationService filingValidationService;
     @MockBean
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @MockBean
     private ErrorMapper errorMapper;
     @MockBean

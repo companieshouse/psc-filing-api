@@ -14,7 +14,10 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.companieshouse.pscfiling.api.model.dto.AddressDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.Date3TupleDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.NameElementsDto;
@@ -25,7 +28,9 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
-class PscIndividualMapperTest {
+@ExtendWith(SpringExtension.class)
+@Import(PscMapperImpl.class)
+class PscMapperTest {
 
     public static final String SELF_URI =
             "/transactions/197315-203316-322377/persons-with-significant-control/individual"
@@ -38,11 +43,12 @@ class PscIndividualMapperTest {
     private Links links;
     private NameElements nameElements;
     private NameElementsDto nameElementsDto;
-    private PscIndividualMapper testMapper;
+
+    @Autowired
+    private PscMapper testMapper;
 
     @BeforeEach
     void setUp() {
-        testMapper = Mappers.getMapper(PscIndividualMapper.class);
         address = Address.builder()
                 .addressLine1("line1")
                 .addressLine2("line2")
@@ -94,7 +100,7 @@ class PscIndividualMapperTest {
                 .notifiedOn(localDate1)
                 .build();
 
-        final var filing = testMapper.map(dto);
+        final var filing = (PscIndividualFiling) testMapper.map(dto);
 
         assertThat(filing.getAddress(), is(equalTo(address)));
         assertThat(filing.getAddressSameAsRegisteredOfficeAddress(), is(true));
@@ -132,7 +138,7 @@ class PscIndividualMapperTest {
                 PscIndividualFiling.builder().naturesOfControl(Arrays.asList(null, null))
                         .build();
 
-        final var filing = testMapper.map(dto);
+        final var filing = (PscIndividualFiling) testMapper.map(dto);
 
         assertThat(filing, is(equalTo(emptyFiling)));
         assertThat(filing.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
@@ -177,7 +183,7 @@ class PscIndividualMapperTest {
                 .statementType("type1")
                 .build();
 
-        final PscIndividualDto dto = testMapper.map(filing);
+        final var dto = (PscIndividualDto) testMapper.map(filing);
 
         assertThat(dto.getAddress(), is(equalTo(addressDto)));
         assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(true));
@@ -236,7 +242,7 @@ class PscIndividualMapperTest {
         final var emptyDto = PscIndividualDto.builder().naturesOfControl(Collections.emptyList())
                 .build();
 
-        final var dto = testMapper.map(filing);
+        final var dto = (PscIndividualDto) testMapper.map(filing);
 
         assertThat(dto, is(equalTo(emptyDto)));
         assertThat(dto.getAddressSameAsRegisteredOfficeAddress(), is(nullValue()));
@@ -244,72 +250,19 @@ class PscIndividualMapperTest {
     }
 
     @Test
-    void pscIndividualFilingToFilingData() {
+    void isoDateOfBirth() {
+        final var tuple = new Date3Tuple(dob1.getDay(), dob1.getMonth(), dob1.getYear());
 
-        final PscIndividualFiling filing = PscIndividualFiling.builder()
-            .address(address)
-            .addressSameAsRegisteredOfficeAddress(true)
-            .notifiedOn(localDate1)
-            .countryOfResidence("countryOfResidence")
-            .createdAt(instant1)
-            .dateOfBirth(dob1)
-            .naturesOfControl(List.of("a", "b", "c"))
-            .kind("kind")
-            .links(links)
-            .nameElements(nameElements)
-            .nationality("nation")
-            .referenceEtag("referenceEtag")
-            .referencePscId("referencePscId")
-            .referencePscListEtag("list")
-            .residentialAddress(address)
-            .residentialAddressSameAsCorrespondenceAddress(true)
-            .ceasedOn(localDate1)
-            .registerEntryDate(localDate1)
-            .updatedAt(instant1)
-            .statementActionDate(localDate1)
-            .statementType("type1")
-            .build();
+        final var isoDateOfBirth = testMapper.isoDateOfBirth(tuple);
 
-        final var filingData = testMapper.mapFiling(filing);
-
-        assertThat(filingData.getFirstName(), is(equalTo(filing.getNameElements().getForename())));
-        assertThat(filingData.getOtherForenames(), is(equalTo(filing.getNameElements().getOtherForenames())));
-        assertThat(filingData.getLastName(), is(equalTo(filing.getNameElements().getSurname())));
+        assertThat(isoDateOfBirth, is("1970-09-12"));
     }
 
     @Test
-    void emptyNameElementsToFilingData() {
+    void nullIsoDateOfBirth() {
+        final var isoDateOfBirth = testMapper.isoDateOfBirth(null);
 
-        final PscIndividualFiling filing = PscIndividualFiling.builder()
-            .nameElements(new NameElements(null, null, null, null))
-            .build();
-
-        final var filingData = testMapper.mapFiling(filing);
-
-        assertThat(filingData.getFirstName(), is(nullValue()));
-        assertThat(filingData.getOtherForenames(), is(nullValue()));
-        assertThat(filingData.getLastName(), is(nullValue()));
-    }
-
-    @Test
-    void nullNameElementsToFilingData() {
-
-        final PscIndividualFiling filing = PscIndividualFiling.builder()
-            .build();
-
-        final var filingData = testMapper.mapFiling(filing);
-
-        assertThat(filingData.getFirstName(), is(nullValue()));
-        assertThat(filingData.getOtherForenames(), is(nullValue()));
-        assertThat(filingData.getLastName(), is(nullValue()));
-    }
-
-    @Test
-    void nullPscIndividualFilingToFilingData() {
-
-        final var filingData = testMapper.mapFiling(null);
-
-        assertThat(filingData, is(nullValue()));
+        assertThat(isoDateOfBirth, is(nullValue()));
     }
 }
 

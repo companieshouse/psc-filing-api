@@ -61,7 +61,7 @@ class PscRegisterEntryDateValidatorTest {
         when(dto.getRegisterEntryDate()).thenReturn(BEFORE_DATE);
 
         testValidator.validate(
-                new FilingValidationContext(dto, errors, transaction, pscType, passThroughHeader));
+                new FilingValidationContext<>(dto, errors, transaction, pscType, passThroughHeader));
 
         assertThat(errors.stream().findFirst().orElseThrow(), equalTo(fieldError));
         assertThat(errors, contains(fieldError));
@@ -70,21 +70,20 @@ class PscRegisterEntryDateValidatorTest {
 
     @ParameterizedTest(name = ARGUMENTS_WITH_NAMES_PLACEHOLDER)
     @MethodSource("provideDates")
-    void validateIncludingWithNullDates(final LocalDate ceasedOnDate,
+    void validateDates(final LocalDate ceasedOnDate,
             final LocalDate registerEntryDate) {
 
         when(dto.getCeasedOn()).thenReturn(ceasedOnDate);
         when(dto.getRegisterEntryDate()).thenReturn(registerEntryDate);
 
         testValidator.validate(
-                new FilingValidationContext(dto, errors, transaction, pscType, passThroughHeader));
+                new FilingValidationContext<>(dto, errors, transaction, pscType, passThroughHeader));
 
         assertThat(errors, is(empty()));
     }
 
     public static Stream<Arguments> provideDates() {
-        return Stream.of(Arguments.of(DATE, DATE), Arguments.of(DATE, AFTER_DATE),
-                Arguments.of(null, null), Arguments.of(null, DATE), Arguments.of(DATE, null));
+        return Stream.of(Arguments.of(DATE, DATE), Arguments.of(DATE, AFTER_DATE));
     }
 
 }

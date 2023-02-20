@@ -49,8 +49,8 @@ class FilingDataControllerImplTest extends BaseControllerIT {
         var filingApi = new FilingApi();
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
-        when(filingDataService.generatePscFiling(FILING_ID, filingsTransaction,
-                PASSTHROUGH_HEADER)).thenReturn(filingApi);
+        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
+                filingsTransaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 filingsTransaction);
 
@@ -67,8 +67,8 @@ class FilingDataControllerImplTest extends BaseControllerIT {
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 filingsTransaction);
-        when(filingDataService.generatePscFiling(FILING_ID, filingsTransaction,
-                PASSTHROUGH_HEADER)).thenThrow(
+        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
+                filingsTransaction, PASSTHROUGH_HEADER)).thenThrow(
                 new FilingResourceNotFoundException("Test Resource not found"));
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,

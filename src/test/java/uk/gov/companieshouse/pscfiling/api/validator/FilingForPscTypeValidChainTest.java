@@ -16,7 +16,7 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 class FilingForPscTypeValidChainTest {
     private FilingForPscTypeValidChain testChain;
     @Mock
-    private FilingValid firstValid;
+    private IndividualFilingValid firstValid;
 
     @BeforeEach
     void setUp() {

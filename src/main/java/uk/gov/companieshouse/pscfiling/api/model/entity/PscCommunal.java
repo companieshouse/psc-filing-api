@@ -3,7 +3,9 @@ package uk.gov.companieshouse.pscfiling.api.model.entity;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.mongodb.core.mapping.Document;
 
+@Document(collection = "psc_submissions")
 public interface PscCommunal {
 
     Address getAddress();
@@ -11,6 +13,8 @@ public interface PscCommunal {
     Boolean getAddressSameAsRegisteredOfficeAddress();
 
     LocalDate getCeasedOn();
+
+    String getName();
 
     Instant getCreatedAt();
 

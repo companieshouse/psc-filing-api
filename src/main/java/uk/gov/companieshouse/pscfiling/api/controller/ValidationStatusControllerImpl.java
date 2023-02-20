@@ -19,9 +19,10 @@ import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -39,15 +40,15 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     private final PscFilingService pscFilingService;
     private final TransactionService transactionService;
     private final FilingValidationService filingValidationService;
-    private final PscIndividualMapper filingMapper;
+    private final PscMapper filingMapper;
     private final ErrorMapper errorMapper;
     private final Logger logger;
     private final boolean isTransactionsCloseableEnabled;
 
     public ValidationStatusControllerImpl(final PscFilingService pscFilingService,
-            final TransactionService transactionService, final FilingValidationService filingValidationService,
-            final PscIndividualMapper filingMapper, final ErrorMapper errorMapper, @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled,
-            Logger logger) {
+                                          final TransactionService transactionService, final FilingValidationService filingValidationService,
+                                          final PscMapper filingMapper, final ErrorMapper errorMapper, @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled,
+                                          Logger logger) {
         this.pscFilingService = pscFilingService;
         this.transactionService = transactionService;
         this.filingValidationService = filingValidationService;
@@ -77,12 +78,12 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
         final var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
-        return maybePscIndividualFiling.map(pscFiling -> isValid(pscFiling, transId, passthroughHeader))
+        return maybePscIndividualFiling.map(f -> isValid(f, transId, passthroughHeader))
                 .orElseThrow(() -> new FilingResourceNotFoundException(
                         "Filing resource not found: " + filingResource));
     }
 
-    private ValidationStatusResponse isValid(final PscIndividualFiling pscFiling, final String transId,
+    private ValidationStatusResponse isValid(final PscCommunal pscFiling, final String transId,
             final String passthroughHeader) {
 
         final var validationStatus = new ValidationStatusResponse();
@@ -105,8 +106,9 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         return validationStatus;
     }
 
-    private ValidationStatusError[] calculateIsValid(final PscIndividualFiling pscFiling, final String transId,
+    private ValidationStatusError[] calculateIsValid(final PscCommunal pscFiling, final String transId,
             final String passthroughHeader) {
+
         final var self = pscFiling.getLinks().getSelf().getPath();
         final var matcher = SELF_URI_PSC_TYPE_PATTERN.matcher(self);
 
@@ -121,23 +123,22 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
                     new ValidationStatusError("PSC type could not be identified", "$.links.self",
                             LocationType.RESOURCE.getValue(), ErrorType.VALIDATION.getType())
             };
-
         }
 
     }
 
-    private ValidationStatusError[] validatePscType(final PscIndividualFiling pscFiling, final String transId,
-            final String passthroughHeader, final PscTypeConstants pscType) {
-        final var dto = filingMapper.map(pscFiling);
+    private ValidationStatusError[] validatePscType(final PscCommunal pscFiling, final String transId,
+                                                    final String passthroughHeader, final PscTypeConstants pscType) {
+        final PscDtoCommunal dto = filingMapper.map(pscFiling);
+
         final var errors = new ArrayList<FieldError>();
-        // TODO: When Transaction Interceptor is implemented, transaction will be in HTTP request
         final var transaction =
                 transactionService.getTransaction(transId, passthroughHeader);
-        final var context = new FilingValidationContext(dto, errors, transaction,
-                pscType, passthroughHeader);
+        final FilingValidationContext<PscDtoCommunal>
+            context = new FilingValidationContext<>(dto, errors, transaction,
+            pscType, passthroughHeader);
 
         filingValidationService.validate(context);
-
         return errorMapper.map(context.getErrors());
     }
 

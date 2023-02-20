@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FilingDataDto {
+public class IndividualFilingDataDto implements FilingDtoCommunal {
 
     private String title;
     private String firstName;
@@ -19,7 +19,7 @@ public class FilingDataDto {
     private String ceasedOn;
     private String registerEntryDate;
 
-    public FilingDataDto() {
+    public IndividualFilingDataDto() {
         // prevent direct instantiation
     }
 
@@ -55,20 +55,20 @@ public class FilingDataDto {
         return new Builder();
     }
 
-    public static Builder builder(final FilingDataDto other) {
+    public static Builder builder(final IndividualFilingDataDto other) {
         return new Builder(other);
     }
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<FilingDataDto>> buildSteps;
+        private final List<Consumer<IndividualFilingDataDto>> buildSteps;
 
         public Builder() {
             this.buildSteps = new ArrayList<>();
         }
 
-        public Builder(final FilingDataDto other) {
+        public Builder(final IndividualFilingDataDto other) {
             this();
             this.title(other.getTitle())
                 .firstName(other.getFirstName())
@@ -121,9 +121,9 @@ public class FilingDataDto {
             return this;
         }
 
-        public FilingDataDto build() {
+        public IndividualFilingDataDto build() {
 
-            final var data = new FilingDataDto();
+            final var data = new IndividualFilingDataDto();
             buildSteps.forEach(step -> step.accept(data));
 
             return data;
@@ -138,7 +138,7 @@ public class FilingDataDto {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FilingDataDto that = (FilingDataDto) o;
+        IndividualFilingDataDto that = (IndividualFilingDataDto) o;
         return Objects.equals(getTitle(), that.getTitle()) &&
             Objects.equals(getFirstName(), that.getFirstName()) &&
             Objects.equals(getOtherForenames(), that.getOtherForenames()) &&

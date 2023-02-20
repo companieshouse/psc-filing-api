@@ -10,7 +10,7 @@ import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscfiling.api.controller.PscFilingControllerImpl.VALIDATION_STATUS;
+import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 import java.net.URI;
@@ -39,10 +39,12 @@ import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -53,7 +55,7 @@ import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
-class PscFilingControllerImplTest {
+class PscIndividualFilingControllerImplTest {
     public static final String TRANS_ID = "117524-754816-491724";
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final PscTypeConstants PSC_TYPE = PscTypeConstants.INDIVIDUAL;
@@ -63,7 +65,7 @@ class PscFilingControllerImplTest {
             URI.create("/transactions/" + TRANS_ID + "/persons-with-significant-control/");
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
 
-    private PscFilingController testController;
+    private PscIndividualFilingController testController;
     @Mock
     private PscFilingService pscFilingService;
     @Mock
@@ -73,7 +75,7 @@ class PscFilingControllerImplTest {
     @Mock
     private Logger logger;
     @Mock
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @Mock
     private PscIndividualDto dto;
     @Mock
@@ -98,10 +100,9 @@ class PscFilingControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController =
-                new PscFilingControllerImpl(transactionService, pscFilingService, filingMapper,
-                        filingValidationService, clock, logger) {
-                };
+        testController = new PscIndividualFilingControllerImpl(transactionService, pscFilingService,
+                filingMapper, filingValidationService, clock, logger) {
+        };
         filing = PscIndividualFiling.builder()
                 .referencePscId(PSC_ID)
                 .referenceEtag("etag")
@@ -137,14 +138,14 @@ class PscFilingControllerImplTest {
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PSC_TYPE, dto,
+        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
                 nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
         final var context =
-                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
         verify(filingValidationService).validate(context);
         assertThat(validationErrors, is(empty()));
@@ -160,7 +161,8 @@ class PscFilingControllerImplTest {
                 transaction);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
+                        result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }
@@ -174,15 +176,15 @@ class PscFilingControllerImplTest {
         when(result.getFieldErrors()).thenReturn(new ArrayList<>());
 
         final var context =
-                new FilingValidationContext(dto, validationErrors, transaction, PSC_TYPE,
+                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
 
-        doAnswer(answerVoid((FilingValidationContext c) -> c.getErrors().add(
-                fieldErrorWithRejectedValue))).when(filingValidationService)
-                .validate(context);
+        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
+                .add(fieldErrorWithRejectedValue))).when(filingValidationService).validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(TRANS_ID, PSC_TYPE, dto, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
+                        result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }
@@ -205,7 +207,7 @@ class PscFilingControllerImplTest {
     @Test
     void getFilingForReviewWhenFound() {
 
-        when(filingMapper.map(filing)).thenReturn(dto);
+        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 

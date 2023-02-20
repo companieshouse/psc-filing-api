@@ -5,5 +5,5 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 public interface FilingForPscTypeValid {
     PscTypeConstants getPscType();
 
-    FilingValid getFirst();
+    IndividualFilingValid getFirst();
 }

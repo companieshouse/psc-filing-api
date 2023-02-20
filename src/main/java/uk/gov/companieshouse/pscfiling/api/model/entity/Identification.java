@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,18 @@ public class Identification {
 
     private Identification() {
         // prevent direct instantiation
+    }
+
+    public Identification(@JsonProperty("countryRegistered") final String countryRegistered,
+                          @JsonProperty("legalAuthority") final String legalAuthority,
+                          @JsonProperty("legalForm") final String legalForm,
+                          @JsonProperty("placeRegistered") final String placeRegistered,
+                          @JsonProperty("registrationNumber") final String registrationNumber) {
+        this.countryRegistered = countryRegistered;
+        this.legalAuthority = legalAuthority;
+        this.legalForm = legalForm;
+        this.placeRegistered = placeRegistered;
+        this.registrationNumber = registrationNumber;
     }
 
     public String getCountryRegistered() {

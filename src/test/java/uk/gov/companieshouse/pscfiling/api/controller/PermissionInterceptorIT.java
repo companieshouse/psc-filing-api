@@ -17,14 +17,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.mapper.PscIndividualMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
-@WebMvcTest(controllers = PscFilingControllerImpl.class)
+@WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
 class PermissionInterceptorIT extends BaseControllerIT {
     @Autowired
     private MockMvc mockMvc;
@@ -40,7 +40,7 @@ class PermissionInterceptorIT extends BaseControllerIT {
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
-    private PscIndividualMapper filingMapper;
+    private PscMapper filingMapper;
     @MockBean
     private Clock clock;
     @MockBean
