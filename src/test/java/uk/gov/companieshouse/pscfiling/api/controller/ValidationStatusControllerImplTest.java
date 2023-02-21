@@ -48,8 +48,6 @@ class ValidationStatusControllerImplTest {
     @Mock
     private PscFilingService pscFilingService;
     @Mock
-    private TransactionService transactionService;
-    @Mock
     private FilingValidationService filingValidationService;
     @Mock
     private HttpServletRequest request;
@@ -67,7 +65,7 @@ class ValidationStatusControllerImplTest {
 
     @BeforeEach
     void setUp() {
-        testController = new ValidationStatusControllerImpl(pscFilingService, transactionService,
+        testController = new ValidationStatusControllerImpl(pscFilingService,
                 filingValidationService, filingMapper, errorMapper, true, logger);
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
@@ -75,13 +73,14 @@ class ValidationStatusControllerImplTest {
 
     @Test
     void validateWhenClosableFlagFalse() {
-        testController = new ValidationStatusControllerImpl(pscFilingService, transactionService,
+        testController = new ValidationStatusControllerImpl(pscFilingService,
                 filingValidationService, filingMapper, errorMapper, false, logger);
         final var filing = PscIndividualFiling.builder()
                 .build();
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(transaction.getId()).thenReturn(TRANS_ID);
 
-        final var response = testController.validate(TRANS_ID, FILING_ID, request);
+        final var response = testController.validate(FILING_ID, transaction, request);
 
         assertThat(response.isValid(), is(false));
         assertThat(response.getValidationStatusError(), is(arrayWithSize(1)));
@@ -92,10 +91,11 @@ class ValidationStatusControllerImplTest {
     @Test
     void validateWhenFilingNotFound() {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(transaction.getId()).thenReturn(TRANS_ID);
 
         final var filingResourceNotFoundException =
                 assertThrows(FilingResourceNotFoundException.class,
-                        () -> testController.validate(TRANS_ID, FILING_ID, request));
+                        () -> testController.validate(FILING_ID, transaction, request));
 
         assertThat(filingResourceNotFoundException.getMessage(), containsString(FILING_ID));
     }
@@ -112,8 +112,9 @@ class ValidationStatusControllerImplTest {
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(transaction.getId()).thenReturn(TRANS_ID);
 
-        final var response = testController.validate(TRANS_ID, FILING_ID, request);
+        final var response = testController.validate(FILING_ID, transaction, request);
         final var expectedError =
                 new ValidationStatusError("PSC type could not be identified", "$.links.self", "resource",
                         "ch:validation");
@@ -135,13 +136,13 @@ class ValidationStatusControllerImplTest {
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(transaction.getId()).thenReturn(TRANS_ID);
+
         final var dto = PscIndividualDto.builder().build();
         when(filingMapper.map(filing)).thenReturn(dto);
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
         when(errorMapper.map(anyList())).thenReturn(new ValidationStatusError[0]);
 
-        final var response = testController.validate(TRANS_ID, FILING_ID, request);
+        final var response = testController.validate(FILING_ID, transaction, request);
 
         assertThat(response.isValid(), is(true));
         assertThat(response.getValidationStatusError(), is(emptyArray()));

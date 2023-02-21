@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.BindingResult;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -21,6 +22,8 @@ class PscWithIdentificationFilingControllerTest {
     @Mock
     private PscWithIdentificationDto dto;
     @Mock
+    private Transaction transaction;
+    @Mock
     private BindingResult bindingResult;
     @Mock
     private HttpServletRequest request;
@@ -28,8 +31,8 @@ class PscWithIdentificationFilingControllerTest {
     @Test
     void createFiling() {
         assertThrows(NotImplementedException.class,
-                () -> testController.createFiling("trans-id", PscTypeConstants.CORPORATE_ENTITY, dto,
-                        bindingResult, request));
+                () -> testController.createFiling(PscTypeConstants.CORPORATE_ENTITY, dto,
+                        transaction, bindingResult, request));
     }
 
     @Test

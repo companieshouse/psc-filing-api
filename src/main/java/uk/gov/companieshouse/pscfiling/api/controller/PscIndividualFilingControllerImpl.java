@@ -18,11 +18,13 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
@@ -66,18 +68,20 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
     /**
      * Create an PSC Filing.
      *
-     * @param transId       the Transaction ID
+     * @param pscType       the PSC type
      * @param dto           the request body payload DTO
+     * @param transaction   the Transaction
      * @param bindingResult the MVC binding result (with any validation errors)
      * @param request       the servlet request
      * @return CREATED response containing the populated Filing resource
      */
     @Override
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
-            @PathVariable("pscType") final PscTypeConstants pscType,
+    public ResponseEntity<Object> createFiling(@PathVariable("pscType") final PscTypeConstants pscType,
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
+            @RequestAttribute("transaction") Transaction transaction,
             final BindingResult bindingResult, final HttpServletRequest request) {
+        final var transId = transaction.getId();
         final var logMap = LogHelper.createLogMap(transId);
 
         logger.debugRequest(request, "POST", logMap);
@@ -87,7 +91,6 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
                 .orElseGet(ArrayList::new);
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
-        final var transaction = transactionService.getTransaction(transId, passthroughHeader);
         logger.infoContext(transId, "transaction found", logMap);
 
         validatorService.validate(
