@@ -25,7 +25,7 @@ public class CeasedOnDateValidator extends BaseIndividualFilingValidator
         final var ceasedOn = validationContext.getDto().getCeasedOn();
         final var notifiedOn = pscDetails.getNotifiedOn();
 
-        if (notifiedOn != null && ceasedOn.isBefore(notifiedOn)) {
+        if (ceasedOn != null && notifiedOn != null && ceasedOn.isBefore(notifiedOn)) {
             validationContext.getErrors()
                     .add(new FieldError("object", "ceased_on", ceasedOn, false, new String[]{null, "date.ceased_on"},
                             null, "Ceased on date cannot be before the date the PSC was notified on"));

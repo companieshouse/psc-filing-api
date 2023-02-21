@@ -14,7 +14,7 @@ public class PscRegisterEntryDateValidator extends BaseIndividualFilingValidator
         final var registerEntryDate = validationContext.getDto().getRegisterEntryDate();
         final var ceasedOnDate = validationContext.getDto().getCeasedOn();
 
-        if (registerEntryDate.isBefore(ceasedOnDate)) {
+        if (registerEntryDate != null && ceasedOnDate != null && registerEntryDate.isBefore(ceasedOnDate)) {
 
             validationContext.getErrors()
                     .add(new FieldError("object", "register_entry_date", registerEntryDate, false,
