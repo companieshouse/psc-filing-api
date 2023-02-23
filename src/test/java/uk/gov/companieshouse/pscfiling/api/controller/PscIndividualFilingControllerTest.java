@@ -30,8 +30,8 @@ class PscIndividualFilingControllerTest {
     @Test
     void createFiling() {
         assertThrows(NotImplementedException.class,
-                () -> testController.createFiling(PscTypeConstants.INDIVIDUAL, dto,
-                    transaction, bindingResult, request));
+                () -> testController.createFiling("trans-id", PscTypeConstants.INDIVIDUAL, transaction,
+                    dto, bindingResult, request));
     }
 
     @Test

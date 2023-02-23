@@ -22,7 +22,7 @@ class FilingDataControllerTest {
         var testController = new FilingDataController(){};
 
         assertThrows(NotImplementedException.class,
-            () -> testController.getFilingsData(PscTypeConstants.INDIVIDUAL,
+            () -> testController.getFilingsData("trans-id", PscTypeConstants.INDIVIDUAL,
                 "filing-id", transaction, request));
     }
 }

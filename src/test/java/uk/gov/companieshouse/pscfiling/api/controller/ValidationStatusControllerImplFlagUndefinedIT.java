@@ -74,7 +74,8 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     void expectNotFoundResponseWhenPathInvalid() throws Exception {
         mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
                         + "-control/{filingResourceId}/validation", TRANS_ID, FILING_ID)
-                        .headers(httpHeaders))
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$").doesNotExist());

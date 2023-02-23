@@ -126,7 +126,6 @@ class PscIndividualFilingControllerImplTest {
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
         when(filingMapper.map(dto)).thenReturn(filing);
-        when(transaction.getId()).thenReturn(TRANS_ID);
 
         final var withFilingId = PscIndividualFiling.builder(filing).id(FILING_ID)
                 .build();
@@ -137,8 +136,8 @@ class PscIndividualFilingControllerImplTest {
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(PscTypeConstants.INDIVIDUAL, dto,
-                transaction, nullBindingResult ? null : result, request);
+        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, transaction,
+            dto, nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
@@ -152,14 +151,46 @@ class PscIndividualFilingControllerImplTest {
     }
 
     @Test
+    void createFilingWhenTransactionNull() {
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
+            PASSTHROUGH_HEADER);
+        when(filingMapper.map(dto)).thenReturn(filing);
+
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+            transaction);
+
+        final var withFilingId = PscIndividualFiling.builder(filing).id(FILING_ID)
+            .build();
+        final var withLinks = PscIndividualFiling.builder(withFilingId).links(links)
+            .build();
+        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL,
+            null, dto, result, request);
+
+        // refEq needed to compare Map value objects; Resource does not override equals()
+        verify(transaction).setResources(refEq(resourceMap));
+        verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        final var context =
+            new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
+                PASSTHROUGH_HEADER);
+        verify(filingValidationService).validate(context);
+        assertThat(validationErrors, is(empty()));
+        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+    }
+
+    @Test
     void createFilingWhenRequestHasBindingError() {
         when(result.getFieldErrors()).thenReturn(List.of(fieldErrorWithRejectedValue));
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(PscTypeConstants.INDIVIDUAL, dto,
-                        transaction, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, transaction,
+                        dto, result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }
@@ -178,8 +209,8 @@ class PscIndividualFilingControllerImplTest {
                 .add(fieldErrorWithRejectedValue))).when(filingValidationService).validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(PscTypeConstants.INDIVIDUAL, dto,
-                        transaction, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, transaction,
+                        dto, result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }

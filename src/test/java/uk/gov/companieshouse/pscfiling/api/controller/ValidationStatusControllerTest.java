@@ -21,7 +21,7 @@ class ValidationStatusControllerTest {
     void validate() {
         var testController = new ValidationStatusController() {};
 
-        assertThrows(NotImplementedException.class, () -> testController.validate("filing-id", transaction, request));
+        assertThrows(NotImplementedException.class, () -> testController.validate("trans-id","filing-id", transaction, request));
     }
 
 }

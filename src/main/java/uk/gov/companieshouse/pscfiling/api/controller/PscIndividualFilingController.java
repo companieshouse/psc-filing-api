@@ -19,17 +19,19 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 public interface PscIndividualFilingController {
     /**
      * Create an PSC Filing for an Individual.
+     * @param transId       the transaction ID
      * @param pscType       the PSC type
-     * @param dto           the request body payload DTO
      * @param transaction   the Transaction
+     * @param dto           the request body payload DTO
      * @param result        the MVC binding result (with any validation errors)
      * @param request       the servlet request
      * @throws NotImplementedException implementing classes must perform work
      */
     @PostMapping
-    default ResponseEntity<Object> createFiling(@PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestBody @Valid @NotNull final PscIndividualDto dto,
+    default ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute("transaction") Transaction transaction,
+            @RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult result,
             final HttpServletRequest request) {
         throw new NotImplementedException();

@@ -15,6 +15,7 @@ public interface FilingDataController {
     /**
      * Controller endpoint: retrieve Filing Data.
      *
+     * @param transId       the transaction ID
      * @param pscType        the PSC type
      * @param filingResource the Filing Resource ID
      * @param transaction    the Transaction
@@ -22,7 +23,8 @@ public interface FilingDataController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @GetMapping
-    default List<FilingApi> getFilingsData(@PathVariable("pscType") PscTypeConstants pscType,
+    default List<FilingApi> getFilingsData(@PathVariable("transactionId") final String transId,
+                                           @PathVariable("pscType") PscTypeConstants pscType,
                                            @PathVariable("filingResource") String filingResource,
                                            @RequestAttribute("transaction") Transaction transaction,
                                            HttpServletRequest request){

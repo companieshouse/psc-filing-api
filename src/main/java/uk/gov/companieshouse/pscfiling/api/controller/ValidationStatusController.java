@@ -11,7 +11,8 @@ import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 public interface ValidationStatusController {
 
     @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
-    default ValidationStatusResponse validate(@PathVariable("filingResourceId") String filingResource,
+    default ValidationStatusResponse validate(@PathVariable("transactionId") final String transId,
+                                              @PathVariable("filingResourceId") String filingResource,
                                               @RequestAttribute("transaction") Transaction transaction,
                                               final HttpServletRequest request) {
 

@@ -9,7 +9,6 @@ import org.springframework.validation.BindingResult;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,8 +30,8 @@ class PscWithIdentificationFilingControllerTest {
     @Test
     void createFiling() {
         assertThrows(NotImplementedException.class,
-                () -> testController.createFiling(PscTypeConstants.CORPORATE_ENTITY, dto,
-                        transaction, bindingResult, request));
+                () -> testController.createFiling("trans-id", PscTypeConstants.CORPORATE_ENTITY, transaction,
+                        dto, bindingResult, request));
     }
 
     @Test

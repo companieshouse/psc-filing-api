@@ -27,6 +27,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -40,6 +41,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
     private final PscFilingService pscFilingService;
     private final FilingValidationService filingValidationService;
+    private final TransactionService transactionService;
     private final PscMapper filingMapper;
     private final ErrorMapper errorMapper;
     private final Logger logger;
@@ -47,11 +49,12 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
     public ValidationStatusControllerImpl(final PscFilingService pscFilingService,
                                           final FilingValidationService filingValidationService,
+                                          final TransactionService transactionService,
                                           final PscMapper filingMapper, final ErrorMapper errorMapper, @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled,
                                           Logger logger) {
         this.pscFilingService = pscFilingService;
-
         this.filingValidationService = filingValidationService;
+        this.transactionService = transactionService;
         this.filingMapper = filingMapper;
         this.errorMapper = errorMapper;
         this.isTransactionsCloseableEnabled = isTransactionsClosableEnabled;
@@ -65,11 +68,11 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
     public ValidationStatusResponse validate(
+            @PathVariable("transactionId") final String transId,
             @PathVariable("filingResourceId") final String filingResource,
             @RequestAttribute("transaction") Transaction transaction,
             final HttpServletRequest request) {
 
-        String transId = transaction.getId();
         final var logMap = LogHelper.createLogMap(transId, filingResource);
         logMap.put("path", request.getRequestURI());
         logMap.put("method", request.getMethod());
@@ -78,9 +81,14 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
 
+        if (transaction == null) {
+            transaction = transactionService.getTransaction(transId, passthroughHeader);
+        }
+
         final var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
-        return maybePscIndividualFiling.map(f -> isValid(f, passthroughHeader, transaction))
+        var finalTransaction = transaction;
+        return maybePscIndividualFiling.map(f -> isValid(f, passthroughHeader, finalTransaction))
                 .orElseThrow(() -> new FilingResourceNotFoundException(
                         "Filing resource not found: " + filingResource));
     }

@@ -28,7 +28,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
@@ -37,18 +36,14 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.refEq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
@@ -126,7 +121,6 @@ class PscWithIdentificationFilingControllerImplTest {
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
         when(filingMapper.map(dto)).thenReturn(filing);
-        when(transaction.getId()).thenReturn(TRANS_ID);
 
         final var withFilingId = PscWithIdentificationFiling.builder(filing).id(FILING_ID)
                 .build();
@@ -137,8 +131,35 @@ class PscWithIdentificationFilingControllerImplTest {
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(PscTypeConstants.CORPORATE_ENTITY, dto,
-                transaction, nullBindingResult ? null : result, request);
+        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, transaction,
+                dto, nullBindingResult ? null : result, request);
+
+        // refEq needed to compare Map value objects; Resource does not override equals()
+        verify(transaction).setResources(refEq(resourceMap));
+        verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+    }
+
+    @Test
+    void createFilingWhenTransactionNull() {
+        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
+            PASSTHROUGH_HEADER);
+        when(filingMapper.map(dto)).thenReturn(filing);
+
+        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
+            transaction);
+
+        final var withFilingId = PscWithIdentificationFiling.builder(filing).id(FILING_ID)
+            .build();
+        final var withLinks = PscWithIdentificationFiling.builder(withFilingId).links(links)
+            .build();
+        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, null,
+            dto, result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
@@ -153,8 +174,8 @@ class PscWithIdentificationFilingControllerImplTest {
                 PASSTHROUGH_HEADER);
 
         final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(PscTypeConstants.CORPORATE_ENTITY, dto,
-                        transaction, result, request));
+                () -> testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, transaction,
+                        dto, result, request));
 
         assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
     }

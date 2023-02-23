@@ -63,7 +63,9 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
     /**
      * Create an PSC Filing.
      *
+     * @param transId       the transaction ID
      * @param pscType       the PSC type
+     * @param transaction   the Transaction
      * @param dto           the request body payload DTO
      * @param bindingResult the MVC binding result (with any validation errors)
      * @param request       the servlet request
@@ -71,12 +73,12 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
      */
     @Override
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<Object> createFiling(@PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestBody @Valid @NotNull final PscWithIdentificationDto dto,
+    public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute("transaction") Transaction transaction,
+            @RequestBody @Valid @NotNull final PscWithIdentificationDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
 
-        final var transId = transaction.getId();
         final var logMap = LogHelper.createLogMap(transId);
 
         logger.debugRequest(request, "POST", logMap);
@@ -87,6 +89,11 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
                 .orElseGet(ArrayList::new);
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+
+        if (transaction == null) {
+            transaction = transactionService.getTransaction(transId, passthroughHeader);
+        }
+
         logger.infoContext(transId, "transaction found", logMap);
 
         if (!validationErrors.isEmpty()) {
