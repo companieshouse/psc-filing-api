@@ -5,9 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.refEq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
@@ -41,7 +39,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
@@ -101,7 +98,7 @@ class PscIndividualFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController = new PscIndividualFilingControllerImpl(transactionService, pscFilingService,
-                filingMapper, filingValidationService, clock, logger) {
+                filingMapper, clock, logger) {
         };
         filing = PscIndividualFiling.builder()
                 .referencePscId(PSC_ID)
@@ -147,7 +144,6 @@ class PscIndividualFilingControllerImplTest {
         final var context =
                 new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
-        verify(filingValidationService).validate(context);
         assertThat(validationErrors, is(empty()));
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
@@ -159,28 +155,6 @@ class PscIndividualFilingControllerImplTest {
                 PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-
-        final var exception = assertThrows(InvalidFilingException.class,
-                () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,
-                        result, request));
-
-        assertThat(exception.getFieldErrors(), contains(fieldErrorWithRejectedValue));
-    }
-
-    @Test
-    void createFilingWhenRequestHasValidationError() {
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-                PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
-        when(result.getFieldErrors()).thenReturn(new ArrayList<>());
-
-        final var context =
-                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
-                        PASSTHROUGH_HEADER);
-
-        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
-                .add(fieldErrorWithRejectedValue))).when(filingValidationService).validate(context);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, dto,

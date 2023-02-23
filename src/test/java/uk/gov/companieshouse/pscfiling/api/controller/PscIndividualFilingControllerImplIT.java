@@ -3,13 +3,10 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -20,7 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,19 +28,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
-import uk.gov.companieshouse.api.error.ApiErrorResponse;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -52,7 +44,6 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
@@ -165,51 +156,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.errors[0].error",
                         is("JSON parse error: Required request body is missing")))
                 .andExpect(jsonPath("$.errors[0].error_values").doesNotExist());
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void createFilingWhenPscNotFoundThenResponse400() throws Exception {
-        final var body = "{" + PSC07_FRAGMENT + "}";
-        final var pscServiceError =
-                createExpectedApiError("PSC Details not found for " + PSC_ID + ": 404 Not Found",
-                        "$.reference_psc_id",
-                        LocationType.JSON_PATH, ErrorType.VALIDATION);
-        final var pscServiceResponse = new ApiErrorResponse();
-
-        pscServiceResponse.setErrors(List.of(pscServiceError));
-        when(errorResponseException.getDetails()).thenReturn(pscServiceResponse);
-        when(errorResponseException.getMessage()).thenReturn("404 Not Found\\n{\"errors"
-                + "\":[{\"type\":\"ch:service\",\"error\":\"company-psc-details-not-found\"}]}");
-
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
-        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
-                PASSTHROUGH_HEADER)).thenThrow(new FilingResourceNotFoundException(
-                "PSC Details not found for " + PSC_ID + ": 404 Not Found", errorResponseException));
-
-        final var bindingErrorCodes = new String[]{null, "notFound.reference_psc_id"};
-        final var fieldErrorWithRejectedValue =
-                new FieldError("object", "reference_psc_id", PSC_ID, false, bindingErrorCodes, null,
-                        "PSC with that reference ID was not found");
-
-        doAnswer(answerVoid((FilingValidationContext<? extends PscDtoCommunal> c) -> c.getErrors()
-                .add(fieldErrorWithRejectedValue))).when(filingValidationService)
-                .validate(any(FilingValidationContext.class));
-
-        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
-                        .contentType(APPLICATION_JSON)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(header().doesNotExist("location"))
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0]",
-                        allOf(hasEntry("location", pscServiceError.getLocation()),
-                                hasEntry("location_type", pscServiceError.getLocationType()),
-                                hasEntry("type", pscServiceError.getType()), hasEntry("error",
-                                        fieldErrorWithRejectedValue.getDefaultMessage()))))
-                .andExpect(jsonPath("$.errors[0].error_values", hasEntry("rejected", PSC_ID)));
     }
 
     @Test
@@ -397,27 +343,44 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     }
 
     @Test
-    void createFilingWhenCeasedOnDateBlankThenResponse400() throws Exception {
+    void createFilingWhenCeasedOnDateBlankThenResponse201() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "") + "}";
-        final var expectedError =
-                createExpectedValidationError("must not be null", "$.ceased_on", 1, 75);
+        final var dto = PscIndividualDto.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(null)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(null)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+        final var locationUri = UriComponentsBuilder.fromPath("/")
+                .pathSegment("transactions", TRANS_ID,
+                        "persons-with-significant-control/individual", FILING_ID)
+                .build();
 
+        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
+        when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
+                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
+        when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
+        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
+                        PscIndividualFiling.builder(filing).id(FILING_ID)
+                                .build()) // copy of 'filing' with id=FILING_ID
+                .thenAnswer(i -> PscIndividualFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(header().doesNotExist("location"))
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0]",
-                        allOf(hasEntry("location", expectedError.getLocation()),
-                                hasEntry("location_type", expectedError.getLocationType()),
-                                hasEntry("type", expectedError.getType()))))
-                .andExpect(jsonPath("$.errors[0].error", containsString("must not be null")))
-                .andExpect(jsonPath("$.errors[0].error_values", is(nullValue())));
+                .andExpect(status().isCreated())
+                .andExpect(header().string("location", locationUri.toUriString()))
+                .andExpect(jsonPath("$").doesNotExist());
+        verify(filingMapper).map(dto);
     }
 
     @Test

@@ -2,8 +2,6 @@ package uk.gov.companieshouse.pscfiling.api.model.dto;
 
 import java.time.LocalDate;
 import java.util.List;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 
 public interface PscDtoCommunal {
@@ -11,7 +9,6 @@ public interface PscDtoCommunal {
 
     Boolean getAddressSameAsRegisteredOfficeAddress();
 
-    @NotNull
     @PastOrPresent
     LocalDate getCeasedOn();
 
@@ -19,15 +16,12 @@ public interface PscDtoCommunal {
 
     LocalDate getNotifiedOn();
 
-    @NotBlank
     String getReferenceEtag();
 
-    @NotBlank
     String getReferencePscId();
 
     String getReferencePscListEtag();
 
-    @NotNull
     @PastOrPresent
     LocalDate getRegisterEntryDate();
 }
