@@ -33,11 +33,9 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
@@ -49,18 +47,15 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
     private final TransactionService transactionService;
     private final PscFilingService pscFilingService;
     private final PscMapper filingMapper;
-    private final FilingValidationService validatorService;
     private final Clock clock;
     private final Logger logger;
 
     public PscIndividualFilingControllerImpl(final TransactionService transactionService,
                                              final PscFilingService pscFilingService, final PscMapper filingMapper,
-                                             final FilingValidationService validatorService, final Clock clock,
-                                             final Logger logger) {
+                                             final Clock clock, final Logger logger) {
         this.transactionService = transactionService;
         this.pscFilingService = pscFilingService;
         this.filingMapper = filingMapper;
-        this.validatorService = validatorService;
         this.clock = clock;
         this.logger = logger;
     }
@@ -100,9 +95,6 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
 
         logger.infoContext(transId, "transaction found", logMap);
 
-        validatorService.validate(
-                new FilingValidationContext<>(dto, validationErrors, transaction, pscType,
-                        passthroughHeader));
         if (!validationErrors.isEmpty()) {
             throw new InvalidFilingException(validationErrors);
         }
