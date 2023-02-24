@@ -131,6 +131,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -152,6 +153,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         + ".HttpServletRequest)", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("")
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -198,6 +200,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .validate(any(FilingValidationContext.class));
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -225,6 +228,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         + "column: 1]", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(EMPTY_QUOTED_JSON)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -250,6 +254,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 + "line: 1, column: 2]", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(MALFORMED_JSON)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -278,6 +283,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 173);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("{" + PSC07_FRAGMENT)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -302,6 +308,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -326,6 +333,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -351,6 +359,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -380,6 +389,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 transaction);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -406,6 +416,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 transaction);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())

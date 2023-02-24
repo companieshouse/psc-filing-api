@@ -59,7 +59,9 @@ class ValidationStatusControllerImplFlagNotBooleanIT extends BaseControllerIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))

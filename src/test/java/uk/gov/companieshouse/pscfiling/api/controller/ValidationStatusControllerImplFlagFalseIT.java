@@ -59,7 +59,9 @@ class ValidationStatusControllerImplFlagFalseIT extends BaseControllerIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 //status code is '200' as this is expected behaviour
                 .andExpect(status().isOk())

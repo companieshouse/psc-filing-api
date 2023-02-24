@@ -61,7 +61,8 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
-                        .headers(httpHeaders))
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
@@ -74,7 +75,8 @@ class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     void expectNotFoundResponseWhenPathInvalid() throws Exception {
         mockMvc.perform(get("/transactions/{transactionId}/persons-with-significant"
                         + "-control/{filingResourceId}/validation", TRANS_ID, FILING_ID)
-                        .headers(httpHeaders))
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$").doesNotExist());
