@@ -80,7 +80,7 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
     public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestAttribute("transaction") Transaction transaction,
+            @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
 

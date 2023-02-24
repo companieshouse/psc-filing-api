@@ -70,7 +70,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     public ValidationStatusResponse validate(
             @PathVariable("transactionId") final String transId,
             @PathVariable("filingResourceId") final String filingResource,
-            @RequestAttribute("transaction") Transaction transaction,
+            @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId, filingResource);
