@@ -8,7 +8,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
@@ -19,16 +21,20 @@ public interface PscWithIdentificationFilingController {
     /**
      * Create an PSC Filing for Corporate (RLE) or Legal Entity.
      *
-     * @param transId the Transaction ID
-     * @param dto     the request body payload DTO
-     * @param result  the MVC binding result (with any validation errors)
-     * @param request the servlet request
+     * @param transId       the transaction ID
+     * @param pscType       the PSC type
+     * @param transaction   the Transaction
+     * @param dto           the request body payload DTO
+     * @param result        the MVC binding result (with any validation errors)
+     * @param request       the servlet request
      * @throws NotImplementedException implementing classes must perform work
      */
     @PostMapping
     default ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestBody @Valid @NotNull final PscWithIdentificationDto dto, final BindingResult result,
+            @RequestAttribute("transaction") Transaction transaction,
+            @RequestBody @Valid @NotNull final PscWithIdentificationDto dto,
+            final BindingResult result,
             final HttpServletRequest request) {
         throw new NotImplementedException();
     }

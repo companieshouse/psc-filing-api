@@ -95,8 +95,9 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.minusDays(1));
         when(pscDetails.getEtag()).thenReturn(ETAG);
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(true)))
@@ -112,8 +113,9 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PASSTHROUGH_HEADER)).thenThrow(
                 new FilingResourceNotFoundException("stub PSC not found", null));
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
@@ -133,8 +135,9 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getEtag()).thenReturn("different-etag");
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
@@ -155,8 +158,9 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getEtag()).thenReturn(ETAG);
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.plusDays(1));
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
@@ -179,8 +183,9 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PscIndividualFiling.builder(filing).registerEntryDate(CEASED_ON_DATE.minusDays(1)).build();
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(invalid));
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
@@ -202,8 +207,9 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.minusDays(1));
         when(pscDetails.getCeasedOn()).thenReturn(CEASED_ON_DATE);
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))

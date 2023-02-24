@@ -119,6 +119,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -140,6 +141,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         + ".HttpServletRequest)", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content("")
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -168,6 +170,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         + "column: 1]", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(EMPTY_QUOTED_JSON)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -193,6 +196,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 + "line: 1, column: 2]", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(MALFORMED_JSON)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -221,6 +225,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 173);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content("{" + PSC07_FRAGMENT)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -245,6 +250,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -269,6 +275,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -294,6 +301,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -323,6 +331,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 transaction);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -371,6 +380,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())

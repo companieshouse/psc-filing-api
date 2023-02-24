@@ -4,9 +4,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
+import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
@@ -23,10 +25,9 @@ public class FilingDataControllerImpl implements FilingDataController {
     private final TransactionService transactionService;
     private final Logger logger;
 
-    public FilingDataControllerImpl(final FilingDataService filingDataService,
-            final TransactionService transactionService, final Logger logger) {
-        this.filingDataService = filingDataService;
+    public FilingDataControllerImpl(final TransactionService transactionService, final FilingDataService filingDataService, final Logger logger) {
         this.transactionService = transactionService;
+        this.filingDataService = filingDataService;
         this.logger = logger;
     }
 
@@ -35,8 +36,10 @@ public class FilingDataControllerImpl implements FilingDataController {
      * Future capability to return multiple resources if a Transaction contains multiple PSC
      * Filings.
      *
-     * @param transId        the Transaction ID
+     * @param transId       the transaction ID
+     * @param pscType        the PSC type
      * @param filingResource the Filing Resource ID
+     * @param transaction    the Transaction
      * @param request        the servlet request
      * @return List of FilingApi resources
      */
@@ -45,7 +48,9 @@ public class FilingDataControllerImpl implements FilingDataController {
     public List<FilingApi> getFilingsData(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
+            @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             final HttpServletRequest request) {
+
         final var logMap = LogHelper.createLogMap(transId, filingResource);
 
         logger.debugRequest(request,
@@ -54,7 +59,10 @@ public class FilingDataControllerImpl implements FilingDataController {
 
         final var passthroughHeader =
             request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
-        final var transaction = transactionService.getTransaction(transId, passthroughHeader);
+
+        if (transaction == null) {
+            transaction = transactionService.getTransaction(transId, passthroughHeader);
+        }
 
         final var filingApi =
                 filingDataService.generatePscFiling(filingResource, pscType, transaction,

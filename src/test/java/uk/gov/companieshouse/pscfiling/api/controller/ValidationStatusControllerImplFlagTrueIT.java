@@ -47,8 +47,9 @@ class ValidationStatusControllerImplFlagTrueIT extends BaseControllerIT {
     void validateWhenFilingNotFound() throws Exception {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+        mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$").doesNotExist());

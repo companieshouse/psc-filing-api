@@ -5,8 +5,10 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,15 +31,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
+import uk.gov.companieshouse.api.error.ApiErrorResponse;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -44,6 +51,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
@@ -122,6 +130,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -143,6 +152,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         + ".HttpServletRequest)", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("")
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -171,6 +181,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         + "column: 1]", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(EMPTY_QUOTED_JSON)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -196,6 +207,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 + "line: 1, column: 2]", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(MALFORMED_JSON)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -224,6 +236,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 173);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("{" + PSC07_FRAGMENT)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -248,6 +261,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -272,6 +286,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -297,6 +312,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -326,6 +342,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 transaction);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
@@ -374,6 +391,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
                         .contentType(APPLICATION_JSON)
                         .headers(httpHeaders))
                 .andDo(print())
