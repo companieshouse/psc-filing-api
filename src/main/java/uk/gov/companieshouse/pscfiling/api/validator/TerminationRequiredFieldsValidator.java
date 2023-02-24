@@ -14,13 +14,13 @@ public class TerminationRequiredFieldsValidator extends BaseIndividualFilingVali
         if (validationContext.getDto().getCeasedOn() == null) {
             validationContext.getErrors()
                     .add(new FieldError("object", "ceased_on", null, false,
-                            new String[]{null, "date.ceased_on"},
+                            new String[]{null, "ceased_on"},
                             null,"must not be null"));
         }
         if (validationContext.getDto().getRegisterEntryDate() == null) {
             validationContext.getErrors()
                     .add(new FieldError("object", "register_entry_date", null, false,
-                            new String[]{null, "date.register_entry_date"},
+                            new String[]{null, "register_entry_date"},
                             null,"must not be null"));
         }
         if (validationContext.getDto().getReferencePscId() == null) {
