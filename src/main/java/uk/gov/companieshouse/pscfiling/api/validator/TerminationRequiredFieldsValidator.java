@@ -8,31 +8,36 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 public class TerminationRequiredFieldsValidator extends BaseIndividualFilingValidator
         implements IndividualFilingValid {
 
+    protected static final String OBJECT_NAME = "object";
+    protected static final String DEFAULT_MESSAGE = "must not be null";
+
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
         if (validationContext.getDto().getCeasedOn() == null) {
             validationContext.getErrors()
-                    .add(new FieldError("object", "ceased_on", null, false,
+                    .add(new FieldError(OBJECT_NAME, "ceased_on", null, false,
                             new String[]{null, "ceased_on"},
-                            null,"must not be null"));
+                            null, DEFAULT_MESSAGE));
         }
         if (validationContext.getDto().getRegisterEntryDate() == null) {
             validationContext.getErrors()
-                    .add(new FieldError("object", "register_entry_date", null, false,
+                    .add(new FieldError(OBJECT_NAME, "register_entry_date", null, false,
                             new String[]{null, "register_entry_date"},
-                            null,"must not be null"));
+                            null, DEFAULT_MESSAGE));
         }
         if (validationContext.getDto().getReferencePscId() == null) {
             validationContext.getErrors()
-                    .add(new FieldError("object", "reference_psc_id", null, false, new String[]{null, "reference_psc_id"},
-                            null, "must not be null"));
+                    .add(new FieldError(
+                            OBJECT_NAME, "reference_psc_id", null, false,
+                            new String[]{null, "reference_psc_id"},
+                            null, DEFAULT_MESSAGE));
         }
         if (validationContext.getDto().getReferenceEtag() == null) {
             validationContext.getErrors()
-                    .add(new FieldError("object", "reference_etag", null,
-                            false, new String[]{null, "reference_etag"},
-                            null, "must not be null"));
+                    .add(new FieldError(OBJECT_NAME, "reference_etag", null, false,
+                            new String[]{null, "reference_etag"},
+                            null, DEFAULT_MESSAGE));
         }
 
         // Only if required fields are present, should 'business' validation proceed
