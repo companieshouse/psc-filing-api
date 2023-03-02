@@ -201,6 +201,7 @@ class PscWithIdentificationFilingControllerImplTest {
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(true);
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
