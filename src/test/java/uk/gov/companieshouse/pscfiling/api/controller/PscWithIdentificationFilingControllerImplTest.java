@@ -202,10 +202,21 @@ class PscWithIdentificationFilingControllerImplTest {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    void getFilingForReviewWhenFoundButResourceNotMatched() {
+        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(false);
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
 
     @Test
@@ -213,7 +224,7 @@ class PscWithIdentificationFilingControllerImplTest {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }

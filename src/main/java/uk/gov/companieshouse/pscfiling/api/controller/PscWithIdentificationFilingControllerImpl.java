@@ -124,11 +124,12 @@ public class PscWithIdentificationFilingControllerImpl implements PscWithIdentif
     public ResponseEntity<PscDtoCommunal> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @PathVariable("filingResourceId") final String filingResource) {
+            @PathVariable("filingResourceId") final String filingResource,
+            final HttpServletRequest request) {
 
         final var maybePSCFiling = pscFilingService.get(filingResource, transId);
 
-        final var maybeDto = maybePSCFiling.map(filingMapper::map);
+        final var maybeDto = maybePSCFiling.filter(f -> pscFilingService.requestMatchesResource(request, f)).map(filingMapper::map);
 
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()

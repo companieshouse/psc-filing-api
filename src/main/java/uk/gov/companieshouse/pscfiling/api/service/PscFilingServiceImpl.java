@@ -1,6 +1,9 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
@@ -78,4 +81,15 @@ public class PscFilingServiceImpl implements PscFilingService {
         return withIdentificationFilingRepository.save(filing);
     }
 
+    @Override
+    public boolean requestMatchesResource(HttpServletRequest request, PscCommunal pscFiling) {
+        URI selfLinkUri = pscFiling.getLinks().getSelf();
+        URI requestUri = null;
+        try {
+            requestUri = new URI(request.getRequestURI());
+        } catch (URISyntaxException e) {
+            return false;
+        }
+        return selfLinkUri.equals(requestUri.normalize());
+    }
 }

@@ -48,7 +48,8 @@ public interface PscIndividualFilingController {
     default ResponseEntity<PscDtoCommunal> getFilingForReview(
             @PathVariable("transactionId") String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @PathVariable("filingResource") String filingResource) {
+            @PathVariable("filingResource") String filingResource,
+            final HttpServletRequest request) {
         throw new NotImplementedException();
     }
 }
