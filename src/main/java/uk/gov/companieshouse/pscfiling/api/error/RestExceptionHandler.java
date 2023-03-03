@@ -178,6 +178,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
+
+
     private static ApiError createApiServiceError(final Exception ex, final WebRequest request) {
         final var error = new ApiError(ex.getMessage(), getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());

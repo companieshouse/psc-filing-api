@@ -18,6 +18,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
+import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
@@ -31,14 +32,16 @@ class FilingDataControllerImplTest extends BaseControllerIT {
     private Logger logger;
     @Mock
     private HttpServletRequest request;
+    @Mock
+    private PscFilingService pscFilingService;
 
     private FilingDataControllerImpl testController;
     private Transaction filingsTransaction;
 
     @BeforeEach
     void setUp() throws Exception {
-        testController =
-                new FilingDataControllerImpl(transactionService, filingDataService, logger);
+        testController = new FilingDataControllerImpl(pscFilingService, transactionService,
+                filingDataService, logger);
         filingsTransaction = new Transaction();
         filingsTransaction.setId(TRANS_ID);
         filingsTransaction.setCompanyNumber(COMPANY_NUMBER);
@@ -53,8 +56,7 @@ class FilingDataControllerImplTest extends BaseControllerIT {
                 filingsTransaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
         final var filingsList =
-                testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL, FILING_ID,
-                        filingsTransaction, request);
+                testController.getFilingsData(TRANS_ID, FILING_ID, filingsTransaction, request);
 
         assertThat(filingsList, Matchers.contains(filingApi));
     }
@@ -68,9 +70,7 @@ class FilingDataControllerImplTest extends BaseControllerIT {
         when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
             filingsTransaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
-        final var filingsList =
-            testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL, FILING_ID,
-                null, request);
+        final var filingsList = testController.getFilingsData(TRANS_ID, FILING_ID, null, request);
 
         assertThat(filingsList, Matchers.contains(filingApi));
     }
@@ -84,8 +84,8 @@ class FilingDataControllerImplTest extends BaseControllerIT {
                 new FilingResourceNotFoundException("Test Resource not found"));
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
-                () -> testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL,
-                        FILING_ID, filingsTransaction, request));
+                () -> testController.getFilingsData(TRANS_ID, FILING_ID, filingsTransaction,
+                        request));
         assertThat(exception.getMessage(), is("Test Resource not found"));
     }
 }
