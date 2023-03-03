@@ -23,7 +23,6 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
 @RequestMapping(
-//TODO Needs to map for all PSC types
         "/private/transactions/{transactionId}/persons-with-significant-control")
 public class FilingDataControllerImpl implements FilingDataController {
     private static final Pattern SELF_URI_PSC_TYPE_PATTERN = Pattern.compile(
@@ -57,8 +56,6 @@ public class FilingDataControllerImpl implements FilingDataController {
     @Override
     @GetMapping(value = "/{filingResourceId}/filings", produces = {"application/json"})
     public List<FilingApi> getFilingsData(@PathVariable("transactionId") final String transId,
-            //TODO need to make generic and retrieve type from self
-            //@PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
             @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             final HttpServletRequest request) {

@@ -5,6 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.CORPORATE_ENTITY;
+import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.INDIVIDUAL;
+import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.LEGAL_PERSON;
 
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
@@ -13,15 +16,15 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.handler.psc.PscsResourceHandler;
+import uk.gov.companieshouse.api.handler.psc.request.PscCorporateEntityGet;
 import uk.gov.companieshouse.api.handler.psc.request.PscIndividualGet;
+import uk.gov.companieshouse.api.handler.psc.request.PscLegalPersonGet;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -29,7 +32,6 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
-import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 @ExtendWith(MockitoExtension.class)
 class PscDetailsServiceImplTest {
@@ -46,6 +48,10 @@ class PscDetailsServiceImplTest {
     @Mock
     private PscIndividualGet pscIndividualGet;
     @Mock
+    private PscCorporateEntityGet pscCorporateEntityGet;
+    @Mock
+    PscLegalPersonGet pscLegalPersonGet;
+    @Mock
     private PscsResourceHandler pscsResourceHandler;
     @Mock
     private Transaction transaction;
@@ -58,16 +64,15 @@ class PscDetailsServiceImplTest {
         testService = new PscDetailsServiceImpl(apiClientService, logger);
     }
 
-    @ParameterizedTest
-    @EnumSource(PscTypeConstants.class)
-    void getPscDetailsWhenFound(final PscTypeConstants pscType)
+    @Test
+    void getPscIndividualDetailsWhenFound()
             throws IOException, URIValidationException {
         when(apiResponse.getData()).thenReturn(new PscApi());
         when(pscIndividualGet.execute()).thenReturn(apiResponse);
         when(pscsResourceHandler.getIndividual("/company/" +
                 COMPANY_NUMBER +
                 "/persons-with-significant-control/" +
-                pscType.getValue() +
+                INDIVIDUAL.getValue() +
                 "/" +
                 PSC_ID)).thenReturn(pscIndividualGet);
         when(apiClient.pscs()).thenReturn(pscsResourceHandler);
@@ -75,7 +80,49 @@ class PscDetailsServiceImplTest {
                 apiClient);
         when(transaction.getCompanyNumber()).thenReturn(COMPANY_NUMBER);
 
-        var pscApi = testService.getPscDetails(transaction, PSC_ID, pscType, PASSTHROUGH_HEADER);
+        var pscApi = testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL, PASSTHROUGH_HEADER);
+
+        assertThat(pscApi, samePropertyValuesAs(new PscApi()));
+    }
+
+    @Test
+    void getPscCorporateDetailsWhenFound()
+            throws IOException, URIValidationException {
+        when(apiResponse.getData()).thenReturn(new PscApi());
+        when(pscCorporateEntityGet.execute()).thenReturn(apiResponse);
+        when(pscsResourceHandler.getCorporateEntity("/company/" +
+                COMPANY_NUMBER +
+                "/persons-with-significant-control/" +
+                CORPORATE_ENTITY.getValue() +
+                "/" +
+                PSC_ID)).thenReturn(pscCorporateEntityGet);
+        when(apiClient.pscs()).thenReturn(pscsResourceHandler);
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(
+                apiClient);
+        when(transaction.getCompanyNumber()).thenReturn(COMPANY_NUMBER);
+
+        var pscApi = testService.getPscDetails(transaction, PSC_ID, CORPORATE_ENTITY, PASSTHROUGH_HEADER);
+
+        assertThat(pscApi, samePropertyValuesAs(new PscApi()));
+    }
+
+    @Test
+    void getPscLegalPersonDetailsWhenFound()
+            throws IOException, URIValidationException {
+        when(apiResponse.getData()).thenReturn(new PscApi());
+        when(pscLegalPersonGet.execute()).thenReturn(apiResponse);
+        when(pscsResourceHandler.getLegalPerson("/company/" +
+                COMPANY_NUMBER +
+                "/persons-with-significant-control/" +
+                LEGAL_PERSON.getValue() +
+                "/" +
+                PSC_ID)).thenReturn(pscLegalPersonGet);
+        when(apiClient.pscs()).thenReturn(pscsResourceHandler);
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(
+                apiClient);
+        when(transaction.getCompanyNumber()).thenReturn(COMPANY_NUMBER);
+
+        var pscApi = testService.getPscDetails(transaction, PSC_ID, LEGAL_PERSON, PASSTHROUGH_HEADER);
 
         assertThat(pscApi, samePropertyValuesAs(new PscApi()));
     }
@@ -86,9 +133,10 @@ class PscDetailsServiceImplTest {
                 new IOException("get test case"));
 
         final var thrown = assertThrows(PscServiceException.class,
-                () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
+                () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL,
                         PASSTHROUGH_HEADER));
-        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for 654321: get test case"));
+        assertThat(thrown.getMessage(),
+                is("Error Retrieving PSC details for 654321: get test case"));
     }
 
     @Test
@@ -98,7 +146,7 @@ class PscDetailsServiceImplTest {
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(FilingResourceNotFoundException.class,
-                () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
+                () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL, PASSTHROUGH_HEADER));
 
         assertThat(thrown.getMessage(), is("PSC Details not found for " + PSC_ID + ": 404 test case"));
     }
@@ -110,10 +158,9 @@ class PscDetailsServiceImplTest {
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(PscServiceException.class,
-            () -> testService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
+            () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL, PASSTHROUGH_HEADER));
 
         assertThat(thrown.getMessage(), is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));
     }
 
 }
-
