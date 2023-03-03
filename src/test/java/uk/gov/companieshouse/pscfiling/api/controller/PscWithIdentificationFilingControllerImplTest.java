@@ -1,5 +1,15 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscfiling.api.controller.BaseFilingControllerImpl.VALIDATION_STATUS;
+import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
+
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
@@ -38,16 +48,6 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.refEq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
-import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 @ExtendWith(MockitoExtension.class)
 class PscWithIdentificationFilingControllerImplTest {
@@ -170,8 +170,6 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void createFilingWhenRequestHasBindingError() {
         when(result.getFieldErrors()).thenReturn(List.of(fieldErrorWithRejectedValue));
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-                PASSTHROUGH_HEADER);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, transaction,

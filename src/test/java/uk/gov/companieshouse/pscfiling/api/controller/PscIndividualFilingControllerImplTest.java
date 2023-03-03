@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
+import static uk.gov.companieshouse.pscfiling.api.controller.BaseFilingControllerImpl.VALIDATION_STATUS;
 import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 import java.net.URI;
@@ -180,8 +180,6 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void createFilingWhenRequestHasBindingError() {
         when(result.getFieldErrors()).thenReturn(List.of(fieldErrorWithRejectedValue));
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-                PASSTHROUGH_HEADER);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, transaction,
