@@ -77,7 +77,7 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                 default:
                     throw new UnsupportedOperationException(
                             MessageFormat.format("PSC type {0} not supported for PSC ID {1}",
-                                    pscType, pscId));
+                                    pscType.name(), pscId));
             }
 
         }

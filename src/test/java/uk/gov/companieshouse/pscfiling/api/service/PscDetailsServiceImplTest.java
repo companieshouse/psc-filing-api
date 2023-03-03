@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.CORPORATE_ENTITY;
 import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.INDIVIDUAL;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -32,6 +35,7 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 @ExtendWith(MockitoExtension.class)
 class PscDetailsServiceImplTest {
@@ -65,8 +69,7 @@ class PscDetailsServiceImplTest {
     }
 
     @Test
-    void getPscIndividualDetailsWhenFound()
-            throws IOException, URIValidationException {
+    void getPscIndividualDetailsWhenFound() throws IOException, URIValidationException {
         when(apiResponse.getData()).thenReturn(new PscApi());
         when(pscIndividualGet.execute()).thenReturn(apiResponse);
         when(pscsResourceHandler.getIndividual("/company/" +
@@ -154,13 +157,37 @@ class PscDetailsServiceImplTest {
     @Test
     void getPscDetailsWhenErrorRetrieving() throws IOException {
         final var exception = new ApiErrorResponseException(
-            new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test case", new HttpHeaders()));
+                new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_FORBIDDEN,
+                        "test case", new HttpHeaders()));
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(PscServiceException.class,
-            () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL, PASSTHROUGH_HEADER));
+                () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL,
+                        PASSTHROUGH_HEADER));
 
-        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));
+        assertThat(thrown.getMessage(),
+                is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));
+    }
+
+    @Test
+    void getPscDetailsWhenTypeNotRecognised() {
+        final var unknownType = mock(PscTypeConstants.class);
+        when(unknownType.getValue()).thenReturn("future");
+        when(unknownType.name()).thenReturn("FUTURE");
+        when(unknownType.ordinal()).thenReturn(3);
+
+        try (final MockedStatic mocked = mockStatic(PscTypeConstants.class)) {
+            mocked.when(PscTypeConstants::values).thenReturn(new PscTypeConstants[]{
+                    INDIVIDUAL, CORPORATE_ENTITY, LEGAL_PERSON, unknownType
+            });
+
+            final var thrown = assertThrows(UnsupportedOperationException.class,
+                    () -> testService.getPscDetails(transaction, PSC_ID, unknownType,
+                            PASSTHROUGH_HEADER));
+
+            assertThat(thrown.getMessage(),
+                    is("PSC type FUTURE not supported for PSC ID " + PSC_ID));
+        }
     }
 
 }
