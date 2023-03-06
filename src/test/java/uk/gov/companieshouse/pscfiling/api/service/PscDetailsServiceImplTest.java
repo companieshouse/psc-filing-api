@@ -15,6 +15,10 @@ import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpStatusCodes;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.EnumSet;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +47,8 @@ class PscDetailsServiceImplTest {
     public static final String PASSTHROUGH_HEADER = "passthrough";
     public static final String COMPANY_NUMBER = "012345678";
     public static final String PSC_ID = "654321";
+    private static MockedStatic<PscTypeConstants> myMockedEnum;
+    private static PscTypeConstants mockedValue;
     @Mock
     private ApiClientService apiClientService;
     @Mock
@@ -62,6 +68,20 @@ class PscDetailsServiceImplTest {
     @Mock
     private Logger logger;
     private PscDetailsService testService;
+
+    @BeforeAll
+    public static void setUpForClass() {
+        PscTypeConstants[] newEnumValues = addNewEnumValue(PscTypeConstants.class);
+        myMockedEnum = mockStatic(PscTypeConstants.class);
+        myMockedEnum.when(PscTypeConstants::values).thenReturn(newEnumValues);
+        mockedValue = newEnumValues[newEnumValues.length - 1];
+        when(mockedValue.name()).thenReturn("UNKNOWN");
+    }
+
+    @AfterAll
+    public static void tearDownForClass() {
+        myMockedEnum.close();
+    }
 
     @BeforeEach
     void setUp() {
@@ -171,23 +191,29 @@ class PscDetailsServiceImplTest {
 
     @Test
     void getPscDetailsWhenTypeNotRecognised() {
-        final var unknownType = mock(PscTypeConstants.class);
-        when(unknownType.getValue()).thenReturn("future");
-        when(unknownType.name()).thenReturn("FUTURE");
-        when(unknownType.ordinal()).thenReturn(3);
 
-        try (final MockedStatic mocked = mockStatic(PscTypeConstants.class)) {
-            mocked.when(PscTypeConstants::values).thenReturn(new PscTypeConstants[]{
-                    INDIVIDUAL, CORPORATE_ENTITY, LEGAL_PERSON, unknownType
-            });
+        final var thrown = assertThrows(UnsupportedOperationException.class,
+                () -> testService.getPscDetails(transaction, PSC_ID, mockedValue,
+                        PASSTHROUGH_HEADER));
 
-            final var thrown = assertThrows(UnsupportedOperationException.class,
-                    () -> testService.getPscDetails(transaction, PSC_ID, unknownType,
-                            PASSTHROUGH_HEADER));
+        assertThat(thrown.getMessage(), is("PSC type UNKNOWN not supported for PSC ID " + PSC_ID));
+    }
 
-            assertThat(thrown.getMessage(),
-                    is("PSC type FUTURE not supported for PSC ID " + PSC_ID));
+    private static <E extends Enum<E>> E[] addNewEnumValue(Class<E> enumClazz) {
+        EnumSet<E> enumSet = EnumSet.allOf(enumClazz);
+        E[] newValues = (E[]) Array.newInstance(enumClazz, enumSet.size() + 1);
+        int i = 0;
+        for (E value : enumSet) {
+            newValues[i] = value;
+            i++;
         }
+
+        E newEnumValue = mock(enumClazz);
+        newValues[newValues.length - 1] = newEnumValue;
+
+        when(newEnumValue.ordinal()).thenReturn(newValues.length - 1);
+
+        return newValues;
     }
 
 }
