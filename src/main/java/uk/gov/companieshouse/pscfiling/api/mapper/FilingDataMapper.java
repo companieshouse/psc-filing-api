@@ -12,6 +12,7 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.FilingDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.WithIdentificationFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Identification;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -40,15 +41,15 @@ public interface FilingDataMapper {
                 .build();
     }
 
-    default PscWithIdentificationFiling enhance(final PscWithIdentificationFiling filing,
-            final PscApi details) {
-        //TODO
-        return PscWithIdentificationFiling.builder(filing).name(details.getName())
+    default PscWithIdentificationFiling enhance(final PscWithIdentificationFiling filing, final PscApi details) {
+        return PscWithIdentificationFiling.builder(filing).identification(map(details.getIdentification()))
                 .build();
     }
 
     @Mapping(target = "otherForenames", source = "middleName")
     NameElements map(final NameElementsApi nameElementsApi);
+
+    Identification map(final uk.gov.companieshouse.api.model.psc.Identification identificationApi);
 
     default FilingDtoCommunal map(final PscCommunal filing) {
         if (filing instanceof PscIndividualFiling) {

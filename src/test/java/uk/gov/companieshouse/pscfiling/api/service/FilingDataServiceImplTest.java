@@ -30,7 +30,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataServiceImplTest {
+class FilingDataServiceImplTest extends BaseServiceTestClass {
 
     private static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
     private static final String TRANS_ID = "23445657412";
@@ -39,7 +39,7 @@ class FilingDataServiceImplTest {
     private static final String CEASED_ON_STR = "2022-10-05";
     private static final LocalDate CEASED_ON = LocalDate.parse("2022-10-05");
     private static final String REGISTER_ENTRY_DATE = "2022-10-05";
-    private static final String PASSTHROUGH_HEADER = "passthrough";
+    //private static final String PASSTHROUGH_HEADER = "passthrough";
     public static final String TITLE = "MR";
     public static final String FIRSTNAME = "JOE";
     public static final String OTHER_FORENAMES = "TOM";
