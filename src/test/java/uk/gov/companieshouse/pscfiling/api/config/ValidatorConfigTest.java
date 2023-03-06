@@ -45,4 +45,22 @@ class ValidatorConfigTest {
         assertThat(valid.getPscType(), is(PscTypeConstants.INDIVIDUAL));
         assertThat(valid.getFirst(), is(terminationRequiredFieldsValidator));
     }
+
+    @Test
+    void filingForCorporateEntityValid() {
+        final var valid = testConfig.filingForCorporateEntityValid(terminationRequiredFieldsValidator, pscExistsValidator,
+                pscEtagValidator, ceasedOnDateValidator, pscRegisterEntryDateValidator, pscIsActiveValidator);
+
+        assertThat(valid.getPscType(), is(PscTypeConstants.CORPORATE_ENTITY));
+        assertThat(valid.getFirst(), is(terminationRequiredFieldsValidator));
+    }
+
+    @Test
+    void filingForLegalPersonValid() {
+        final var valid = testConfig.filingForLegalPersonValid(terminationRequiredFieldsValidator, pscExistsValidator,
+                pscEtagValidator, ceasedOnDateValidator, pscRegisterEntryDateValidator, pscIsActiveValidator);
+
+        assertThat(valid.getPscType(), is(PscTypeConstants.LEGAL_PERSON));
+        assertThat(valid.getFirst(), is(terminationRequiredFieldsValidator));
+    }
 }

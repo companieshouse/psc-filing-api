@@ -5,8 +5,8 @@ import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 
 @Component
-public class TerminationRequiredFieldsValidator extends BaseIndividualFilingValidator
-        implements IndividualFilingValid {
+public class TerminationRequiredFieldsValidator extends BaseFilingValidator
+        implements FilingValid {
 
     protected static final String OBJECT_NAME = "object";
     protected static final String DEFAULT_MESSAGE = "must not be null";
