@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
 import java.time.Clock;
-import java.time.ZoneId;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
@@ -103,20 +100,6 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()
                         .build());
-    }
-
-    private Map<String, Resource> buildResourceMap(final Links links) {
-        final Map<String, Resource> resourceMap = new HashMap<>();
-        final var resource = new Resource();
-        final var linksMap = new HashMap<>(
-                Map.of("resource", links.getSelf().toString(), VALIDATION_STATUS,
-                        links.getValidationStatus().toString()));
-
-        resource.setKind("psc-filing");
-        resource.setLinks(linksMap);
-        resource.setUpdatedAt(clock.instant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        resourceMap.put(links.getSelf().toString(), resource);
-        return resourceMap;
     }
 
     private Links saveFilingWithLinks(final PscWithIdentificationFiling entity, final String transId,
