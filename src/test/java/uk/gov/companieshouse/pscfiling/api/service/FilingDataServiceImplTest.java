@@ -31,15 +31,11 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 @ExtendWith(MockitoExtension.class)
 class FilingDataServiceImplTest extends BaseServiceTestClass {
-
-    private static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
-    private static final String TRANS_ID = "23445657412";
     private static final String REF_PSC_ID = "12345";
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON_STR = "2022-10-05";
     private static final LocalDate CEASED_ON = LocalDate.parse("2022-10-05");
     private static final String REGISTER_ENTRY_DATE = "2022-10-05";
-    //private static final String PASSTHROUGH_HEADER = "passthrough";
     public static final String TITLE = "MR";
     public static final String FIRSTNAME = "JOE";
     public static final String OTHER_FORENAMES = "TOM";
@@ -67,7 +63,7 @@ class FilingDataServiceImplTest extends BaseServiceTestClass {
                 filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
+        transaction.setCompanyNumber(COMPANY_NUMBER);
     }
 
     @Test

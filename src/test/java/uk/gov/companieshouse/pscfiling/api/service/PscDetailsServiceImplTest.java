@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.CORPORATE_ENTITY;
@@ -15,15 +14,12 @@ import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpStatusCodes;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.EnumSet;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -42,13 +38,9 @@ import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 @ExtendWith(MockitoExtension.class)
-class PscDetailsServiceImplTest {
+class PscDetailsServiceImplTest extends BaseServiceTestClass {
 
-    public static final String PASSTHROUGH_HEADER = "passthrough";
-    public static final String COMPANY_NUMBER = "012345678";
     public static final String PSC_ID = "654321";
-    private static MockedStatic<PscTypeConstants> myMockedEnum;
-    private static PscTypeConstants mockedValue;
     @Mock
     private ApiClientService apiClientService;
     @Mock
@@ -159,7 +151,7 @@ class PscDetailsServiceImplTest {
                 () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL,
                         PASSTHROUGH_HEADER));
         assertThat(thrown.getMessage(),
-                is("Error Retrieving PSC details for 654321: get test case"));
+                is("Error Retrieving PSC details for " + PSC_ID + ": get test case"));
     }
 
     @Test
@@ -197,23 +189,6 @@ class PscDetailsServiceImplTest {
                         PASSTHROUGH_HEADER));
 
         assertThat(thrown.getMessage(), is("PSC type UNKNOWN not supported for PSC ID " + PSC_ID));
-    }
-
-    private static <E extends Enum<E>> E[] addNewEnumValue(Class<E> enumClazz) {
-        EnumSet<E> enumSet = EnumSet.allOf(enumClazz);
-        E[] newValues = (E[]) Array.newInstance(enumClazz, enumSet.size() + 1);
-        int i = 0;
-        for (E value : enumSet) {
-            newValues[i] = value;
-            i++;
-        }
-
-        E newEnumValue = mock(enumClazz);
-        newValues[newValues.length - 1] = newEnumValue;
-
-        when(newEnumValue.ordinal()).thenReturn(newValues.length - 1);
-
-        return newValues;
     }
 
 }
