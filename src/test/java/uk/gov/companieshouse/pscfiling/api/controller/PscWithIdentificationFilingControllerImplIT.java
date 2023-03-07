@@ -409,8 +409,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
 
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
-        mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reference_etag", is(ETAG)))

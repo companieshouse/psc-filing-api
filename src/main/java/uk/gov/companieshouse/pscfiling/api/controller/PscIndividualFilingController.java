@@ -1,11 +1,13 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -34,6 +36,27 @@ public interface PscIndividualFilingController {
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
             final BindingResult result,
             final HttpServletRequest request) {
+        throw new NotImplementedException();
+    }
+
+    /**
+     * Update a PSC Individual Filing resource by applying a JSON merge-patch.
+     *
+     * @param transId        the transaction ID
+     * @param pscType        the PSC type
+     * @param filingResource the PSC Filing ID
+     * @param mergePatch     details of the merge-patch to apply
+     * @param result         the MVC binding result (with any validation errors)
+     * @param request        the servlet request
+     * @throws NotImplementedException implementing classes must perform work
+     * @see <a href="https://www.rfc-editor.org/rfc/rfc7396">RFC7396</a>
+     */
+    @PatchMapping
+    default ResponseEntity<PscIndividualDto> updateFiling(
+            @PathVariable("transactionId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType, @PathVariable("filingResource") String filingResource,
+            @RequestBody @Valid @NotNull final JsonMergePatch mergePatch,
+            final BindingResult result, final HttpServletRequest request) {
         throw new NotImplementedException();
     }
 

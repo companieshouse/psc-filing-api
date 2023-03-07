@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+@JsonDeserialize(builder = PscCommon.Builder.class)
 public class PscCommon implements PscCommunal {
     private Address address;
     private Boolean addressSameAsRegisteredOfficeAddress;

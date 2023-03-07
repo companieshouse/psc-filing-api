@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = PscIndividualFiling.Builder.class)
 public class PscIndividualFiling implements PscCommunal {
 
     @Id
@@ -207,6 +210,7 @@ public class PscIndividualFiling implements PscCommunal {
         return new Builder(other);
     }
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
         private final List<Consumer<PscIndividualFiling>> buildSteps;

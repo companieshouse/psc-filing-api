@@ -5,13 +5,13 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
-import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,35 +29,35 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
-import uk.gov.companieshouse.api.error.ApiErrorResponse;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapperImpl;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.dto.NameElementsDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@Import(PscExistsValidator.class)
+@Import({PscExistsValidator.class, PscMapperImpl.class})
 @WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
 class PscIndividualFilingControllerImplIT extends BaseControllerIT {
+    private static final String URL_PSC_INDIVIDUAL_RESOURCE_PATCH = URL_PSC_INDIVIDUAL_RESOURCE;// + "/alt";
+    private NameElements nameElements;
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -68,7 +68,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     private PscApi pscDetails;
     @MockBean
     private PscFilingService pscFilingService;
-    @MockBean
+    @SpyBean
     private PscMapper filingMapper;
     @MockBean
     private Clock clock;
@@ -84,6 +84,12 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @BeforeEach
     void setup() throws Exception {
         super.setUp();
+        nameElements = NameElements.builder()
+                .forename("Forename")
+                .otherForenames("Other Forenames")
+                .surname("Surname")
+                .title("Sir")
+                .build();
     }
 
     @Test
@@ -116,7 +122,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         "persons-with-significant-control/individual", FILING_ID)
                 .build();
 
-        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -377,7 +382,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         "persons-with-significant-control/individual", FILING_ID)
                 .build();
 
-        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -417,15 +421,13 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
 
-        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
-
-        mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reference_etag", is(ETAG)))
                 .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
                 .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())));
+        verify(filingMapper).map(filing);
     }
 
     @Test
@@ -434,9 +436,10 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+                        get(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+        verifyNoInteractions(filingMapper);
     }
 
     private ApiError createExpectedValidationError(final String msg, final String location,
@@ -453,6 +456,196 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     private ApiError createExpectedApiError(final String msg, final String location,
             final LocationType locationType, final ErrorType errorType) {
         return new ApiError(msg, location, locationType.getValue(), errorType.getType());
+    }
+
+    @Test
+    void updateFilingWhenReplacingFields() throws Exception {
+        final var body = "{\n"
+                + "  \"ceased_on\": \"2023-03-03\",\n"
+                + "  \"name_elements\": {\n"
+                + "    \"surname\": \"Replaced\"\n"
+                + "  }\n"
+                + "}";
+        final var replacedCeasedOn = LocalDate.of(2023, 3, 3);
+        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(CEASED_ON_DATE)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .nameElements(nameElements)
+                .build();
+        final var replacedNameElements = NameElements.builder(nameElements).surname("Replaced")
+                .build();
+        final var patchDto = PscIndividualDto.builder()
+                .ceasedOn(replacedCeasedOn)
+                .nameElements(NameElementsDto.builder().surname("Replaced")
+                        .build())
+                .build();
+        final var updatedFiling = PscIndividualFiling.builder(filing)
+                .ceasedOn(replacedCeasedOn)
+                .nameElements(replacedNameElements)
+                .build();
+        final var updatedNameElementsDto =
+                NameElementsDto.builder().forename(nameElements.getForename())
+                        .otherForenames(nameElements.getOtherForenames())
+                        .surname("Replaced")
+                        .title(nameElements.getTitle())
+                        .build();
+        final var updatedDto = PscIndividualDto.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(replacedCeasedOn)
+                .nameElements(updatedNameElementsDto)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+                i -> PscIndividualFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE_PATCH, TRANS_ID, FILING_ID)
+                .content(body)
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk());
+        verify(filingMapper).map(updatedFiling);
+    }
+
+    @Test
+    void updateFilingWhenAddingFields() throws Exception {
+        final var body = "{\n"
+                + "  \"ceased_on\": \"2023-03-03\",\n"
+                + "  \"name_elements\": {\n"
+                + "    \"surname\": \"Added\"\n"
+                + "  }\n"
+                + "}";
+        final var addedCeasedOn = LocalDate.of(2023, 3, 3);
+        final var patchDto = PscIndividualDto.builder()
+                .ceasedOn(addedCeasedOn)
+                .nameElements(NameElementsDto.builder().surname("Added")
+                        .build())
+                .build();
+        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+        final var addedNameElements = NameElements.builder().surname("Added")
+                .build();
+        final var updatedFiling = PscIndividualFiling.builder(filing)
+                .ceasedOn(addedCeasedOn)
+                .nameElements(addedNameElements)
+                .build();
+        final NameElementsDto updatedNameElementsDto = NameElementsDto.builder().surname("Added")
+                .build();
+        final var updatedDto = PscIndividualDto.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(addedCeasedOn)
+                .nameElements(updatedNameElementsDto)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+                i -> PscIndividualFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE_PATCH, TRANS_ID, FILING_ID)
+                .content(body)
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk());
+        verify(filingMapper).map(updatedFiling);
+    }
+
+    @Test
+    void updateFilingWhenDeletingFields() throws Exception {
+        final var body = "{\n"
+                + "  \"ceased_on\": null,\n"
+                + "  \"name_elements\": {\n"
+                + "    \"surname\": null\n"
+                + "  }\n"
+                + "}";
+        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(CEASED_ON_DATE)
+                .nameElements(nameElements)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+        final var deletedNameElements = NameElements.builder()
+                .forename(nameElements.getForename())
+                .otherForenames(nameElements.getOtherForenames())
+                .surname(null)
+                .title(nameElements.getTitle())
+                .build();
+        final var updatedFiling = PscIndividualFiling.builder(filing).ceasedOn(null)
+                .nameElements(deletedNameElements)
+                .build();
+        final var updatedNameElementsDto =
+                NameElementsDto.builder().forename(nameElements.getForename())
+                        .otherForenames(nameElements.getOtherForenames())
+                        .surname(null)
+                        .title(nameElements.getTitle())
+                        .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+                i -> PscIndividualFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE_PATCH, TRANS_ID, FILING_ID)
+                .content(body)
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk());
+        verify(filingMapper).map(updatedFiling);
+    }
+
+    @Test
+    void updateFilingWhenFieldsAbsentThenUnchanged() throws Exception {
+        final var body = "{ }";
+        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(CEASED_ON_DATE)
+                .nameElements(nameElements)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+        final var updatedFiling = PscIndividualFiling.builder(filing)
+                .build();
+        final var nameElementsDto =
+                NameElementsDto.builder().forename(nameElements.getForename())
+                        .otherForenames(nameElements.getOtherForenames())
+                        .surname(nameElements.getSurname())
+                        .title(nameElements.getTitle())
+                        .build();
+        final var updatedDto = PscIndividualDto.builder().referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .ceasedOn(CEASED_ON_DATE)
+                .nameElements(nameElementsDto)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+                i -> PscIndividualFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE_PATCH, TRANS_ID, FILING_ID)
+                .content(body)
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isOk());
+        verify(filingMapper).map(updatedFiling);
     }
 
 }

@@ -179,8 +179,11 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getEtag()).thenReturn(ETAG);
         when(pscDetails.getNotifiedOn()).thenReturn(CEASED_ON_DATE.minusDays(1));
-        PscIndividualFiling invalid =
-                PscIndividualFiling.builder(filing).registerEntryDate(CEASED_ON_DATE.minusDays(1)).build();
+
+        final PscIndividualFiling invalid =
+                PscIndividualFiling.builder(filing).registerEntryDate(CEASED_ON_DATE.minusDays(1))
+                        .build();
+
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(invalid));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)

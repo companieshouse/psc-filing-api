@@ -26,11 +26,13 @@ public class BaseControllerIT {
     protected static final String URL_PSC =
             "/transactions/{id}/persons-with-significant-control";
     protected static final String URL_PSC_INDIVIDUAL = URL_PSC + "/individual";
+    protected static final String URL_PSC_INDIVIDUAL_RESOURCE = URL_PSC_INDIVIDUAL + "/{filingResource}";
     protected static final String URL_PSC_CORPORATE_ENTITY = URL_PSC + "/corporate-entity";
     protected static final String URL_VALIDATION_STATUS =
             "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId"
                     + "}/validation_status";
     protected static final String APPLICATION_JSON = "application/json";
+    protected static final String APPLICATION_JSON_MERGE_PATCH = "application/merge-patch+json";
     protected static final String PSC07_FRAGMENT = "\"reference_etag\":\""
             + ETAG
             + "\","
