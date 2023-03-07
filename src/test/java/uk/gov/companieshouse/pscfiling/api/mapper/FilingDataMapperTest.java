@@ -204,22 +204,40 @@ class FilingDataMapperTest {
 
     @Test
     void filingToWithIdentificationFilingDataDto() {
-        final var filing =
-                PscWithIdentificationFiling.builder().identification(createIdentification())
-                        .build();
+
+        final Identification identification = createIdentification();
+        final PscCommunal filing = PscWithIdentificationFiling.builder()
+                .identification(identification)
+                .registerEntryDate(localDate1)
+                .ceasedOn(localDate2)
+                .build();
 
         final var filingDataDto = (WithIdentificationFilingDataDto) testMapper.map(filing);
+        final var expected = (PscWithIdentificationFiling) filing;
 
         assertThat(filingDataDto.getCountryRegistered(),
-                is(equalTo(filing.getIdentification().getCountryRegistered())));
+                is(equalTo(expected.getIdentification().getCountryRegistered())));
         assertThat(filingDataDto.getLegalAuthority(),
-                is(equalTo(filing.getIdentification().getLegalAuthority())));
+                is(equalTo(expected.getIdentification().getLegalAuthority())));
         assertThat(filingDataDto.getLegalForm(),
-                is(equalTo(filing.getIdentification().getLegalForm())));
+                is(equalTo(expected.getIdentification().getLegalForm())));
         assertThat(filingDataDto.getPlaceRegistered(),
-                is(equalTo(filing.getIdentification().getPlaceRegistered())));
-        assertThat(filingDataDto.getRegistrationNumber(),
-                is(equalTo(filing.getIdentification().getRegistrationNumber())));
+                is(equalTo(expected.getIdentification().getPlaceRegistered())));
+        assertThat(filingDataDto.getRegistrationNumber(), is(equalTo(expected.getIdentification().getRegistrationNumber())));
+        assertThat(filingDataDto.getRegisterEntryDate(), is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
+        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
+    }
+
+    @Test
+    void filingEmptyIdentificationToWithIdentificationFilingDataDto() {
+        final PscCommunal emptyFiling = PscWithIdentificationFiling.builder()
+                .identification(Identification.builder().build())
+                .build();
+        final var expectedDataDto = WithIdentificationFilingDataDto.builder()
+                .build();
+
+        final var filingDataDto = testMapper.map(emptyFiling);
+        assertThat(filingDataDto, is(equalTo(expectedDataDto)));
     }
 
     @Test

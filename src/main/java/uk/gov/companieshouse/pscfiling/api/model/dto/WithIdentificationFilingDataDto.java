@@ -16,9 +16,20 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
     private String registrationNumber;
     private String legalAuthority;
     private String legalForm;
+    private String ceasedOn;
+
+    private String registerEntryDate;
 
     public WithIdentificationFilingDataDto() {
         // prevent direct instantiation
+    }
+
+    public String getCeasedOn() {
+        return ceasedOn;
+    }
+
+    public String getRegisterEntryDate() {
+        return registerEntryDate;
     }
 
     public String getCountryRegistered() {
@@ -61,10 +72,12 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
         public Builder(final WithIdentificationFilingDataDto other) {
             this();
             this.countryRegistered(other.getCountryRegistered())
-                .placeRegistered(other.getPlaceRegistered())
-                .registrationNumber(other.getRegistrationNumber())
-                .legalAuthority(other.getLegalAuthority())
-                .legalForm(other.getLegalForm());
+                    .placeRegistered(other.getPlaceRegistered())
+                    .registrationNumber(other.getRegistrationNumber())
+                    .legalAuthority(other.getLegalAuthority())
+                    .legalForm(other.getLegalForm())
+                    .ceasedOn(other.getCeasedOn())
+                    .registerEntryDate(other.getRegisterEntryDate());
         }
 
         public Builder countryRegistered(final String value) {
@@ -97,6 +110,19 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
             return this;
         }
 
+        public Builder ceasedOn(final String value) {
+
+            buildSteps.add(data -> data.ceasedOn = value);
+            return this;
+        }
+
+        public Builder registerEntryDate(final String value) {
+
+            buildSteps.add(data -> data.registerEntryDate = value);
+            return this;
+        }
+
+
         public WithIdentificationFilingDataDto build() {
 
             final var data = new WithIdentificationFilingDataDto();
@@ -116,26 +142,30 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
         }
         final WithIdentificationFilingDataDto that = (WithIdentificationFilingDataDto) o;
         return Objects.equals(getCountryRegistered(), that.getCountryRegistered())
-            && Objects.equals(getPlaceRegistered(), that.getPlaceRegistered())
-            && Objects.equals(getRegistrationNumber(), that.getRegistrationNumber())
-            && Objects.equals(getLegalAuthority(), that.getLegalAuthority())
-            && Objects.equals(getLegalForm(), that.getLegalForm());
+                && Objects.equals(getPlaceRegistered(), that.getPlaceRegistered())
+                && Objects.equals(getRegistrationNumber(), that.getRegistrationNumber())
+                && Objects.equals(getLegalAuthority(), that.getLegalAuthority())
+                && Objects.equals(getLegalForm(), that.getLegalForm())
+                && Objects.equals(getCeasedOn(), that.getCeasedOn())
+                && Objects.equals(getRegisterEntryDate(), that.getRegisterEntryDate());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getCountryRegistered(), getPlaceRegistered(), getRegistrationNumber(),
-            getLegalAuthority(), getLegalForm());
+            getLegalAuthority(), getLegalForm(), getCeasedOn(), getRegisterEntryDate());
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", WithIdentificationFilingDataDto.class.getSimpleName() + "[", "]").add(
-                "countryRegistered='" + countryRegistered + "'")
-            .add("placeRegistered='" + placeRegistered + "'")
-            .add("registrationNumber='" + registrationNumber + "'")
-            .add("legalAuthority='" + legalAuthority + "'")
-            .add("legalForm='" + legalForm + "'")
-            .toString();
+        return new StringJoiner(", ", WithIdentificationFilingDataDto.class.getSimpleName() + "[", "]")
+                .add("countryRegistered='" + countryRegistered + "'")
+                .add("placeRegistered='" + placeRegistered + "'")
+                .add("registrationNumber='" + registrationNumber + "'")
+                .add("legalAuthority='" + legalAuthority + "'")
+                .add("legalForm='" + legalForm + "'")
+                .add("ceasedOn='" + ceasedOn + "'")
+                .add("registerEntryDate='" + registerEntryDate + "'")
+                .toString();
     }
 }
