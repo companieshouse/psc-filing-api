@@ -82,27 +82,6 @@ class PscDetailsServiceImplTest extends BaseServiceTestClass {
         testService = new PscDetailsServiceImpl(apiClientService, logger);
     }
 
-    @ParameterizedTest
-    @EnumSource(PscTypeConstants.class)
-    void getPscDetailsWhenFound(final PscTypeConstants pscType)
-            throws IOException, URIValidationException {
-        when(apiResponse.getData()).thenReturn(new PscApi());
-        when(pscIndividualGet.execute()).thenReturn(apiResponse);
-        when(pscsResourceHandler.getIndividual("/company/"
-                + COMPANY_NUMBER
-                + "/persons-with-significant-control/"
-                + pscType.getValue()
-                + "/"
-                + PSC_ID)).thenReturn(pscIndividualGet);
-        when(apiClient.pscs()).thenReturn(pscsResourceHandler);
-        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
-        when(transaction.getCompanyNumber()).thenReturn(COMPANY_NUMBER);
-
-        var pscApi = testService.getPscDetails(transaction, PSC_ID, pscType, PASSTHROUGH_HEADER);
-
-        assertThat(pscApi, samePropertyValuesAs(new PscApi()));
-    }
-
     @Test
     void getPscIndividualDetailsWhenFound() throws IOException, URIValidationException {
         when(apiResponse.getData()).thenReturn(new PscApi());
