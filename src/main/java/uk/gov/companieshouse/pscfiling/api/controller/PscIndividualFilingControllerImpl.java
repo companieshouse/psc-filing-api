@@ -9,12 +9,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import java.time.Clock;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -23,7 +19,6 @@ import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
-import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
@@ -55,22 +49,12 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @RequestMapping(
         "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
                 + "(?:individual)}")
-public class PscIndividualFilingControllerImpl implements PscIndividualFilingController {
-    public static final String VALIDATION_STATUS = "validation_status";
-    private final TransactionService transactionService;
-    private final PscFilingService pscFilingService;
-    private final PscMapper filingMapper;
-    private final Clock clock;
-    private final Logger logger;
+public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl implements PscIndividualFilingController {
 
     public PscIndividualFilingControllerImpl(final TransactionService transactionService,
                                              final PscFilingService pscFilingService, final PscMapper filingMapper,
                                              final Clock clock, final Logger logger) {
-        this.transactionService = transactionService;
-        this.pscFilingService = pscFilingService;
-        this.filingMapper = filingMapper;
-        this.clock = clock;
-        this.logger = logger;
+        super(transactionService, pscFilingService, filingMapper, clock, logger);
     }
 
     /**
@@ -97,28 +81,13 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
 
         logger.debugRequest(request, "POST", logMap);
 
-        final var validationErrors = Optional.ofNullable(bindingResult)
-                .map(Errors::getFieldErrors).map(ArrayList::new)
-                .orElseGet(ArrayList::new);
-        final var passthroughHeader =
-                request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+        checkBindingErrors(bindingResult);
 
-        if (transaction == null) {
-            transaction = transactionService.getTransaction(transId, passthroughHeader);
-        }
-
-        logger.infoContext(transId, "transaction found", logMap);
-
-        if (!validationErrors.isEmpty()) {
-            throw new InvalidFilingException(validationErrors);
-        }
+        transaction = getTransaction(transId, transaction, logMap, getPassthroughHeader(request));
 
         final var entity = filingMapper.map(dto);
         final var links = saveFilingWithLinks(entity, transId, request, logMap);
-        final var resourceMap = buildResourceMap(links);
-
-        transaction.setResources(resourceMap);
-        transactionService.updateTransaction(transaction, passthroughHeader);
+        updateTransactionResources(transaction, links);
 
         return ResponseEntity.created(links.getSelf())
                 .build();
@@ -275,35 +244,22 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
     public ResponseEntity<PscDtoCommunal> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
-            @PathVariable("filingResourceId") final String filingResource) {
+            @PathVariable("filingResourceId") final String filingResource,
+            final HttpServletRequest request) {
 
         final var maybePSCFiling = pscFilingService.get(filingResource, transId);
 
-        final var maybeDto = maybePSCFiling.map(filingMapper::map);
+        final var maybeDto = maybePSCFiling.filter(f -> pscFilingService.requestMatchesResource(request, f)).map(filingMapper::map);
 
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()
                         .build());
     }
 
-    private Map<String, Resource> buildResourceMap(final Links links) {
-        final Map<String, Resource> resourceMap = new HashMap<>();
-        final var resource = new Resource();
-        final var linksMap = new HashMap<>(
-                Map.of("resource", links.getSelf().toString(), VALIDATION_STATUS,
-                        links.getValidationStatus().toString()));
-
-        resource.setKind("psc-filing");
-        resource.setLinks(linksMap);
-        resource.setUpdatedAt(clock.instant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        resourceMap.put(links.getSelf().toString(), resource);
-        return resourceMap;
-    }
-
     private Links saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
                                       final HttpServletRequest request, final Map<String, Object> logMap) {
         final var saved = pscFilingService.save(entity, transId);
-        final var links = buildLinks(saved, request);
+        final var links = buildLinks(request, saved);
         final var updated = PscIndividualFiling.builder(saved).links(links)
                 .build();
         final var resaved = pscFilingService.save(updated, transId);
@@ -314,7 +270,7 @@ public class PscIndividualFilingControllerImpl implements PscIndividualFilingCon
         return links;
     }
 
-    private Links buildLinks(final PscIndividualFiling savedFiling, final HttpServletRequest request) {
+    private Links buildLinks(final HttpServletRequest request, final PscIndividualFiling savedFiling) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
         final var selfUri = UriComponentsBuilder
                 .fromUriString(request.getRequestURI())
