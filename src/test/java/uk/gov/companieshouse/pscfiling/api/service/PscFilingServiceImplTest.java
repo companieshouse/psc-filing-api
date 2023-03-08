@@ -2,17 +2,23 @@ package uk.gov.companieshouse.pscfiling.api.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
@@ -30,6 +36,10 @@ class PscFilingServiceImplTest extends BaseServiceTestClass {
     @Mock
     private PscIndividualFiling filing;
     @Mock
+    private PscWithIdentificationFiling identificationFiling;
+    @Mock
+    private HttpServletRequest request;
+    @Mock
     private Logger logger;
     @Mock
     private LogHelper logHelper;
@@ -41,12 +51,18 @@ class PscFilingServiceImplTest extends BaseServiceTestClass {
     }
 
     @Test
-    void save() {
+    void saveIndividual() {
         testService.save(filing, TRANS_ID);
 
         verify(individualFilingRepository).save(filing);
     }
 
+    @Test
+    void saveWithIdentification() {
+        testService.save(identificationFiling, TRANS_ID);
+
+        verify(withIdentificationFilingRepository).save(identificationFiling);
+    }
     @Test
     void getWhenFound() {
         final var filing = PscIndividualFiling.builder()
@@ -65,4 +81,35 @@ class PscFilingServiceImplTest extends BaseServiceTestClass {
         assertThat(pscIndividualFiling.isPresent(), is(false));
     }
 
+    @Test
+    void requestMatchesResource() throws URISyntaxException {
+        var links = new Links(new URI("transactions/" + TRANS_ID), new URI("validation_status"));
+
+        when(filing.getLinks()).thenReturn(links);
+        when(request.getRequestURI()).thenReturn("transactions/" + TRANS_ID);
+
+        assertThat(testService.requestMatchesResource(request, filing), is(true));
+    }
+
+    @Test
+    void requestDoesNotMatchResource() throws URISyntaxException {
+        var links = new Links(new URI("transactions/" + TRANS_ID), new URI("validation_status"));
+
+        when(filing.getLinks()).thenReturn(links);
+        when(request.getRequestURI()).thenReturn("different");
+
+        assertThat(testService.requestMatchesResource(request, filing), is(false));
+    }
+
+    @Test
+    void requestMatchesResourceThrowsException() throws URISyntaxException {
+        var links = new Links(new URI("transactions/" + TRANS_ID), new URI("validation_status"));
+
+        when(filing.getLinks()).thenReturn(links);
+        when(request.getRequestURI()).thenReturn(":");
+
+        var thrown = assertThrows(URISyntaxException.class, () -> new URI(":"));
+        assertThat(thrown.getMessage(), is("Expected scheme name at index 0: :"));
+        assertThat(testService.requestMatchesResource(request, filing), is(false));
+    }
 }

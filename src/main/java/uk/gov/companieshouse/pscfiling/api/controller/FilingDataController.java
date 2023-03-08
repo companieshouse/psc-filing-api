@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 public interface FilingDataController {
 
@@ -15,6 +16,7 @@ public interface FilingDataController {
      * Controller endpoint: retrieve Filing Data.
      *
      * @param transId       the transaction ID
+     * @param pscType        the PSC type
      * @param filingResource the Filing Resource ID
      * @param transaction    the Transaction
      * @param request        the servlet request
@@ -22,6 +24,7 @@ public interface FilingDataController {
      */
     @GetMapping
     default List<FilingApi> getFilingsData(@PathVariable("transactionId") final String transId,
+                                           @PathVariable("pscType") PscTypeConstants pscType,
                                            @PathVariable("filingResource") String filingResource,
                                            @RequestAttribute("transaction") Transaction transaction,
                                            HttpServletRequest request){

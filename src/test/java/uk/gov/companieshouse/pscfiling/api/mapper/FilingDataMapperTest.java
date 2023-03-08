@@ -26,7 +26,6 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
-
 @ExtendWith(SpringExtension.class)
 @Import(FilingDataMapperImpl.class)
 class FilingDataMapperTest {
@@ -186,8 +185,8 @@ class FilingDataMapperTest {
         identificationApi.setCountryRegistered("country");
         identificationApi.setPlaceRegistered("place");
         identificationApi.setRegistrationNumber("registration");
-        identificationApi.setLegalAuthority("legalAuthority");
-        identificationApi.setLegalForm("legalForm");
+        identificationApi.setLegalAuthority("legalauthority");
+        identificationApi.setLegalForm("legalform");
 
         final var identification = testMapper.map(identificationApi);
 
@@ -292,20 +291,20 @@ class FilingDataMapperTest {
     @Test
     void enhanceWithIdentificationFiling() {
         final PscCommunal filing =
-                PscWithIdentificationFiling.builder()
-                        .identification(createIdentification())
+                PscWithIdentificationFiling.builder().identification(createIdentification())
                         .build();
         final PscApi pscDetails = new PscApi();
+
         final var expectedIdentification = createIdentificationApi();
         pscDetails.setIdentification(expectedIdentification);
 
-        final var enhanced =
-                (PscWithIdentificationFiling) testMapper.enhance(filing, pscDetails);
+        final var enhanced = (PscWithIdentificationFiling) testMapper.enhance(filing, pscDetails);
 
         assertThat(enhanced.getIdentification().getCountryRegistered(), is(expectedIdentification.getCountryRegistered()));
         assertThat(enhanced.getIdentification().getLegalAuthority(), is(expectedIdentification.getLegalAuthority()));
         assertThat(enhanced.getIdentification().getLegalForm(), is(expectedIdentification.getLegalForm()));
         assertThat(enhanced.getIdentification().getPlaceRegistered(), is(expectedIdentification.getPlaceRegistered()));
+        assertThat(enhanced.getIdentification().getRegistrationNumber(), is(expectedIdentification.getRegistrationNumber()));
         assertThat(enhanced.getIdentification().getRegistrationNumber(), is(expectedIdentification.getRegistrationNumber()));
     }
 
@@ -371,11 +370,10 @@ class FilingDataMapperTest {
     private static Identification createIdentification() {
         return Identification.builder()
                 .countryRegistered("country")
-                .legalAuthority("legalAuthority")
-                .legalForm("legalForm")
+                .legalAuthority("legalauthority")
+                .legalForm("legalform")
                 .placeRegistered("place")
                 .registrationNumber("registration")
                 .build();
     }
 }
-
