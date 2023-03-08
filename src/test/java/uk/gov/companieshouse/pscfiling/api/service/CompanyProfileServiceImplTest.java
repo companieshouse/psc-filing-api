@@ -28,7 +28,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceException;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyProfileServiceImplTest extends BaseServiceTestClass {
+class CompanyProfileServiceImplTest extends TestBaseService {
 
     private static final String URI = "/company/" + COMPANY_NUMBER;
     @Mock

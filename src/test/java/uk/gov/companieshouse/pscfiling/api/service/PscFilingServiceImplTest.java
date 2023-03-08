@@ -25,7 +25,7 @@ import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilin
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
-class PscFilingServiceImplTest extends BaseServiceTestClass {
+class PscFilingServiceImplTest extends TestBaseService {
     private PscFilingService testService;
     @Mock
     private PscFilingRepository filingRepository;

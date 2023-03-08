@@ -32,7 +32,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionServiceImplTest extends BaseServiceTestClass {
+class TransactionServiceImplTest extends TestBaseService {
     @Mock
     private ApiClientService apiClientService;
     @Mock

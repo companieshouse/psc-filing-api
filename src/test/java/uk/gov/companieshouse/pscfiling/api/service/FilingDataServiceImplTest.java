@@ -30,7 +30,7 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataServiceImplTest extends BaseServiceTestClass {
+class FilingDataServiceImplTest extends TestBaseService {
     private static final String REF_PSC_ID = "12345";
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON_STR = "2022-10-05";

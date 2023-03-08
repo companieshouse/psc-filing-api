@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import org.mockito.MockedStatic;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
-public class BaseServiceTestClass {
+public class TestBaseService {
 
     static final String PASSTHROUGH_HEADER = "passthrough";
     static final String TRANS_ID = "23445657412";

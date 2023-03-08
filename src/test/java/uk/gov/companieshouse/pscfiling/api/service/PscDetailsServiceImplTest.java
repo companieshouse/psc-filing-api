@@ -19,8 +19,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.ApiClient;
@@ -40,7 +38,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 @ExtendWith(MockitoExtension.class)
-class PscDetailsServiceImplTest extends BaseServiceTestClass {
+class PscDetailsServiceImplTest extends TestBaseService {
 
     public static final String PSC_ID = "654321";
     @Mock
