@@ -301,13 +301,7 @@ class FilingDataMapperTest {
 
         final var enhanced = (PscWithIdentificationFiling) testMapper.enhance(filing, pscDetails);
 
-        assertThat(enhanced.getName(), is("name"));
-        assertThat(enhanced.getIdentification().getCountryRegistered(), is(expectedIdentification.getCountryRegistered()));
-        assertThat(enhanced.getIdentification().getLegalAuthority(), is(expectedIdentification.getLegalAuthority()));
-        assertThat(enhanced.getIdentification().getLegalForm(), is(expectedIdentification.getLegalForm()));
-        assertThat(enhanced.getIdentification().getPlaceRegistered(), is(expectedIdentification.getPlaceRegistered()));
-        assertThat(enhanced.getIdentification().getRegistrationNumber(), is(expectedIdentification.getRegistrationNumber()));
-        assertThat(enhanced.getIdentification().getRegistrationNumber(), is(expectedIdentification.getRegistrationNumber()));
+        assertThat(enhanced.getName(), is("api name"));
     }
 
     @Test

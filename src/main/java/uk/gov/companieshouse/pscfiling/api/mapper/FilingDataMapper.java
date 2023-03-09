@@ -42,8 +42,7 @@ public interface FilingDataMapper {
     }
 
     default PscWithIdentificationFiling enhance(final PscWithIdentificationFiling filing, final PscApi details) {
-        return PscWithIdentificationFiling.builder(filing).identification(map(details.getIdentification()))
-                .build();
+        return PscWithIdentificationFiling.builder(filing).name(details.getName()).build();
     }
 
     @Mapping(target = "otherForenames", source = "middleName")
