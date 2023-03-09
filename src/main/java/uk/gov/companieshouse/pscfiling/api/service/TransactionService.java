@@ -23,10 +23,9 @@ public interface TransactionService {
      * Update a Transaction by ID.
      *
      * @param transaction the Transaction object to update
-     * @param ericPassThroughHeader includes authorisation for transaction update
      *
      * @throws TransactionServiceException if Transaction not found or an error occurred
      */
-    void updateTransaction(Transaction transaction, final String ericPassThroughHeader)
+    void updateTransaction(Transaction transaction)
             throws TransactionServiceException;
 }
