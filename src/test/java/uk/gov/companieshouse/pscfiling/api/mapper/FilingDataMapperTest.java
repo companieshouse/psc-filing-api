@@ -290,16 +290,18 @@ class FilingDataMapperTest {
 
     @Test
     void enhanceWithIdentificationFiling() {
-        final PscCommunal filing =
-                PscWithIdentificationFiling.builder().identification(createIdentification())
-                        .build();
+        final PscCommunal filing = PscWithIdentificationFiling.builder()
+                .identification(createIdentification())
+                .name("name")
+                .build();
         final PscApi pscDetails = new PscApi();
-
+        pscDetails.setName("api name");
         final var expectedIdentification = createIdentificationApi();
         pscDetails.setIdentification(expectedIdentification);
 
         final var enhanced = (PscWithIdentificationFiling) testMapper.enhance(filing, pscDetails);
 
+        assertThat(enhanced.getName(), is("name"));
         assertThat(enhanced.getIdentification().getCountryRegistered(), is(expectedIdentification.getCountryRegistered()));
         assertThat(enhanced.getIdentification().getLegalAuthority(), is(expectedIdentification.getLegalAuthority()));
         assertThat(enhanced.getIdentification().getLegalForm(), is(expectedIdentification.getLegalForm()));

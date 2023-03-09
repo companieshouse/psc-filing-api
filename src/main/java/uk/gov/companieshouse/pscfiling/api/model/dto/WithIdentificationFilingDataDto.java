@@ -17,7 +17,7 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
     private String legalAuthority;
     private String legalForm;
     private String ceasedOn;
-
+    private String name;
     private String registerEntryDate;
 
     public WithIdentificationFilingDataDto() {
@@ -27,11 +27,12 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
     public String getCeasedOn() {
         return ceasedOn;
     }
-
+    public String getName() {
+        return name;
+    }
     public String getRegisterEntryDate() {
         return registerEntryDate;
     }
-
     public String getCountryRegistered() {
         return countryRegistered;
     }
@@ -77,7 +78,9 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
                     .legalAuthority(other.getLegalAuthority())
                     .legalForm(other.getLegalForm())
                     .ceasedOn(other.getCeasedOn())
+                    .name(other.getName())
                     .registerEntryDate(other.getRegisterEntryDate());
+
         }
 
         public Builder countryRegistered(final String value) {
@@ -122,6 +125,11 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
             return this;
         }
 
+        public Builder name(final String value) {
+
+            buildSteps.add(data -> data.name = value);
+            return this;
+        }
 
         public WithIdentificationFilingDataDto build() {
 
@@ -147,13 +155,14 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
                 && Objects.equals(getLegalAuthority(), that.getLegalAuthority())
                 && Objects.equals(getLegalForm(), that.getLegalForm())
                 && Objects.equals(getCeasedOn(), that.getCeasedOn())
+                && Objects.equals(getName(), that.getName())
                 && Objects.equals(getRegisterEntryDate(), that.getRegisterEntryDate());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(getCountryRegistered(), getPlaceRegistered(), getRegistrationNumber(),
-            getLegalAuthority(), getLegalForm(), getCeasedOn(), getRegisterEntryDate());
+            getLegalAuthority(), getLegalForm(), getCeasedOn(), getRegisterEntryDate(), getName());
     }
 
     @Override
@@ -166,6 +175,8 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
                 .add("legalForm='" + legalForm + "'")
                 .add("ceasedOn='" + ceasedOn + "'")
                 .add("registerEntryDate='" + registerEntryDate + "'")
+                .add("name='" + name + "'")
                 .toString();
+
     }
 }
