@@ -28,12 +28,9 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceException;
 
 @ExtendWith(MockitoExtension.class)
-class CompanyProfileServiceImplTest {
+class CompanyProfileServiceImplTest extends TestBaseService {
 
-    private static final String PASSTHROUGH_HEADER = "passthrough";
-    private static final String COMPANY_NUMBER = "12345678";
     private static final String URI = "/company/" + COMPANY_NUMBER;
-
     @Mock
     private ApiClient apiClient;
     @Mock

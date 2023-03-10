@@ -51,11 +51,35 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                     + pscType.getValue()
                     + "/"
                     + pscId;
-            return apiClientService.getApiClient(ericPassThroughHeader)
-                    .pscs()
-                    .getIndividual(uri)
-                    .execute()
-                    .getData();
+
+            switch (pscType) {
+                case INDIVIDUAL:
+                    return apiClientService.getApiClient(ericPassThroughHeader)
+                            .pscs()
+                            .getIndividual(uri)
+                            .execute()
+                            .getData();
+
+                case CORPORATE_ENTITY:
+                    return apiClientService.getApiClient(ericPassThroughHeader)
+                            .pscs()
+                            .getCorporateEntity(uri)
+                            .execute()
+                            .getData();
+
+                case LEGAL_PERSON:
+                    return apiClientService.getApiClient(ericPassThroughHeader)
+                            .pscs()
+                            .getLegalPerson(uri)
+                            .execute()
+                            .getData();
+
+                default:
+                    throw new UnsupportedOperationException(
+                            MessageFormat.format("PSC type {0} not supported for PSC ID {1}",
+                                    pscType.name(), pscId));
+            }
+
         }
         catch (final ApiErrorResponseException e) {
             logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);

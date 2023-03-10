@@ -54,13 +54,13 @@ public class FilingDataServiceImpl implements FilingDataService {
         final var transactionId = transaction.getId();
         final var pscFilingOpt = pscFilingService.get(filingId, transactionId);
         final var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
-                String.format("Psc individual not found when generating filing for %s", filingId)));
+                String.format("PSC filing not found when generating filing for %s", filingId)));
         final PscApi pscDetails =
                 pscDetailsService.getPscDetails(transaction, pscFiling.getReferencePscId(), pscType,
                         passthroughHeader);
-        final PscCommunal enhancedPscFiling = dataMapper.enhance(pscFiling, pscDetails);
+        final PscCommunal enhancedPscFiling = dataMapper.enhance(pscFiling, pscType, pscDetails);
 
-        final var filingData = dataMapper.map(enhancedPscFiling);
+        final var filingData = dataMapper.map(enhancedPscFiling, pscType);
         final var dataMap = MapHelper.convertObject(filingData);
 
         final var logMap = LogHelper.createLogMap(transactionId, filingId);

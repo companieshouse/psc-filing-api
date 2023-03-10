@@ -25,11 +25,8 @@ import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilin
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
-class PscFilingServiceImplTest {
-    public static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
-    public static final String TRANS_ID = "12345-54321-76666";
+class PscFilingServiceImplTest extends TestBaseService {
     private PscFilingService testService;
-
     @Mock
     private PscFilingRepository filingRepository;
     @Mock

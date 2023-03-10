@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
@@ -231,8 +232,10 @@ public class PscWithIdentificationFiling implements PscCommunal {
         }
 
         public Builder identification(final Identification value) {
-
-            buildSteps.add(data -> data.identification = value);
+            buildSteps.add(data -> data.identification = Optional.ofNullable(value)
+                    .map(v -> new Identification(v.getCountryRegistered(), v.getLegalAuthority(),
+                            v.getLegalForm(), v.getPlaceRegistered(), v.getRegistrationNumber()))
+                    .orElse(null));
             return this;
         }
 
