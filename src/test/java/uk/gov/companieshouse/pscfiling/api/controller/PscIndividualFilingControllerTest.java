@@ -38,6 +38,6 @@ class PscIndividualFilingControllerTest {
     void getFilingForReview() {
         assertThrows(NotImplementedException.class,
                 () -> testController.getFilingForReview("trans-id", PscTypeConstants.INDIVIDUAL,
-                        "filing-resource-id"));
+                        "filing-resource-id", request));
     }
 }

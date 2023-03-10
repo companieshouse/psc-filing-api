@@ -1,5 +1,15 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscfiling.api.controller.BaseFilingControllerImpl.VALIDATION_STATUS;
+import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
+
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
@@ -38,16 +48,6 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.refEq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingControllerImpl.VALIDATION_STATUS;
-import static uk.gov.companieshouse.pscfiling.api.model.entity.Links.PREFIX_PRIVATE;
 
 @ExtendWith(MockitoExtension.class)
 class PscWithIdentificationFilingControllerImplTest {
@@ -136,7 +136,7 @@ class PscWithIdentificationFilingControllerImplTest {
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
-        verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        verify(transactionService).updateTransaction(transaction);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
 
@@ -163,15 +163,13 @@ class PscWithIdentificationFilingControllerImplTest {
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
-        verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        verify(transactionService).updateTransaction(transaction);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
 
     @Test
     void createFilingWhenRequestHasBindingError() {
         when(result.getFieldErrors()).thenReturn(List.of(fieldErrorWithRejectedValue));
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-                PASSTHROUGH_HEADER);
 
         final var exception = assertThrows(InvalidFilingException.class,
                 () -> testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, transaction,
@@ -201,11 +199,23 @@ class PscWithIdentificationFilingControllerImplTest {
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(true);
 
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    void getFilingForReviewWhenFoundButResourceNotMatched() {
+        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(false);
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
 
     @Test
@@ -213,7 +223,7 @@ class PscWithIdentificationFilingControllerImplTest {
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
 
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }

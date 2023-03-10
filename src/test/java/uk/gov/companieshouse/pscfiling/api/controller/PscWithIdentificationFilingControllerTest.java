@@ -38,6 +38,6 @@ class PscWithIdentificationFilingControllerTest {
     void getFilingForReview() {
         assertThrows(NotImplementedException.class,
                 () -> testController.getFilingForReview("trans-id", PscTypeConstants.CORPORATE_ENTITY,
-                        "filing-resource-id"));
+                        "filing-resource-id", request));
     }
 }
