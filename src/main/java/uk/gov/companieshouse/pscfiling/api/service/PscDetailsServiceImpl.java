@@ -51,24 +51,35 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                     + pscType.getValue()
                     + "/"
                     + pscId;
-            final PscApi data;
+
             switch (pscType) {
                 case INDIVIDUAL:
-                    data = apiClientService.getApiClient(ericPassThroughHeader).pscs()
-                            .getIndividual(uri).execute().getData();
-                    break;
+                    return apiClientService.getApiClient(ericPassThroughHeader)
+                            .pscs()
+                            .getIndividual(uri)
+                            .execute()
+                            .getData();
+
                 case CORPORATE_ENTITY:
-                    data = apiClientService.getApiClient(ericPassThroughHeader).pscs()
-                            .getCorporateEntity(uri).execute().getData();
-                    break;
+                    return apiClientService.getApiClient(ericPassThroughHeader)
+                            .pscs()
+                            .getCorporateEntity(uri)
+                            .execute()
+                            .getData();
+
                 case LEGAL_PERSON:
-                    data = apiClientService.getApiClient(ericPassThroughHeader).pscs()
-                            .getLegalPerson(uri).execute().getData();
-                    break;
+                    return apiClientService.getApiClient(ericPassThroughHeader)
+                            .pscs()
+                            .getLegalPerson(uri)
+                            .execute()
+                            .getData();
+
                 default:
-                    throw new PscServiceException("PSC type not supported: " + pscType, null);
+                    throw new UnsupportedOperationException(
+                            MessageFormat.format("PSC type {0} not supported for PSC ID {1}",
+                                    pscType.name(), pscId));
             }
-            return data;
+
         }
         catch (final ApiErrorResponseException e) {
             logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);

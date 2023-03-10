@@ -16,8 +16,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.net.URI;
 import java.time.Clock;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -39,6 +41,7 @@ import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
@@ -390,27 +393,34 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         verify(filingMapper).map(dto);
     }
 
-    @Disabled("Pending PSC-71 + PSC-72")
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
+
         final var dto = PscWithIdentificationDto.builder().referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(CEASED_ON_DATE)
                 .build();
+
+                Links links = new Links(new URI("/transactions/" + TRANS_ID +
+                "/persons-with-significant-control/corporate-entity/" + FILING_ID),
+                                        new URI("validation_status"));
+
         final var filing = PscWithIdentificationFiling.builder()
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(CEASED_ON_DATE)
+                .links(links)
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
-
+        when(pscFilingService.requestMatchesResource(any(HttpServletRequest.class),
+                eq(filing))).thenReturn(true);
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+                        get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reference_etag", is(ETAG)))
@@ -418,7 +428,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())));
     }
 
-    @Disabled("Pending PSC-71 + PSC-72")
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 

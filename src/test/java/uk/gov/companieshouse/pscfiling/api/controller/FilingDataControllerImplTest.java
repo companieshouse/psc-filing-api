@@ -4,7 +4,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.INDIVIDUAL;
 
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,10 +65,10 @@ class FilingDataControllerImplTest extends BaseControllerIT {
     void getFilingsDataWhenTransactionNull() {
         var filingApi = new FilingApi();
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-            PASSTHROUGH_HEADER);
+                PASSTHROUGH_HEADER);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(filingsTransaction);
         when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
-            filingsTransaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
+                filingsTransaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
         final var filingsList =
             testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL, FILING_ID,

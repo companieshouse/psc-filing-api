@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.CORPORATE_ENTITY;
 import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.INDIVIDUAL;
@@ -13,6 +14,8 @@ import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpStatusCodes;
 import java.io.IOException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,12 +35,11 @@ import uk.gov.companieshouse.api.sdk.ApiClientService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 @ExtendWith(MockitoExtension.class)
-class PscDetailsServiceImplTest {
+class PscDetailsServiceImplTest extends TestBaseService {
 
-    public static final String PASSTHROUGH_HEADER = "passthrough";
-    public static final String COMPANY_NUMBER = "012345678";
     public static final String PSC_ID = "654321";
     @Mock
     private ApiClientService apiClientService;
@@ -59,6 +61,20 @@ class PscDetailsServiceImplTest {
     private Logger logger;
     private PscDetailsService testService;
 
+    @BeforeAll
+    public static void setUpForClass() {
+        PscTypeConstants[] newEnumValues = addNewEnumValue(PscTypeConstants.class);
+        myMockedEnum = mockStatic(PscTypeConstants.class);
+        myMockedEnum.when(PscTypeConstants::values).thenReturn(newEnumValues);
+        mockedValue = newEnumValues[newEnumValues.length - 1];
+        when(mockedValue.name()).thenReturn("UNKNOWN");
+    }
+
+    @AfterAll
+    public static void tearDownForClass() {
+        myMockedEnum.close();
+    }
+
     @BeforeEach
     void setUp() {
         testService = new PscDetailsServiceImpl(apiClientService, logger);
@@ -68,11 +84,12 @@ class PscDetailsServiceImplTest {
     void getPscIndividualDetailsWhenFound() throws IOException, URIValidationException {
         when(apiResponse.getData()).thenReturn(new PscApi());
         when(pscIndividualGet.execute()).thenReturn(apiResponse);
-        when(pscsResourceHandler.getIndividual("/company/" +
-                COMPANY_NUMBER +
-                "/persons-with-significant-control/" +
-                INDIVIDUAL.getValue() +
-                "/" +
+        when(pscsResourceHandler.getIndividual("/company/"
+                + COMPANY_NUMBER
+                + "/persons-with-significant-control/"
+                + INDIVIDUAL.getValue()
+                + "/"
+                +
                 PSC_ID)).thenReturn(pscIndividualGet);
         when(apiClient.pscs()).thenReturn(pscsResourceHandler);
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(
@@ -134,7 +151,8 @@ class PscDetailsServiceImplTest {
         final var thrown = assertThrows(PscServiceException.class,
                 () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL,
                         PASSTHROUGH_HEADER));
-        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for 654321: get test case"));
+        assertThat(thrown.getMessage(),
+                is("Error Retrieving PSC details for " + PSC_ID + ": get test case"));
     }
 
     @Test
@@ -152,14 +170,25 @@ class PscDetailsServiceImplTest {
     @Test
     void getPscDetailsWhenErrorRetrieving() throws IOException {
         final var exception = new ApiErrorResponseException(
-            new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_FORBIDDEN, "test case", new HttpHeaders()));
+                new HttpResponseException.Builder(HttpStatusCodes.STATUS_CODE_FORBIDDEN,
+                        "test case", new HttpHeaders()));
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(PscServiceException.class,
             () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL, PASSTHROUGH_HEADER));
 
-        assertThat(thrown.getMessage(), is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));
+        assertThat(thrown.getMessage(),
+                is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));
+    }
+
+    @Test
+    void getPscDetailsWhenTypeNotRecognised() {
+
+        final var thrown = assertThrows(UnsupportedOperationException.class,
+                () -> testService.getPscDetails(transaction, PSC_ID, mockedValue,
+                        PASSTHROUGH_HEADER));
+
+        assertThat(thrown.getMessage(), is("PSC type UNKNOWN not supported for PSC ID " + PSC_ID));
     }
 
 }
-
