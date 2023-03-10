@@ -3,9 +3,9 @@ package uk.gov.companieshouse.pscfiling.api.validator;
 import java.util.Optional;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 
-public class BaseIndividualFilingValidator implements IndividualFilingValid {
+public class BaseFilingValidator implements FilingValid {
 
-    private IndividualFilingValid nextValidator;
+    private FilingValid nextValidator;
 
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
@@ -14,7 +14,7 @@ public class BaseIndividualFilingValidator implements IndividualFilingValid {
     }
 
     @Override
-    public void setNext(final IndividualFilingValid individualFilingValidator) {
-        this.nextValidator = individualFilingValidator;
+    public void setNext(final FilingValid filingValidator) {
+        this.nextValidator = filingValidator;
     }
 }

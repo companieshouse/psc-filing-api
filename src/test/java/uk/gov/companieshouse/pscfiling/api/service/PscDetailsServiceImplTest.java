@@ -52,7 +52,7 @@ class PscDetailsServiceImplTest extends TestBaseService {
     @Mock
     private PscCorporateEntityGet pscCorporateEntityGet;
     @Mock
-    PscLegalPersonGet pscLegalPersonGet;
+    private PscLegalPersonGet pscLegalPersonGet;
     @Mock
     private PscsResourceHandler pscsResourceHandler;
     @Mock
@@ -175,8 +175,7 @@ class PscDetailsServiceImplTest extends TestBaseService {
         when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenThrow(exception);
 
         final var thrown = assertThrows(PscServiceException.class,
-                () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL,
-                        PASSTHROUGH_HEADER));
+            () -> testService.getPscDetails(transaction, PSC_ID, INDIVIDUAL, PASSTHROUGH_HEADER));
 
         assertThat(thrown.getMessage(),
                 is("Error Retrieving PSC details for " + PSC_ID + ": 403 test case"));

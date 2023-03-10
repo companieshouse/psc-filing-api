@@ -11,8 +11,8 @@ import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
  * A previous validator must have checked that the PSC exists.
  */
 @Component
-public class PscEtagValidator extends BaseIndividualFilingValidator
-        implements IndividualFilingValid {
+public class PscEtagValidator extends BaseFilingValidator
+        implements FilingValid {
 
     private final PscDetailsService pscDetailsService;
 
