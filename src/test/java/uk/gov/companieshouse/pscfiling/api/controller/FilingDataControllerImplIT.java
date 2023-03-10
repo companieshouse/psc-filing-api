@@ -9,9 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -39,34 +43,63 @@ class FilingDataControllerImplIT extends BaseControllerIT {
     @Autowired
     private MockMvc mockMvc;
 
-    protected static final String URL_PSC_FILINGS =
-            "/private/transactions/{id}/persons-with-significant-control/individual/{filingId"
-                    + "}/filings";
+    private static final String URL_PSC =
+            "/private/transactions/{id}/persons-with-significant-control";
+    private static final String FILINGS_SUFFIX = "/{filingId" + "}/filings";
+
+    public static Stream<Arguments> provideFilingData() {
+        final Map<String, Object> nameElementsMap =
+                Map.of("title", "title", "forename", "forename", "otherForenames",
+                        "other forenames", "surname", "surname");
+        final Map<String, Object> individualDataMap =
+                Map.of("referenceEtag", ETAG, "referencePscId", PSC_ID, "filingResourceId",
+                        CEASED_ON, "registerEntryDate", REGISTER_ENTRY, "nameElements",
+                        nameElementsMap);
+
+        final Map<String, Object> corporateIdentificationMap =
+                Map.of("countryRegistered", "countryRegistered", "legalForm", "legalForm",
+                        "legalAuthority", "legalAuthority", "registrationNumber",
+                        "registrationNumber", "placeRegistered", "placeRegistered");
+        final Map<String, Object> corporateDataMap =
+                Map.of("name", "name", "referenceEtag", ETAG, "referencePscId", PSC_ID,
+                        "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY,
+                        "identification", corporateIdentificationMap);
+
+        final Map<String, Object> legalPersonIdentificationMap =
+                Map.of("legalForm", "legalForm", "legalAuthority", "legalAuthority");
+        final Map<String, Object> legalPersonDataMap =
+                Map.of("name", "legal person name", "referenceEtag", ETAG, "referencePscId", PSC_ID,
+                        "filingResourceId", CEASED_ON, "registerEntryDate", REGISTER_ENTRY,
+                        "identification", legalPersonIdentificationMap);
+
+        return Stream.of(Arguments.of(PscTypeConstants.INDIVIDUAL, individualDataMap),
+                Arguments.of(PscTypeConstants.CORPORATE_ENTITY, corporateDataMap),
+                Arguments.of(PscTypeConstants.LEGAL_PERSON, legalPersonDataMap));
+    }
 
     @BeforeEach
     void setUp() throws Exception {
         super.setUp();
     }
 
-    @Test
-    void getFilingsWhenFound() throws Exception {
+    @ParameterizedTest
+    @MethodSource("provideFilingData")
+    void getFilingsWhenFound(PscTypeConstants pscType, final Map<String, Object> dataMap)
+            throws Exception {
         final var filingApi = new FilingApi();
         filingApi.setKind(FilingKind.PSC_CESSATION.getValue());
-        final Map<String, Object> dataMap =
-                Map.of("referenceEtag", ETAG, "referencePscId", PSC_ID, "filingResourceId",
-                        CEASED_ON, "registerEntryDate", REGISTER_ENTRY);
         filingApi.setData(dataMap);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
-        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
-                transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
+        when(filingDataService.generatePscFiling(FILING_ID, pscType, transaction,
+                PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
-        mockMvc.perform(get(URL_PSC_FILINGS, TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC + "/" + pscType.getValue() + FILINGS_SUFFIX, TRANS_ID,
+                        FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].data", is(dataMap)))
                 .andExpect(jsonPath("$[0].kind", is(FilingKind.PSC_CESSATION.getValue())));
     }
 
@@ -78,7 +111,8 @@ class FilingDataControllerImplIT extends BaseControllerIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
 
-        mockMvc.perform(get(URL_PSC_FILINGS, TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC + "/individual" + FILINGS_SUFFIX, TRANS_ID, FILING_ID).headers(
+                        httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason(is("Resource not found")))

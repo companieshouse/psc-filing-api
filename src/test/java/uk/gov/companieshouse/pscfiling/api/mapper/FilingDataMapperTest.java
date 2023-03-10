@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.companieshouse.api.model.common.DateOfBirth;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
 import uk.gov.companieshouse.api.model.psc.PscApi;
+import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.WithIdentificationFilingDataDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Date3Tuple;
@@ -127,7 +129,7 @@ class FilingDataMapperTest {
                 .ceasedOn(localDate2)
                 .build();
 
-        final var filingDataDto = (IndividualFilingDataDto) testMapper.map(filing);
+        final var filingDataDto = (IndividualFilingDataDto) testMapper.map(filing, PscTypeConstants.INDIVIDUAL);
         final var expected = (PscIndividualFiling) filing;
 
         assertThat(filingDataDto.getTitle(), is(equalTo(expected.getNameElements().getTitle())));
@@ -146,7 +148,7 @@ class FilingDataMapperTest {
 
     @Test
     void nullFilingToIndividualFilingDataDto() {
-        final var filing = testMapper.map((PscIndividualFiling) null);
+        final var filing = testMapper.mapIndividual((PscIndividualFiling) null);
 
         assertThat(filing, is(nullValue()));
     }
@@ -158,7 +160,7 @@ class FilingDataMapperTest {
         final var expectedDataDto = IndividualFilingDataDto.builder()
                 .build();
 
-        final var filingDataDto = testMapper.map(emptyFiling);
+        final var filingDataDto = testMapper.map(emptyFiling,PscTypeConstants.INDIVIDUAL );
 
         assertThat(filingDataDto, is(equalTo(expectedDataDto)));
     }
@@ -172,7 +174,7 @@ class FilingDataMapperTest {
         final var expectedDataDto = IndividualFilingDataDto.builder()
                 .build();
 
-        final var filingDataDto = testMapper.map(emptyFiling);
+        final var filingDataDto = testMapper.map(emptyFiling,PscTypeConstants.INDIVIDUAL );
 
         assertThat(filingDataDto, is(equalTo(expectedDataDto)));
     }
@@ -202,7 +204,7 @@ class FilingDataMapperTest {
     }
 
     @Test
-    void filingToWithIdentificationFilingDataDto() {
+    void filingToCorporateIdentificationFilingDataDto() {
 
         final Identification identification = createIdentification();
         final PscCommunal filing = PscWithIdentificationFiling.builder()
@@ -211,7 +213,7 @@ class FilingDataMapperTest {
                 .ceasedOn(localDate2)
                 .build();
 
-        final var filingDataDto = (WithIdentificationFilingDataDto) testMapper.map(filing);
+        final var filingDataDto = (WithIdentificationFilingDataDto) testMapper.map(filing,PscTypeConstants.CORPORATE_ENTITY );
         final var expected = (PscWithIdentificationFiling) filing;
 
         assertThat(filingDataDto.getCountryRegistered(),
@@ -222,33 +224,62 @@ class FilingDataMapperTest {
                 is(equalTo(expected.getIdentification().getLegalForm())));
         assertThat(filingDataDto.getPlaceRegistered(),
                 is(equalTo(expected.getIdentification().getPlaceRegistered())));
-        assertThat(filingDataDto.getRegistrationNumber(), is(equalTo(expected.getIdentification().getRegistrationNumber())));
-        assertThat(filingDataDto.getRegisterEntryDate(), is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
+        assertThat(filingDataDto.getRegistrationNumber(),
+                is(equalTo(expected.getIdentification().getRegistrationNumber())));
+        assertThat(filingDataDto.getRegisterEntryDate(),
+                is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
+        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
+    }
+
+    @Disabled("To be handled in the future when irrelevant legal person identity fields should not be mapped")
+    @Test
+    void filingToLegalPersonIdentificationFilingDataDto() {
+
+        final Identification identification = createIdentification();
+        final PscCommunal filing = PscWithIdentificationFiling.builder()
+                .identification(identification)
+                .registerEntryDate(localDate1)
+                .ceasedOn(localDate2)
+                .build();
+
+        final var filingDataDto = (WithIdentificationFilingDataDto) testMapper.map(filing,PscTypeConstants.LEGAL_PERSON );
+        final var expected = (PscWithIdentificationFiling) filing;
+
+        assertThat(filingDataDto.getCountryRegistered(), is(nullValue()));
+        assertThat(filingDataDto.getLegalAuthority(),
+                is(equalTo(expected.getIdentification().getLegalAuthority())));
+        assertThat(filingDataDto.getLegalForm(),
+                is(equalTo(expected.getIdentification().getLegalForm())));
+        assertThat(filingDataDto.getPlaceRegistered(), is(nullValue()));
+        assertThat(filingDataDto.getRegistrationNumber(), is(nullValue()));
+        assertThat(filingDataDto.getRegisterEntryDate(),
+                is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
         assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
     }
 
     @Test
     void filingEmptyIdentificationToWithIdentificationFilingDataDto() {
         final PscCommunal emptyFiling = PscWithIdentificationFiling.builder()
-                .identification(Identification.builder().build())
+                .identification(Identification.builder()
+                        .build())
                 .build();
         final var expectedDataDto = WithIdentificationFilingDataDto.builder()
                 .build();
 
-        final var filingDataDto = testMapper.map(emptyFiling);
+        final var filingDataDto = testMapper.map(emptyFiling,PscTypeConstants.CORPORATE_ENTITY );
         assertThat(filingDataDto, is(equalTo(expectedDataDto)));
     }
 
     @Test
     void nullFilingToWithIdentificationFilingDataDto() {
-        final var filing = testMapper.map((PscWithIdentificationFiling) null);
+        final var filing = testMapper.map((PscWithIdentificationFiling) null, PscTypeConstants.CORPORATE_ENTITY);
 
         assertThat(filing, is(nullValue()));
     }
 
     @Test
     void nullFiling() {
-        final var filing = testMapper.map((PscCommunal) null);
+        final var filing = testMapper.map((PscCommunal) null,PscTypeConstants.CORPORATE_ENTITY );
 
         assertThat(filing, is(nullValue()));
     }
@@ -260,7 +291,7 @@ class FilingDataMapperTest {
         final var expectedDataDto = WithIdentificationFilingDataDto.builder()
                 .build();
 
-        final var filingDataDto = testMapper.map(emptyFiling);
+        final var filingDataDto = testMapper.map(emptyFiling,PscTypeConstants.CORPORATE_ENTITY );
 
         assertThat(filingDataDto, is(equalTo(expectedDataDto)));
     }
@@ -277,7 +308,8 @@ class FilingDataMapperTest {
         pscDetails.setNameElements(expectedNames);
 
         final var enhanced =
-                (PscIndividualFiling) testMapper.enhance(filing, pscDetails);
+                (PscIndividualFiling) testMapper.enhance(filing, PscTypeConstants.INDIVIDUAL,
+                        pscDetails);
 
         assertThat(enhanced.getNameElements().getTitle(), is(expectedNames.getTitle()));
         assertThat(enhanced.getNameElements().getForename(),
@@ -296,17 +328,20 @@ class FilingDataMapperTest {
                 .build();
         final PscApi pscDetails = new PscApi();
         pscDetails.setName("api name");
+
         final var expectedIdentification = createIdentificationApi();
         pscDetails.setIdentification(expectedIdentification);
 
-        final var enhanced = (PscWithIdentificationFiling) testMapper.enhance(filing, pscDetails);
+        final var enhanced = (PscWithIdentificationFiling) testMapper.enhance(filing,
+                PscTypeConstants.CORPORATE_ENTITY, pscDetails);
 
         assertThat(enhanced.getName(), is("api name"));
     }
 
     @Test
     void enhanceNullFiling() {
-        final var enhanced = testMapper.enhance((PscCommunal) null, new PscApi());
+        final var enhanced =
+                testMapper.enhance(null, PscTypeConstants.INDIVIDUAL, new PscApi());
 
         assertThat(enhanced, is(nullValue()));
     }
@@ -317,7 +352,7 @@ class FilingDataMapperTest {
                 PscWithIdentificationFiling.builder().identification(createIdentification())
                         .build();
 
-        final var enhanced = testMapper.enhance(filing, null);
+        final var enhanced = testMapper.enhance(filing, PscTypeConstants.CORPORATE_ENTITY, null);
 
         assertThat(enhanced, is(sameInstance(filing)));
     }
