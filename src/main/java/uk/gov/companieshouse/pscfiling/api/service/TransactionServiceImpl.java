@@ -71,18 +71,17 @@ public class TransactionServiceImpl implements TransactionService {
      * Update a given transaction via the transaction service.
      *
      * @param transaction           the Transaction ID
-     * @param ericPassThroughHeader includes authorisation for transaction update
      * @throws TransactionServiceException if the transaction update failed
      */
     @Override
-    public void updateTransaction(final Transaction transaction, final String ericPassThroughHeader)
+    public void updateTransaction(final Transaction transaction)
             throws TransactionServiceException {
         final var logMap = LogHelper.createLogMap(transaction.getId());
         try {
             logger.debugContext(transaction.getId(), "Updating transaction", logMap);
             final var uri = PREFIX_PRIVATE + "/transactions/" + transaction.getId();
             final var resp =
-                    apiClientService.getInternalApiClient(ericPassThroughHeader)
+                    apiClientService.getInternalApiClient()
                             .privateTransaction()
                             .patch(uri, transaction)
                             .execute();

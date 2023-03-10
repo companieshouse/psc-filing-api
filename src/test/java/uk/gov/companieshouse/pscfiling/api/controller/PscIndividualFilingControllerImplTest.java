@@ -138,7 +138,7 @@ class PscIndividualFilingControllerImplTest {
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
-        verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        verify(transactionService).updateTransaction(transaction);
         final var context =
                 new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                         PASSTHROUGH_HEADER);
@@ -169,7 +169,7 @@ class PscIndividualFilingControllerImplTest {
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
-        verify(transactionService).updateTransaction(transaction, PASSTHROUGH_HEADER);
+        verify(transactionService).updateTransaction(transaction);
         final var context =
             new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
                 PASSTHROUGH_HEADER);
