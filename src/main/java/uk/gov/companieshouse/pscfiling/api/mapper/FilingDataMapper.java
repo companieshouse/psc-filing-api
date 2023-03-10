@@ -34,10 +34,9 @@ public interface FilingDataMapper {
                 return enhanceIndividual((PscIndividualFiling) filing, details);
 
             case CORPORATE_ENTITY:
-                return enhanceCorporateEntity((PscWithIdentificationFiling) filing, details);
-
+                // fall through
             case LEGAL_PERSON:
-                return enhanceLegalPerson((PscWithIdentificationFiling) filing, details);
+                return enhanceWithIdentification((PscWithIdentificationFiling) filing, details);
 
             default:
                 throw new UnsupportedOperationException(
@@ -52,15 +51,8 @@ public interface FilingDataMapper {
                 .build();
     }
 
-    default PscWithIdentificationFiling enhanceCorporateEntity(
+    default PscWithIdentificationFiling enhanceWithIdentification(
             final PscWithIdentificationFiling filing, final PscApi details) {
-
-        return PscWithIdentificationFiling.builder(filing).name(details.getName())
-                .build();
-    }
-
-    default PscWithIdentificationFiling enhanceLegalPerson(final PscWithIdentificationFiling filing,
-            final PscApi details) {
 
         return PscWithIdentificationFiling.builder(filing).name(details.getName())
                 .build();

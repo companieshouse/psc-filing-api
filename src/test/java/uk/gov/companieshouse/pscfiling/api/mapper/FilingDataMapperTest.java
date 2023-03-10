@@ -9,7 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,7 +230,6 @@ class FilingDataMapperTest {
         assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
     }
 
-    @Disabled("To be handled in the future when irrelevant legal person identity fields should not be mapped")
     @Test
     void filingToLegalPersonIdentificationFilingDataDto() {
 
