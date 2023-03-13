@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +51,9 @@ class FilingDataServiceImplTest extends TestBaseService {
     private static final String REGISTRATION_NUMBER = "reg no";
     private static final String PLACE_REGISTERED = "place registered";
     private static final String LEGAL_NAME = "legal name";
+    protected static final String INDIVIDUAL = "individual";
+    protected static final String CORPORATE_ENTITY = "corporate-entity";
+    protected static final String LEGAL_PERSON = "legal-person";
 
 
     @Mock
@@ -123,7 +127,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                         REGISTER_ENTRY_DATE);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), INDIVIDUAL)));
     }
 
     @Test
@@ -181,7 +186,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                         REGISTER_ENTRY_DATE);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), CORPORATE_ENTITY)));
     }
 
 
@@ -235,7 +241,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                         REGISTER_ENTRY_DATE);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), LEGAL_PERSON)));
     }
 
     @Test
@@ -300,7 +307,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                         LEGAL_FORM);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), LEGAL_PERSON)));
     }
 
     @Test

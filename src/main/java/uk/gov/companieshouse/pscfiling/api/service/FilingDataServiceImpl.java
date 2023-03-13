@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import java.text.MessageFormat;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.psc.PscApi;
@@ -40,8 +41,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     public FilingApi generatePscFiling(final String filingId, final PscTypeConstants pscType,
             final Transaction transaction, final String passthroughHeader) {
         final var filing = new FilingApi();
-        filing.setKind(
-                FilingKind.PSC_CESSATION.getValue()); // TODO: handling other kinds to come later
+        filing.setKind(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), pscType.getValue())); // TODO: handling other kinds to come later
         filing.setDescription(filingDataConfig.getPsc07Description());
 
         return populateFilingData(filing, filingId, pscType, transaction, passthroughHeader);
