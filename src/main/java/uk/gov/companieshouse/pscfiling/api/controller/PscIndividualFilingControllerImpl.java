@@ -8,6 +8,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,7 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
@@ -55,7 +58,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
      */
     @Override
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
+    public ResponseEntity<PscCommunal> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
@@ -73,8 +76,12 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
         final var links = saveFilingWithLinks(entity, transId, request, logMap);
         updateTransactionResources(transaction, links);
 
-        return ResponseEntity.created(links.getSelf())
-                .build();
+        var responseEntity = pscFilingService.get(entity.getId(), transId);
+//        return responseEntity.map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", links.getSelf().getPath());
+        return new ResponseEntity(responseEntity, headers, HttpStatus.CREATED);
     }
 
     /**
