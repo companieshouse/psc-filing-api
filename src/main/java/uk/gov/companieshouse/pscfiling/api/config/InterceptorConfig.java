@@ -103,6 +103,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         return PermissionsMapping.builder()
                 .defaultRequireAnyOf(Permission.Value.READ)
                 .mappedRequireAnyOf(HttpMethod.POST.toString(), Permission.Value.DELETE)
+                .mappedRequireAnyOf(HttpMethod.PATCH.toString(), Permission.Value.DELETE)
                 .build();
     }
 }

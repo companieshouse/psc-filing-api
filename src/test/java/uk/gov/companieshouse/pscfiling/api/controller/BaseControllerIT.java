@@ -26,11 +26,13 @@ public class BaseControllerIT {
     protected static final String URL_PSC =
             "/transactions/{id}/persons-with-significant-control";
     protected static final String URL_PSC_INDIVIDUAL = URL_PSC + "/individual";
+    protected static final String URL_PSC_INDIVIDUAL_RESOURCE = URL_PSC_INDIVIDUAL + "/{filingResourceId}";
     protected static final String URL_PSC_CORPORATE_ENTITY = URL_PSC + "/corporate-entity";
     protected static final String URL_VALIDATION_STATUS =
             "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId"
                     + "}/validation_status";
     protected static final String APPLICATION_JSON = "application/json";
+    protected static final String APPLICATION_JSON_MERGE_PATCH = "application/merge-patch+json";
     protected static final String PSC07_FRAGMENT = "\"reference_etag\":\""
             + ETAG
             + "\","
@@ -42,6 +44,7 @@ public class BaseControllerIT {
     protected static final String EMPTY_QUOTED_JSON = "\"\"";
     protected static final String MALFORMED_JSON = "{";
     protected static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
+    protected static final Instant SECOND_INSTANT = Instant.parse("2023-01-15T09:33:52.900Z");
     protected static final String COMPANY_NUMBER = "012345678";
     protected static final String CEASED_ON = "2022-10-05";
     protected static final String REGISTER_ENTRY = "2022-10-05";

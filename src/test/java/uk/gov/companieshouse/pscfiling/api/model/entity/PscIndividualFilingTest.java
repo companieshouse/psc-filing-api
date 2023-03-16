@@ -129,26 +129,26 @@ class PscIndividualFilingTest {
     @DisplayName("toString")
     void testToString() throws JsonProcessingException {
         final String expected =
-                "PscIndividualFiling[id='id', address=Address[addressLine1='line1', "
-                        + "addressLine2='line2', careOf='careOf', country='country', "
-                        + "locality='locality', poBox='poBox', postalCode='postalCode', "
-                        + "premises='premises', region='region'], "
-                        + "addressSameAsRegisteredOfficeAddress=true, name=null, "
-                        + "ceasedOn=2022-11-21, "
-                        + "createdAt=2019-11-05T00:00:00Z, etag='etag', kind='kind', "
-                        + "links=Links[self=self, validationStatus=valid], "
-                        + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
-                        + "referenceEtag='etag', referencePscId='psc', "
-                        + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
-                        + "updatedAt=2022-11-05T00:00:00Z, countryOfResidence='Wales', "
-                        + "dateOfBirth=Date3Tuple[day=12, month=9, year=1970], "
-                        + "nameElements=NameElements[forename='forename', otherForenames='other',"
-                        + " surname='surname', title='title'], nationality='nationality', "
-                        + "residentialAddress=Address[addressLine1='line1', addressLine2='line2',"
-                        + " careOf='careOf', country='country', locality='locality', "
-                        + "poBox='poBox', postalCode='postalCode', premises='premises', "
-                        + "region='region'], residentialAddressSameAsCorrespondenceAddress=true, "
-                        + "statementActionDate=2022-10-31, statementType='type']";
+                "PscIndividualFiling[id='id', address=Address["
+                    + "addressLine1='line1', addressLine2='line2', careOf='careOf',"
+                    + " country='country', locality='locality', poBox='poBox',"
+                    + " postalCode='postalCode', premises='premises', region='region'"
+                    + "],"
+                + " addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, name='name',"
+                + " createdAt=2019-11-05T00:00:00Z, etag='etag', kind='kind',"
+                + " links=Links[self=self, validationStatus=valid], naturesOfControl=[type1, type2],"
+                + " notifiedOn=2022-11-10, referenceEtag='etag', referencePscId='psc',"
+                + " referencePscListEtag='list', registerEntryDate=2022-11-05,"
+                + " updatedAt=2022-11-05T00:00:00Z, countryOfResidence='Wales',"
+                + " dateOfBirth=Date3Tuple[day=12, month=9, year=1970],"
+                + " nameElements=NameElements["
+                    + "forename='forename', otherForenames='other', surname='surname', title='title'],"
+                + " nationality='nationality', residentialAddress=Address["
+                    + "addressLine1='line1', addressLine2='line2', careOf='careOf', country='country',"
+                    + " locality='locality', poBox='poBox', postalCode='postalCode', premises='premises',"
+                    + " region='region'],"
+                + " residentialAddressSameAsCorrespondenceAddress=true,"
+                + " statementActionDate=2022-10-31, statementType='type']";
         assertThat(test.toString(), is(expected));
 
         ObjectMapper mapper = new ObjectMapper();
@@ -211,6 +211,7 @@ class PscIndividualFilingTest {
                 .etag("etag")
                 .kind("kind")
                 .links(links)
+                .name("name")
                 .nameElements(nameElements)
                 .nationality("nationality")
                 .naturesOfControl(List.of("type1", "type2"))

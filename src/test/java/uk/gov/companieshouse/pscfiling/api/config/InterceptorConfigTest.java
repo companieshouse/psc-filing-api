@@ -105,7 +105,7 @@ class InterceptorConfigTest {
         assertThat(mapping.apply(HttpMethod.GET.toString()),
                 containsInAnyOrder(Permission.Value.READ));
         assertThat(mapping.apply(HttpMethod.PATCH.toString()),
-                containsInAnyOrder(Permission.Value.READ));
+                containsInAnyOrder(Permission.Value.DELETE));
     }
 }
 

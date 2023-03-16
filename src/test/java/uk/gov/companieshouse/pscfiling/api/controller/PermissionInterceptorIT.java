@@ -18,9 +18,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingMergeProcessor;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingPostMergeProcessor;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
@@ -39,6 +43,14 @@ class PermissionInterceptorIT extends BaseControllerIT {
     private PscApi pscDetails;
     @MockBean
     private PscFilingService pscFilingService;
+    @MockBean
+    private PscIndividualFilingService pscIndividualFilingService;
+    @MockBean
+    private PscIndividualFilingProvider pscIndividualFilingProvider;
+    @MockBean
+    private PscIndividualFilingMergeProcessor pscIndividualFilingMergeProcessor;
+    @MockBean
+    private PscIndividualFilingPostMergeProcessor pscIndividualFilingPostMergeProcessor;
     @MockBean
     private PscMapper filingMapper;
     @MockBean

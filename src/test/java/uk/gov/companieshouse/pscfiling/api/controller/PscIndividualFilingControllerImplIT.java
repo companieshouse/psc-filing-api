@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -38,21 +40,27 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapperImpl;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingMergeProcessor;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingPostMergeProcessor;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@Import(PscExistsValidator.class)
+@Import({PscExistsValidator.class, PscMapperImpl.class})
 @WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
 class PscIndividualFilingControllerImplIT extends BaseControllerIT {
+    private NameElements nameElements;
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -64,6 +72,14 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
+    private PscIndividualFilingService pscIndividualFilingService;
+    @MockBean
+    private PscIndividualFilingProvider pscIndividualFilingProvider;
+    @MockBean
+    private PscIndividualFilingMergeProcessor pscIndividualFilingMergeProcessor;
+    @MockBean
+    private PscIndividualFilingPostMergeProcessor pscIndividualFilingPostMergeProcessor;
+    @SpyBean
     private PscMapper filingMapper;
     @MockBean
     private Clock clock;
@@ -79,6 +95,12 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @BeforeEach
     void setup() throws Exception {
         super.setUp();
+        nameElements = NameElements.builder()
+                .forename("Forename")
+                .otherForenames("Other Forenames")
+                .surname("Surname")
+                .title("Sir")
+                .build();
     }
 
     @Test
@@ -111,7 +133,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         "persons-with-significant-control/individual", FILING_ID)
                 .build();
 
-        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -372,7 +393,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         "persons-with-significant-control/individual", FILING_ID)
                 .build();
 
-        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -413,28 +433,28 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .links(links)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.requestMatchesResource(any(HttpServletRequest.class), eq(filing))).thenReturn(true);
-        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
-        mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reference_etag", is(ETAG)))
                 .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
                 .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())));
+        verify(filingMapper).map(filing);
     }
 
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
-                        get(URL_PSC_INDIVIDUAL + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+                        get(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+        verifyNoInteractions(filingMapper);
     }
 
     private ApiError createExpectedValidationError(final String msg, final String location,

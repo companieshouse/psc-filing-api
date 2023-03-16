@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.psc.PscApi;
@@ -61,7 +62,8 @@ public class FilingDataServiceImpl implements FilingDataService {
         final PscCommunal enhancedPscFiling = dataMapper.enhance(pscFiling, pscDetails);
 
         final var filingData = dataMapper.map(enhancedPscFiling);
-        final var dataMap = MapHelper.convertObject(filingData);
+        final var dataMap =
+                MapHelper.convertObject(filingData, PropertyNamingStrategies.SNAKE_CASE);
 
         final var logMap = LogHelper.createLogMap(transactionId, filingId);
 
