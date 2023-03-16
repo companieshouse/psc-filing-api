@@ -26,6 +26,9 @@ public class InterceptorConfig implements WebMvcConfigurer {
             "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
                     + "(?:individual|corporate-entity|legal-person)}"
     };
+    static final String TRANSACTIONS = "/transactions/**";
+    static final String PRIVATE = "/private/**";
+    static final String[] TRANSACTIONS_LIST = {TRANSACTIONS, PRIVATE};
     public static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
@@ -59,7 +62,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
         registry.addInterceptor(transactionInterceptor())
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .addPathPatterns(TRANSACTIONS_LIST);
     }
 
     private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
