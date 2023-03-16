@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import uk.gov.companieshouse.api.interceptor.ClosedTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.MappablePermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
@@ -39,6 +40,8 @@ class InterceptorConfigTest {
     private CompanyInterceptor companyInterceptor;
     @Mock
     private OpenTransactionInterceptor openTransactionInterceptor;
+    @Mock
+    ClosedTransactionInterceptor closedTransactionInterceptor;
     @Mock
     private InterceptorRegistry interceptorRegistry;
     @Mock
@@ -63,6 +66,8 @@ class InterceptorConfigTest {
                 .addInterceptor(tokenPermissionsInterceptor);
         doReturn(interceptorRegistration).when(interceptorRegistry)
                 .addInterceptor(any(MappablePermissionsInterceptor.class));
+        doReturn(interceptorRegistration).when(interceptorRegistry)
+                .addInterceptor(any(ClosedTransactionInterceptor.class));
 
         testConfig.setTokenPermissionsInterceptor(tokenPermissionsInterceptor);
         testConfig.setCompanyInterceptor(companyInterceptor);
@@ -74,15 +79,24 @@ class InterceptorConfigTest {
         inOrder.verify(interceptorRegistry).addInterceptor(any(OpenTransactionInterceptor.class));
         inOrder.verify(interceptorRegistry).addInterceptor(companyInterceptor);
         inOrder.verify(interceptorRegistry).addInterceptor(tokenPermissionsInterceptor);
-        inOrder.verify(interceptorRegistry)
-                .addInterceptor(any(MappablePermissionsInterceptor.class));
+        inOrder.verify(interceptorRegistry).addInterceptor(any(MappablePermissionsInterceptor.class));
+        inOrder.verify(interceptorRegistry).addInterceptor(any(ClosedTransactionInterceptor.class));
         verify(interceptorRegistration, times(5))
                 .addPathPatterns("/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}");
+
+        verify(interceptorRegistration, times(1))
+                .addPathPatterns(            "/private/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
+                        + "(?:individual|corporate-entity|legal-person)}/{filing_resource_id}/filings");
     }
 
     @Test
     void openTransactionInterceptor() {
         assertThat(testConfig.openTransactionInterceptor(), isA(OpenTransactionInterceptor.class));
+    }
+
+    @Test
+    void closedTransactionInterceptor() {
+        assertThat(testConfig.transactionClosedInterceptor(), isA(ClosedTransactionInterceptor.class));
     }
 
     @Test
@@ -108,4 +122,3 @@ class InterceptorConfigTest {
                 containsInAnyOrder(Permission.Value.READ));
     }
 }
-

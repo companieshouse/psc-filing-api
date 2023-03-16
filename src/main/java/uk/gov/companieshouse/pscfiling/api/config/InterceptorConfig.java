@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import uk.gov.companieshouse.api.interceptor.ClosedTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.MappablePermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
@@ -26,7 +27,10 @@ public class InterceptorConfig implements WebMvcConfigurer {
             "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
                     + "(?:individual|corporate-entity|legal-person)}"
     };
-    public static final String PSC_FILING_API = "psc-filing-api";
+    private static final String GET_FILINGS_ENDPOINT =
+            "/private/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
+                    + "(?:individual|corporate-entity|legal-person)}/{filing_resource_id}/filings";
+    private static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     private CompanyInterceptor companyInterceptor;
@@ -55,6 +59,12 @@ public class InterceptorConfig implements WebMvcConfigurer {
         addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
         addRequestPermissionsInterceptor(registry);
+        addTransactionClosedInterceptor(registry);
+    }
+
+    private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(transactionClosedInterceptor())
+                .addPathPatterns(GET_FILINGS_ENDPOINT);
     }
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
@@ -89,6 +99,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Bean
     public TransactionInterceptor transactionInterceptor() {
         return new TransactionInterceptor(PSC_FILING_API);
+    }
+
+    @Bean
+    public ClosedTransactionInterceptor transactionClosedInterceptor() {
+        return new ClosedTransactionInterceptor(GET_FILINGS_ENDPOINT);
     }
 
     @Bean
