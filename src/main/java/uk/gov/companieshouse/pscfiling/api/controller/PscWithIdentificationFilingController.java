@@ -15,7 +15,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
 public interface PscWithIdentificationFilingController {
 
@@ -31,7 +31,7 @@ public interface PscWithIdentificationFilingController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @PostMapping
-    default ResponseEntity<PscCommunal> createFiling(@PathVariable("transactionId") final String transId,
+    default ResponseEntity<PscWithIdentificationFiling> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute("transaction") Transaction transaction,
             @RequestBody @Valid @NotNull final PscWithIdentificationDto dto,
