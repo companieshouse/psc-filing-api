@@ -35,13 +35,7 @@ class InterceptorConfigTest {
     @Mock
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     @Mock
-    private TransactionInterceptor transactionInterceptor;
-    @Mock
     private CompanyInterceptor companyInterceptor;
-    @Mock
-    private OpenTransactionInterceptor openTransactionInterceptor;
-    @Mock
-    ClosedTransactionInterceptor closedTransactionInterceptor;
     @Mock
     private InterceptorRegistry interceptorRegistry;
     @Mock
