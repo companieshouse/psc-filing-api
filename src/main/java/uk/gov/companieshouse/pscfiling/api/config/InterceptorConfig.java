@@ -58,8 +58,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(transactionInterceptor())
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+        registry.addInterceptor(transactionInterceptor());
     }
 
     private void addOpenTransactionInterceptor(InterceptorRegistry registry) {

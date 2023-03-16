@@ -34,11 +34,7 @@ class InterceptorConfigTest {
     @Mock
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     @Mock
-    private TransactionInterceptor transactionInterceptor;
-    @Mock
     private CompanyInterceptor companyInterceptor;
-    @Mock
-    private OpenTransactionInterceptor openTransactionInterceptor;
     @Mock
     private InterceptorRegistry interceptorRegistry;
     @Mock
@@ -76,7 +72,7 @@ class InterceptorConfigTest {
         inOrder.verify(interceptorRegistry).addInterceptor(tokenPermissionsInterceptor);
         inOrder.verify(interceptorRegistry)
                 .addInterceptor(any(MappablePermissionsInterceptor.class));
-        verify(interceptorRegistration, times(5))
+        verify(interceptorRegistration, times(4))
                 .addPathPatterns("/transactions/{transaction_id}/persons-with-significant-control/{pscType:(?:individual|corporate-entity|legal-person)}");
     }
 
