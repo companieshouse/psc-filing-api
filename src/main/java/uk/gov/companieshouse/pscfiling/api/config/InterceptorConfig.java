@@ -16,6 +16,7 @@ import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.RequestLoggingInterceptor;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
@@ -50,11 +51,16 @@ public class InterceptorConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(@NonNull final InterceptorRegistry registry) {
+        addRequestLoggingInterceptor(registry);
         addTransactionInterceptor(registry);
         addOpenTransactionInterceptor(registry);
         addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
         addRequestPermissionsInterceptor(registry);
+    }
+
+    private void addRequestLoggingInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(requestLoggingInterceptor());
     }
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
@@ -79,6 +85,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private void addRequestPermissionsInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(requestPermissionsInterceptor(pscPermissionsMapping()))
                 .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+    }
+
+    @Bean
+    public RequestLoggingInterceptor requestLoggingInterceptor() {
+        return new RequestLoggingInterceptor();
     }
 
     @Bean
