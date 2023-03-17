@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class PscFilingApiApplication {
 
-    public static final String APP_NAMESPACE = "officer-filing-api";
+    public static final String APP_NAMESPACE = "psc-filing-api";
 
     public static void main(final String[] args) {
         SpringApplication.run(PscFilingApiApplication.class, args);
