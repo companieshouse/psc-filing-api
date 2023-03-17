@@ -15,6 +15,7 @@ import static uk.gov.companieshouse.pscfiling.api.controller.ValidationStatusCon
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -147,30 +148,4 @@ class ValidationStatusControllerImplTest {
 
     }
 
-    @Test
-    void validateWhenTransactionNull()
-    {
-        final var self = UriComponentsBuilder.fromUriString(SELF_FRAGMENT)
-            .pathSegment(PscTypeConstants.INDIVIDUAL.getValue())
-            .pathSegment(FILING_ID)
-            .build()
-            .toUri();
-        final Links links = new Links(self, null);
-        final PscCommunal filing = PscIndividualFiling.builder().links(links)
-            .build();
-
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-            transaction);
-
-        final var dto = PscIndividualDto.builder().build();
-        when(filingMapper.map(filing)).thenReturn(dto);
-        when(errorMapper.map(anyList())).thenReturn(new ValidationStatusError[0]);
-
-        final var response = testController.validate(TRANS_ID, FILING_ID, null, request);
-
-        assertThat(response.isValid(), is(true));
-        assertThat(response.getValidationStatusError(), is(emptyArray()));
-
-    }
 }

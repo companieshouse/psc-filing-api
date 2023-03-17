@@ -23,13 +23,11 @@ import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 @PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String[] INTERCEPTOR_PATHS_LIST = {
+    public static final String COMMON_INTERCEPTOR_PATH =
             "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
-                    + "(?:individual|corporate-entity|legal-person)}"
-    };
-    private static final String GET_FILINGS_ENDPOINT =
-            "/private/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
-                    + "(?:individual|corporate-entity|legal-person)}/{filing_resource_id}/filings";
+                    + "(?:individual|corporate-entity|legal-person)}";
+    public static final String FILINGS_PATH =
+            "/private" + COMMON_INTERCEPTOR_PATH + "/{filing_resource_id}/filings";
     private static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
@@ -42,7 +40,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 
     @Autowired
-    public void setCompanyInterceptor(CompanyInterceptor companyInterceptor) {
+    public void setCompanyInterceptor(final CompanyInterceptor companyInterceptor) {
         this.companyInterceptor = companyInterceptor;
     }
 
@@ -62,33 +60,33 @@ public class InterceptorConfig implements WebMvcConfigurer {
         addTransactionClosedInterceptor(registry);
     }
 
-    private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
-        registry.addInterceptor(transactionClosedInterceptor())
-                .addPathPatterns(GET_FILINGS_ENDPOINT);
-    }
-
-    private void addTransactionInterceptor(InterceptorRegistry registry) {
+    private void addTransactionInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(transactionInterceptor())
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .order(1);
     }
 
-    private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
+    private void addOpenTransactionInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .addPathPatterns(COMMON_INTERCEPTOR_PATH).order(2);
     }
 
-    private void addCompanyInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(companyInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
+    private void addCompanyInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(companyInterceptor).order(3);
     }
 
-    private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
+    private void addTokenPermissionsInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(tokenPermissionsInterceptor).order(4);
 
     }
 
     private void addRequestPermissionsInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(requestPermissionsInterceptor(pscPermissionsMapping()))
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .order(5);
+    }
+
+    private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(transactionClosedInterceptor())
+                .addPathPatterns(FILINGS_PATH).order(6);
     }
 
     @Bean
@@ -103,7 +101,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     @Bean
     public ClosedTransactionInterceptor transactionClosedInterceptor() {
-        return new ClosedTransactionInterceptor(GET_FILINGS_ENDPOINT);
+        return new ClosedTransactionInterceptor(FILINGS_PATH);
     }
 
     @Bean
