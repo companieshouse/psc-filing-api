@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -114,8 +113,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Bean
     public PermissionsMapping pscPermissionsMapping() {
         return PermissionsMapping.builder()
-                .defaultRequireAnyOf(Permission.Value.READ)
-                .mappedRequireAnyOf(HttpMethod.POST.toString(), Permission.Value.DELETE)
+                .defaultRequireAnyOf(Permission.Value.DELETE)
                 .build();
     }
 }

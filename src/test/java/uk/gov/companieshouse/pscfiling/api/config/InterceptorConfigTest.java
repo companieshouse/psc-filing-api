@@ -4,17 +4,13 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
-import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -98,8 +94,8 @@ class InterceptorConfigTest {
         assertThat(mapping.apply(HttpMethod.POST.toString()),
                 containsInAnyOrder(Permission.Value.DELETE));
         assertThat(mapping.apply(HttpMethod.GET.toString()),
-                containsInAnyOrder(Permission.Value.READ));
+                containsInAnyOrder(Permission.Value.DELETE));
         assertThat(mapping.apply(HttpMethod.PATCH.toString()),
-                containsInAnyOrder(Permission.Value.READ));
+                containsInAnyOrder(Permission.Value.DELETE));
     }
 }
