@@ -120,7 +120,9 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", locationUri.toUriString()))
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(jsonPath("$.id", is(FILING_ID)))
+                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())))
+                .andExpect(jsonPath("$.country_of_residence").doesNotExist());
         verify(filingMapper).map(dto);
     }
 
@@ -381,7 +383,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", locationUri.toUriString()))
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(jsonPath("$.id", is(FILING_ID)))
+                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())));
         verify(filingMapper).map(dto);
     }
 
