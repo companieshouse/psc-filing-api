@@ -15,12 +15,15 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
@@ -84,38 +87,63 @@ class FilingDataControllerImplIT extends BaseControllerIT {
 
     @ParameterizedTest
     @MethodSource("provideFilingData")
-    void getFilingsWhenFound(PscTypeConstants pscType, final Map<String, Object> dataMap)
+    void getFilingsWhenFound(final PscTypeConstants pscType, final Map<String, Object> dataMap)
             throws Exception {
+
         final var filingApi = new FilingApi();
         filingApi.setKind(FilingKind.PSC_CESSATION.getValue());
         filingApi.setData(dataMap);
 
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
+        transaction.setStatus(TransactionStatus.CLOSED);
         when(filingDataService.generatePscFiling(FILING_ID, pscType, transaction,
                 PASSTHROUGH_HEADER)).thenReturn(filingApi);
 
         mockMvc.perform(get(URL_PSC + "/" + pscType.getValue() + FILINGS_SUFFIX, TRANS_ID,
-                        FILING_ID).headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isOk())
+                        FILING_ID).headers(httpHeaders).requestAttr(AttributeName.TRANSACTION.getValue(), transaction)).andDo(print()).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].kind", is(FilingKind.PSC_CESSATION.getValue())));
     }
 
     @Test
     void getFilingsWhenNotFound() throws Exception {
+        transaction.setStatus(TransactionStatus.CLOSED);
+
         when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
                 transaction, PASSTHROUGH_HEADER)).thenThrow(
                 new FilingResourceNotFoundException("for Not Found scenario", null));
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-                transaction);
 
         mockMvc.perform(get(URL_PSC + "/individual" + FILINGS_SUFFIX, TRANS_ID, FILING_ID).headers(
-                        httpHeaders))
+                        httpHeaders).requestAttr(AttributeName.TRANSACTION.getValue(), transaction))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason(is("Resource not found")))
                 .andExpect(jsonPath("$").doesNotExist());
     }
+    @Test
+    void getFilingsWhenNotFoundAndTransactionNull() throws Exception {
+
+        mockMvc.perform(get(URL_PSC + "/individual" + FILINGS_SUFFIX, TRANS_ID, FILING_ID).headers(
+                        httpHeaders))
+                .andDo(print())
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$").doesNotExist());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TransactionStatus.class, names = {"CLOSED"}, mode = EnumSource.Mode.EXCLUDE)
+    void getFilingsWhenFoundAndTransactionNotClosed(TransactionStatus transactionStatus)
+            throws Exception {
+
+        transaction.setStatus(transactionStatus);
+        final var filingApi = new FilingApi();
+        filingApi.setKind(FilingKind.PSC_CESSATION.getValue());
+
+        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
+                transaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
+
+        mockMvc.perform(get(URL_PSC + "/" + PscTypeConstants.INDIVIDUAL.getValue() + FILINGS_SUFFIX,
+                        TRANS_ID, FILING_ID).headers(httpHeaders).requestAttr(AttributeName.TRANSACTION.getValue(), transaction))
+                .andExpect(status().isInternalServerError());
+    }
+
 }
