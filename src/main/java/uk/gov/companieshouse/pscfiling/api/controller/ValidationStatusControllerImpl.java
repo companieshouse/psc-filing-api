@@ -81,10 +81,6 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
 
-        if (transaction == null) {
-            transaction = transactionService.getTransaction(transId, passthroughHeader);
-        }
-
         final var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
 
         var finalTransaction = transaction;
