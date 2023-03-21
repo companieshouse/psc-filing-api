@@ -23,6 +23,7 @@ import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.RequestLoggingInterceptor;
 
 @ExtendWith(MockitoExtension.class)
 class InterceptorConfigTest {
@@ -39,6 +40,8 @@ class InterceptorConfigTest {
     private InterceptorRegistry interceptorRegistry;
     @Mock
     private PermissionsMapping permissionsMapping;
+    @Mock
+    private RequestLoggingInterceptor requestLoggingInterceptor;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +53,7 @@ class InterceptorConfigTest {
         testConfig.setTokenPermissionsInterceptor(tokenPermissionsInterceptor);
         testConfig.setCompanyInterceptor(companyInterceptor);
         testConfig.setInternalUserInterceptor(internalUserInterceptor);
+        testConfig.setRequestLoggingInterceptor(requestLoggingInterceptor);
         testConfig.addInterceptors(interceptorRegistry);
 
         verify(interceptorRegistry.addInterceptor(any(TransactionInterceptor.class)))
@@ -74,6 +78,7 @@ class InterceptorConfigTest {
                         + "/{pscType:"
                         + "(?:individual|corporate-entity|legal-person)}"
                         + "/{filing_resource_id}/filings")).order(7);
+        verify(interceptorRegistry.addInterceptor(requestLoggingInterceptor)).order(8);
     }
 
     @Test
