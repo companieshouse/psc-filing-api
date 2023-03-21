@@ -17,7 +17,6 @@ public class PscCommonDto implements PscDtoCommunal {
     private LocalDate notifiedOn;
     private String referenceEtag;
     private String referencePscId;
-    private String referencePscListEtag;
     private LocalDate registerEntryDate;
 
     private PscCommonDto() {
@@ -61,11 +60,6 @@ public class PscCommonDto implements PscDtoCommunal {
     }
 
     @Override
-    public String getReferencePscListEtag() {
-        return referencePscListEtag;
-    }
-
-    @Override
     public LocalDate getRegisterEntryDate() {
         return registerEntryDate;
     }
@@ -97,7 +91,6 @@ public class PscCommonDto implements PscDtoCommunal {
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
-                    .referencePscListEtag(other.getReferencePscListEtag())
                     .registerEntryDate(other.getRegisterEntryDate());
         }
 
@@ -146,12 +139,6 @@ public class PscCommonDto implements PscDtoCommunal {
             return this;
         }
 
-        public Builder referencePscListEtag(final String value) {
-
-            buildSteps.add(data -> data.referencePscListEtag = value);
-            return this;
-        }
-
         public Builder registerEntryDate(final LocalDate value) {
 
             buildSteps.add(data -> data.registerEntryDate = value);
@@ -184,8 +171,7 @@ public class PscCommonDto implements PscDtoCommunal {
                 getNaturesOfControl(), that.getNaturesOfControl()) && Objects.equals(
                 getNotifiedOn(), that.getNotifiedOn()) && Objects.equals(getReferenceEtag(),
                 that.getReferenceEtag()) && Objects.equals(getReferencePscId(),
-                that.getReferencePscId()) && Objects.equals(getReferencePscListEtag(),
-                that.getReferencePscListEtag()) && Objects.equals(getRegisterEntryDate(),
+                that.getReferencePscId()) && Objects.equals(getRegisterEntryDate(),
                 that.getRegisterEntryDate());
     }
 
@@ -193,7 +179,7 @@ public class PscCommonDto implements PscDtoCommunal {
     public int hashCode() {
         return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
                 getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(),
-                getReferencePscId(), getReferencePscListEtag(), getRegisterEntryDate());
+                getReferencePscId(), getRegisterEntryDate());
     }
 
     @Override
@@ -205,7 +191,6 @@ public class PscCommonDto implements PscDtoCommunal {
                 .add("notifiedOn=" + notifiedOn)
                 .add("referenceEtag='" + referenceEtag + "'")
                 .add("referencePscId='" + referencePscId + "'")
-                .add("referencePscListEtag='" + referencePscListEtag + "'")
                 .add("registerEntryDate=" + registerEntryDate)
                 .toString();
     }

@@ -32,8 +32,6 @@ public interface PscCommunal {
 
     String getReferencePscId();
 
-    String getReferencePscListEtag();
-
     LocalDate getRegisterEntryDate();
 
     Instant getUpdatedAt();

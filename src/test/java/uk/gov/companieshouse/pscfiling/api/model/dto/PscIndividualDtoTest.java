@@ -60,7 +60,6 @@ class PscIndividualDtoTest {
                 .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
-                .referencePscListEtag("list")
                 .registerEntryDate(registerEntryDate)
                 .residentialAddress(addressDto)
                 .residentialAddressSameAsCorrespondenceAddress(true)
@@ -118,11 +117,6 @@ class PscIndividualDtoTest {
     }
 
     @Test
-    void getReferencePscListEtag() {
-        assertThat(testDto.getReferencePscListEtag(), is(equalTo("list")));
-    }
-
-    @Test
     void getCeasedOn() {
         assertThat(testDto.getCeasedOn(), is(equalTo(ceasedOn)));
     }
@@ -145,7 +139,7 @@ class PscIndividualDtoTest {
                 + "poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
                 + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
                 + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, referenceEtag='etag', "
-                + "referencePscId='psc', referencePscListEtag='list', "
+                + "referencePscId='psc', "
                 + "registerEntryDate=2022-11-05, countryOfResidence='Wales', "
                 + "dateOfBirth=Date3TupleDto[day=12, month=9, year=1970], "
                 + "nameElements=NameElementsDto[forename='forename', otherForenames='other', "
@@ -183,7 +177,6 @@ class PscIndividualDtoTest {
                 .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
-                .referencePscListEtag("list")
                 .registerEntryDate(registerEntryDate)
                 .identification(identification)
                 .name("name")
@@ -193,7 +186,7 @@ class PscIndividualDtoTest {
                 + "poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
                 + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
                 + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, referenceEtag='etag', "
-                + "referencePscId='psc', referencePscListEtag='list', "
+                + "referencePscId='psc', "
                 + "registerEntryDate=2022-11-05, "
                 + "identification=IdentificationDto[countryRegistered='theCountry',"
                 + " placeRegistered='thePlace', registrationNumber='registration',"

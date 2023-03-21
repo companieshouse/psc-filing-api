@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import uk.gov.companieshouse.api.interceptor.ClosedTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.MappablePermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
@@ -33,6 +34,8 @@ class InterceptorConfigTest {
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     @Mock
     private CompanyInterceptor companyInterceptor;
+    @Mock
+    private InternalUserInterceptor internalUserInterceptor;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private InterceptorRegistry interceptorRegistry;
     @Mock
@@ -49,6 +52,7 @@ class InterceptorConfigTest {
     void addInterceptors() {
         testConfig.setTokenPermissionsInterceptor(tokenPermissionsInterceptor);
         testConfig.setCompanyInterceptor(companyInterceptor);
+        testConfig.setInternalUserInterceptor(internalUserInterceptor);
         testConfig.setRequestLoggingInterceptor(requestLoggingInterceptor);
         testConfig.addInterceptors(interceptorRegistry);
 
@@ -62,13 +66,19 @@ class InterceptorConfigTest {
         verify(interceptorRegistry.addInterceptor(tokenPermissionsInterceptor)).order(4);
         verify(interceptorRegistry.addInterceptor(any(MappablePermissionsInterceptor.class)))
                 .order(5);
-        verify(interceptorRegistry.addInterceptor(any(ClosedTransactionInterceptor.class))
+        verify(interceptorRegistry.addInterceptor(any(InternalUserInterceptor.class))
                 .addPathPatterns("/private"
                         + "/transactions/{transaction_id}/persons-with-significant-control"
                         + "/{pscType:"
                         + "(?:individual|corporate-entity|legal-person)}"
                         + "/{filing_resource_id}/filings")).order(6);
-        verify(interceptorRegistry.addInterceptor(requestLoggingInterceptor)).order(7);
+        verify(interceptorRegistry.addInterceptor(any(ClosedTransactionInterceptor.class))
+                .addPathPatterns("/private"
+                        + "/transactions/{transaction_id}/persons-with-significant-control"
+                        + "/{pscType:"
+                        + "(?:individual|corporate-entity|legal-person)}"
+                        + "/{filing_resource_id}/filings")).order(7);
+        verify(interceptorRegistry.addInterceptor(requestLoggingInterceptor)).order(8);
     }
 
     @Test

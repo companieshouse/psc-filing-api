@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -54,6 +55,8 @@ public class BaseControllerIT {
     protected OpenTransactionInterceptor openTransactionInterceptor;
     @MockBean
     protected CompanyInterceptor companyInterceptor;
+    @MockBean
+    protected InternalUserInterceptor internalUserInterceptor;
 
     void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -62,6 +65,7 @@ public class BaseControllerIT {
         when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         when(companyInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        when(internalUserInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         transaction = createOpenTransaction();
     }
 

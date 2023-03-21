@@ -9,6 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.api.interceptor.ClosedTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.MappablePermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
@@ -32,6 +33,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     private CompanyInterceptor companyInterceptor;
+    private InternalUserInterceptor internalUserInterceptor;
     private RequestLoggingInterceptor requestLoggingInterceptor;
 
     @Autowired
@@ -43,6 +45,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Autowired
     public void setCompanyInterceptor(final CompanyInterceptor companyInterceptor) {
         this.companyInterceptor = companyInterceptor;
+    }
+
+    @Autowired
+    public void setInternalUserInterceptor(InternalUserInterceptor internalUserInterceptor) {
+        this.internalUserInterceptor = internalUserInterceptor;
     }
 
     @Autowired
@@ -64,10 +71,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
         addTokenPermissionsInterceptor(registry);
         addRequestPermissionsInterceptor(registry);
         addTransactionClosedInterceptor(registry);
+        addInternalUserInterceptor(registry);
         addRequestLoggingInterceptor(registry);
     }
 
-    private void addTransactionInterceptor(InterceptorRegistry registry) {
+    private void addTransactionInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(transactionInterceptor())
                 .order(1);
     }
@@ -91,13 +99,18 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .order(5);
     }
 
-    private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
-        registry.addInterceptor(transactionClosedInterceptor())
+    private void addInternalUserInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(internalUserInterceptor)
                 .addPathPatterns(FILINGS_PATH).order(6);
     }
 
+    private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(transactionClosedInterceptor())
+                .addPathPatterns(FILINGS_PATH).order(7);
+    }
+
     private void addRequestLoggingInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(requestLoggingInterceptor).order(7);
+        registry.addInterceptor(requestLoggingInterceptor).order(8);
     }
 
     @Bean

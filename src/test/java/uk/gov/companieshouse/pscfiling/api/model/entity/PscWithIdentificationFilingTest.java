@@ -118,11 +118,6 @@ class PscWithIdentificationFilingTest {
     }
 
     @Test
-    void getReferencePscListEtag() {
-        assertThat(test.getReferencePscListEtag(), is(equalTo("list")));
-    }
-
-    @Test
     void getRegisterEntryDate() {
         assertThat(test.getRegisterEntryDate(), is(equalTo(registerEntryDate)));
     }
@@ -160,7 +155,7 @@ class PscWithIdentificationFilingTest {
                         + "kind='kind', links=Links[self=self, "
                         + "validationStatus=validationStatus], naturesOfControl=[type1, type2], "
                         + "notifiedOn=2022-11-10, referenceEtag='etag', referencePscId='psc', "
-                        + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
+                        + "registerEntryDate=2022-11-05, "
                         + "updatedAt=2022-11-05T00:00:00Z, "
                         + "identification='Identification[countryRegistered='theCountry', "
                         + "legalAuthority='theAuthority', legalForm='theForm', "
@@ -200,7 +195,6 @@ class PscWithIdentificationFilingTest {
                 .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
-                .referencePscListEtag("list")
                 .registerEntryDate(registerEntryDate)
                 .statementActionDate(statementActionDate)
                 .statementType("type")
