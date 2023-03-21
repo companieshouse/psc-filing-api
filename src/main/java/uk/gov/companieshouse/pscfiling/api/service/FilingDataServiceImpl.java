@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import java.text.MessageFormat;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.psc.PscApi;
@@ -41,8 +42,7 @@ public class FilingDataServiceImpl implements FilingDataService {
     public FilingApi generatePscFiling(final String filingId, final PscTypeConstants pscType,
             final Transaction transaction, final String passthroughHeader) {
         final var filing = new FilingApi();
-        filing.setKind(
-                FilingKind.PSC_CESSATION.getValue()); // TODO: handling other kinds to come later
+        filing.setKind(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), pscType.getValue())); // TODO: handling other kinds to come later
         filing.setDescription(filingDataConfig.getPsc07Description());
 
         return populateFilingData(filing, filingId, pscType, transaction, passthroughHeader);
@@ -55,13 +55,15 @@ public class FilingDataServiceImpl implements FilingDataService {
         final var transactionId = transaction.getId();
         final var pscFilingOpt = pscFilingService.get(filingId, transactionId);
         final var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
-                String.format("Psc individual not found when generating filing for %s", filingId)));
+                String.format("PSC filing not found when generating filing for %s", filingId)));
         final PscApi pscDetails =
                 pscDetailsService.getPscDetails(transaction, pscFiling.getReferencePscId(), pscType,
                         passthroughHeader);
-        final PscCommunal enhancedPscFiling = dataMapper.enhance(pscFiling, pscDetails);
+        final PscCommunal enhancedPscFiling = dataMapper.enhance(pscFiling, pscType, pscDetails);
 
-        final var filingData = dataMapper.map(enhancedPscFiling);
+//        final var filingData = dataMapper.map(enhancedPscFiling);
+        final var filingData = dataMapper.map(enhancedPscFiling, pscType);
+//        final var dataMap = MapHelper.convertObject(filingData);
         final var dataMap =
                 MapHelper.convertObject(filingData, PropertyNamingStrategies.SNAKE_CASE);
 

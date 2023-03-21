@@ -5,10 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import uk.gov.companieshouse.api.interceptor.ClosedTransactionInterceptor;
+import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.MappablePermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.PermissionsMapping;
@@ -22,14 +23,16 @@ import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 @PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
-    static final String[] INTERCEPTOR_PATHS_LIST = {
+    public static final String COMMON_INTERCEPTOR_PATH =
             "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
-                    + "(?:individual|corporate-entity|legal-person)}"
-    };
-    public static final String PSC_FILING_API = "psc-filing-api";
+                    + "(?:individual|corporate-entity|legal-person)}";
+    public static final String FILINGS_PATH =
+            "/private" + COMMON_INTERCEPTOR_PATH + "/{filing_resource_id}/filings";
+    private static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     private CompanyInterceptor companyInterceptor;
+    private InternalUserInterceptor internalUserInterceptor;
 
     @Autowired
     public void setTokenPermissionsInterceptor(
@@ -38,8 +41,13 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 
     @Autowired
-    public void setCompanyInterceptor(CompanyInterceptor companyInterceptor) {
+    public void setCompanyInterceptor(final CompanyInterceptor companyInterceptor) {
         this.companyInterceptor = companyInterceptor;
+    }
+
+    @Autowired
+    public void setInternalUserInterceptor(InternalUserInterceptor internalUserInterceptor) {
+        this.internalUserInterceptor = internalUserInterceptor;
     }
 
     /**
@@ -55,30 +63,42 @@ public class InterceptorConfig implements WebMvcConfigurer {
         addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
         addRequestPermissionsInterceptor(registry);
+        addTransactionClosedInterceptor(registry);
+        addInternalUserInterceptor(registry);
     }
 
-    private void addTransactionInterceptor(InterceptorRegistry registry) {
+    private void addTransactionInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(transactionInterceptor())
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .order(1);
     }
 
-    private void addOpenTransactionInterceptor(InterceptorRegistry registry) {
+    private void addOpenTransactionInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .addPathPatterns(COMMON_INTERCEPTOR_PATH).order(2);
     }
 
-    private void addCompanyInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(companyInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
+    private void addCompanyInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(companyInterceptor).order(3);
     }
 
-    private void addTokenPermissionsInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(tokenPermissionsInterceptor).addPathPatterns(INTERCEPTOR_PATHS_LIST);
+    private void addTokenPermissionsInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(tokenPermissionsInterceptor).order(4);
 
     }
 
     private void addRequestPermissionsInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(requestPermissionsInterceptor(pscPermissionsMapping()))
-                .addPathPatterns(INTERCEPTOR_PATHS_LIST);
+                .order(5);
+    }
+
+    private void addInternalUserInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(internalUserInterceptor)
+                .addPathPatterns(FILINGS_PATH).order(6);
+    }
+
+    private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
+        registry.addInterceptor(transactionClosedInterceptor())
+                .addPathPatterns(FILINGS_PATH).order(7);
     }
 
     @Bean
@@ -92,6 +112,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 
     @Bean
+    public ClosedTransactionInterceptor transactionClosedInterceptor() {
+        return new ClosedTransactionInterceptor(FILINGS_PATH);
+    }
+
+    @Bean
     public MappablePermissionsInterceptor requestPermissionsInterceptor(
             final PermissionsMapping permissionMapping) {
         return new MappablePermissionsInterceptor(Permission.Key.COMPANY_PSCS, true,
@@ -101,9 +126,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Bean
     public PermissionsMapping pscPermissionsMapping() {
         return PermissionsMapping.builder()
-                .defaultRequireAnyOf(Permission.Value.READ)
-                .mappedRequireAnyOf(HttpMethod.POST.toString(), Permission.Value.DELETE)
-                .mappedRequireAnyOf(HttpMethod.PATCH.toString(), Permission.Value.DELETE)
+                .defaultRequireAnyOf(Permission.Value.DELETE)
                 .build();
     }
 }

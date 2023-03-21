@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import javax.servlet.http.HttpServletRequest;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -55,22 +56,6 @@ class FilingDataControllerImplTest extends BaseControllerIT {
         final var filingsList =
                 testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL, FILING_ID,
                         filingsTransaction, request);
-
-        assertThat(filingsList, Matchers.contains(filingApi));
-    }
-
-    @Test
-    void getFilingsDataWhenTransactionNull() {
-        var filingApi = new FilingApi();
-        when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-            PASSTHROUGH_HEADER);
-        when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(filingsTransaction);
-        when(filingDataService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,
-            filingsTransaction, PASSTHROUGH_HEADER)).thenReturn(filingApi);
-
-        final var filingsList =
-            testController.getFilingsData(TRANS_ID, PscTypeConstants.INDIVIDUAL, FILING_ID,
-                null, request);
 
         assertThat(filingsList, Matchers.contains(filingApi));
     }

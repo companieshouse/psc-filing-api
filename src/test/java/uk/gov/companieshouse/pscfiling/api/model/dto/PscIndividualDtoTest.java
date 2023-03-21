@@ -7,7 +7,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,13 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PscIndividualDtoTest {
 
     private PscIndividualDto testDto;
-    private PscIndividualDto.Builder testBuilder;
     private AddressDto addressDto;
     private LocalDate ceasedOn;
     private LocalDate notifiedOn;
     private LocalDate registerEntryDate;
-    private Date3TupleDto dob1;
-    private Instant createdAt;
     private NameElementsDto nameElementsDto;
 
     @BeforeEach
@@ -43,8 +39,7 @@ class PscIndividualDtoTest {
                 .region("region")
                 .build();
         ceasedOn = LocalDate.of(2022,11,21);
-        dob1 = new Date3TupleDto(12, 9, 1970);
-        createdAt = Instant.parse("2019-11-05T00:00:00Z");
+        Date3TupleDto dob1 = new Date3TupleDto(12, 9, 1970);
         nameElementsDto = NameElementsDto.builder()
                 .forename("forename")
                 .otherForenames("other")
@@ -53,7 +48,7 @@ class PscIndividualDtoTest {
                 .build();
         notifiedOn = LocalDate.of(2022,11,10);
         registerEntryDate = LocalDate.of(2022,11,5);
-        testBuilder = PscIndividualDto.builder();
+        PscIndividualDto.Builder testBuilder = PscIndividualDto.builder();
         testDto = testBuilder.address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
                 .ceasedOn(ceasedOn)

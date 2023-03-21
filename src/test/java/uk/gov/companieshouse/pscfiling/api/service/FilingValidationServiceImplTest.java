@@ -16,22 +16,21 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
+import uk.gov.companieshouse.pscfiling.api.validator.FilingValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
-import uk.gov.companieshouse.pscfiling.api.validator.IndividualFilingValid;
 
 @ExtendWith(MockitoExtension.class)
-class IndividualFilingValidationServiceImplTest {
+class FilingValidationServiceImplTest {
     private FilingValidationService testService;
     private List<? extends FilingForPscTypeValid> forPscTypeValids;
     @Mock
-    private IndividualFilingValid firstIndividualFilingValid;
+    private FilingValid firstFilingValid;
     @Mock
     private FilingValidationContext<PscDtoCommunal> context;
 
     @BeforeEach
     void setUp() {
-        forPscTypeValids = List.of(new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL,
-                firstIndividualFilingValid));
+        forPscTypeValids = List.of(new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, firstFilingValid));
         testService = new FilingValidationServiceImpl(forPscTypeValids);
     }
 
@@ -41,7 +40,7 @@ class IndividualFilingValidationServiceImplTest {
 
         testService.validate(context);
 
-        verify(firstIndividualFilingValid).validate(context);
+        verify(firstFilingValid).validate(context);
 
     }
 

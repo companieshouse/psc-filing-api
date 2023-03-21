@@ -7,9 +7,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
+import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.api.util.security.EricConstants;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
@@ -56,6 +58,8 @@ public class BaseControllerIT {
     protected OpenTransactionInterceptor openTransactionInterceptor;
     @MockBean
     protected CompanyInterceptor companyInterceptor;
+    @MockBean
+    protected InternalUserInterceptor internalUserInterceptor;
 
     void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -64,18 +68,23 @@ public class BaseControllerIT {
         when(transactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         when(openTransactionInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         when(companyInterceptor.preHandle(any(), any(), any())).thenReturn(true);
-        transaction = createTestTransaction();
+        when(internalUserInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        transaction = createOpenTransaction();
     }
 
     protected void setupEricTokenPermissions() {
-        httpHeaders.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS,
-                Permission.Key.COMPANY_PSCS + "=" + Permission.Value.DELETE);
+        httpHeaders.add(EricConstants.ERIC_AUTHORISED_TOKEN_PERMISSIONS, Permission.Key.COMPANY_PSCS
+                + "="
+                + Permission.Value.DELETE
+                + ","
+                + Permission.Value.READ);
     }
 
-    protected Transaction createTestTransaction() {
+    protected Transaction createOpenTransaction() {
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
         transaction.setCompanyNumber(COMPANY_NUMBER);
+        transaction.setStatus(TransactionStatus.OPEN);
         return transaction;
     }
 }

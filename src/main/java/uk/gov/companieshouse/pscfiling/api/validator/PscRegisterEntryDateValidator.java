@@ -5,8 +5,8 @@ import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 
 @Component
-public class PscRegisterEntryDateValidator extends BaseIndividualFilingValidator
-        implements IndividualFilingValid {
+public class PscRegisterEntryDateValidator extends BaseFilingValidator
+        implements FilingValid {
 
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {

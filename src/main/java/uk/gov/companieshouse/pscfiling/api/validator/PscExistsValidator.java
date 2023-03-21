@@ -7,8 +7,8 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
 @Component
-public class PscExistsValidator extends BaseIndividualFilingValidator
-        implements IndividualFilingValid {
+public class PscExistsValidator extends BaseFilingValidator
+        implements FilingValid {
 
     private final PscDetailsService pscDetailsService;
 

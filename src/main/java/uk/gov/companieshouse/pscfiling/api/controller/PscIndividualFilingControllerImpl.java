@@ -66,7 +66,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
     @Override
     @Transactional
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<Object> createFiling(@PathVariable("transactionId") final String transId,
+    public ResponseEntity<PscIndividualFiling> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             @RequestBody @Valid @NotNull final PscIndividualDto dto,
@@ -81,11 +81,11 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
         transaction = getTransaction(transId, transaction, logMap, getPassthroughHeader(request));
 
         final var entity = filingMapper.map(dto);
-        final var links = saveFilingWithLinks(entity, transId, request, logMap);
-        updateTransactionResources(transaction, links);
+        final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap);
+        updateTransactionResources(transaction, savedEntity.getLinks());
 
-        return ResponseEntity.created(links.getSelf())
-                .build();
+        return ResponseEntity.created(savedEntity.getLinks().getSelf())
+                .body(savedEntity);
     }
 
     /**
@@ -169,8 +169,9 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
                         .build());
     }
 
-    private Links saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
-            final HttpServletRequest request, final Map<String, Object> logMap) {
+    private PscIndividualFiling saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
+                                                    final HttpServletRequest request,
+                                                    final Map<String, Object> logMap) {
         final var saved = pscFilingService.save(entity, transId);
         final var links = buildLinks(request, saved);
         final var updated = PscIndividualFiling.builder(saved).links(links)
@@ -180,7 +181,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
         logMap.put("filing_id", resaved.getId());
         logger.infoContext(transId, "Filing saved", logMap);
 
-        return links;
+        return resaved;
     }
 
     private Links buildLinks(final HttpServletRequest request, final PscIndividualFiling savedFiling) {

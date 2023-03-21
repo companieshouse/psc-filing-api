@@ -16,14 +16,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.net.URI;
 import java.time.Clock;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,14 +31,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
@@ -64,9 +62,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     private Clock clock;
     @MockBean
     private Logger logger;
-
-    @Mock
-    private ApiErrorResponseException errorResponseException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -125,7 +120,9 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", locationUri.toUriString()))
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(jsonPath("$.id", is(FILING_ID)))
+                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())))
+                .andExpect(jsonPath("$.country_of_residence").doesNotExist());
         verify(filingMapper).map(dto);
     }
 
@@ -386,11 +383,11 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", locationUri.toUriString()))
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(jsonPath("$.id", is(FILING_ID)))
+                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())));
         verify(filingMapper).map(dto);
     }
 
-    @Disabled("Pending PSC-71 + PSC-72")
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
         final var dto = PscWithIdentificationDto.builder().referenceEtag(ETAG)
@@ -398,15 +395,20 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(CEASED_ON_DATE)
                 .build();
+
+                final Links links = new Links(new URI("/transactions/" + TRANS_ID +
+                "/persons-with-significant-control/corporate-entity/" + FILING_ID),
+                                        new URI("validation_status"));
+
         final var filing = PscWithIdentificationFiling.builder()
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(CEASED_ON_DATE)
+                .links(links)
                 .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
-
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
         mockMvc.perform(get(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).headers(httpHeaders))
@@ -417,7 +419,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())));
     }
 
-    @Disabled("Pending PSC-71 + PSC-72")
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
@@ -438,11 +439,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         expectedError.addErrorValue("column", String.valueOf(column));
 
         return expectedError;
-    }
-
-    private ApiError createExpectedApiError(final String msg, final String location,
-            final LocationType locationType, final ErrorType errorType) {
-        return new ApiError(msg, location, locationType.getValue(), errorType.getType());
     }
 
 }

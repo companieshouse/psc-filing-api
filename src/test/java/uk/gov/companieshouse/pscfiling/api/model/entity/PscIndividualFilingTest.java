@@ -33,7 +33,7 @@ class PscIndividualFilingTest {
     private Instant updatedAt;
     private NameElements nameElements;
     private Links links;
-    private Identification identification;
+
 
     @BeforeEach
     void setUp() throws URISyntaxException {
@@ -46,7 +46,6 @@ class PscIndividualFilingTest {
         notifiedOn = LocalDate.of(2022, 11, 10);
         registerEntryDate = LocalDate.of(2022, 11, 5);
         statementActionDate = LocalDate.of(2022, 10, 31);
-        identification = createIdentification();
         nameElements = createNameElements();
         updatedAt = Instant.parse("2022-11-05T00:00:00Z");
 
@@ -174,18 +173,6 @@ class PscIndividualFilingTest {
                 .build();
 
         return address;
-    }
-
-    private Identification createIdentification() {
-        identification = Identification.builder()
-                .countryRegistered("theCountry")
-                .placeRegistered("thePlace")
-                .legalAuthority("theAuthority")
-                .legalForm("theForm")
-                .registrationNumber("registration")
-                .build();
-
-        return identification;
     }
 
     private NameElements createNameElements() {

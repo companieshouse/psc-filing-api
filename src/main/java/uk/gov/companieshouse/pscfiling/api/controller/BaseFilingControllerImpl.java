@@ -27,7 +27,6 @@ public class BaseFilingControllerImpl {
     protected final PscMapper filingMapper;
     protected final Clock clock;
     protected final Logger logger;
-    private String passThroughHeader;
 
     public BaseFilingControllerImpl(final TransactionService transactionService,
                                     final PscFilingService pscFilingService, final PscMapper filingMapper,
@@ -49,10 +48,7 @@ public class BaseFilingControllerImpl {
     }
 
     protected String getPassthroughHeader(HttpServletRequest request) {
-        if (passThroughHeader == null) {
-            passThroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
-        }
-        return passThroughHeader;
+        return request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
     }
 
     protected Transaction getTransaction(String transId, Transaction transaction, Map<String, Object> logMap,
@@ -66,11 +62,9 @@ public class BaseFilingControllerImpl {
     }
 
     protected void updateTransactionResources(Transaction transaction, Links links) {
-        Objects.requireNonNull(passThroughHeader);
         final var resourceMap = buildResourceMap(links);
-
         transaction.setResources(resourceMap);
-        transactionService.updateTransaction(transaction, passThroughHeader);
+        transactionService.updateTransaction(transaction);
     }
 
     private Map<String, Resource> buildResourceMap(final Links links) {

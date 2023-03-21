@@ -6,10 +6,10 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
 public class FilingForPscTypeValidChain implements FilingForPscTypeValid {
     private final PscTypeConstants pscType;
-    private final IndividualFilingValid first;
+    private final FilingValid first;
 
     public FilingForPscTypeValidChain(final PscTypeConstants pscType,
-            final IndividualFilingValid first) {
+            final FilingValid first) {
         this.pscType = Objects.requireNonNull(pscType);
         this.first = Objects.requireNonNull(first);
     }
@@ -20,7 +20,7 @@ public class FilingForPscTypeValidChain implements FilingForPscTypeValid {
     }
 
     @Override
-    public IndividualFilingValid getFirst() {
+    public FilingValid getFirst() {
         return first;
     }
 

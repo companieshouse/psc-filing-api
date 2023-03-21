@@ -32,10 +32,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @ExtendWith(MockitoExtension.class)
-class TransactionServiceImplTest {
-
-    public static final String PASSTHROUGH_HEADER = "passthrough";
-    public static final String TRANS_ID = "12345";
+class TransactionServiceImplTest extends TestBaseService {
     @Mock
     private ApiClientService apiClientService;
     @Mock
@@ -75,10 +72,9 @@ class TransactionServiceImplTest {
         when(transactionsResourceHandler.get("/transactions/" + TRANS_ID)).thenReturn(
                 transactionsGet);
         when(apiClient.transactions()).thenReturn(transactionsResourceHandler);
-        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(
-                apiClient);
+        when(apiClientService.getApiClient(PASSTHROUGH_HEADER)).thenReturn(apiClient);
 
-        var transaction = testService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER);
+        var transaction = testService.getTransaction(TRANS_ID,PASSTHROUGH_HEADER);
 
         assertThat(transaction, samePropertyValuesAs(testTransaction(TRANS_ID)));
     }
@@ -89,7 +85,7 @@ class TransactionServiceImplTest {
                 IOException.class);
 
         assertThrows(TransactionServiceException.class,
-                () -> testService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER));
+                () -> testService.getTransaction(TRANS_ID,PASSTHROUGH_HEADER));
     }
 
     @Test
@@ -107,42 +103,33 @@ class TransactionServiceImplTest {
     @Test
     void updateTransactionWhenResponse204() throws IOException, URIValidationException {
         when(privateTransactionPatch.execute()).thenReturn(apiResponseVoid);
-        when(privateTransactionResourceHandler.patch("/private/transactions/12345",
+        when(privateTransactionResourceHandler.patch("/private/transactions/" + TRANS_ID,
                 testTransaction)).thenReturn(privateTransactionPatch);
         when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(apiClientService.getInternalApiClient(PASSTHROUGH_HEADER)).thenReturn(
+        when(apiClientService.getInternalApiClient()).thenReturn(
                 internalApiClient);
 
         when(apiResponseVoid.getStatusCode()).thenReturn(HttpStatusCodes.STATUS_CODE_NO_CONTENT);
-        testService.updateTransaction(testTransaction, PASSTHROUGH_HEADER);
+        testService.updateTransaction(testTransaction);
 
         verify(apiResponseVoid).getStatusCode();
     }
 
     @Test
-    void updateTransactionWhenIoException() throws IOException {
-        when(apiClientService.getInternalApiClient(PASSTHROUGH_HEADER)).thenThrow(
-                new IOException("update test case"));
-
-        final var thrown = assertThrows(TransactionServiceException.class,
-                () -> testService.updateTransaction(testTransaction, PASSTHROUGH_HEADER));
-        assertThat(thrown.getMessage(), is("Error Updating Transaction 12345: update test case"));
-    }
-
-    @Test
     void updateTransactionWhenResponseNot204() throws IOException, URIValidationException {
         when(privateTransactionPatch.execute()).thenReturn(apiResponseVoid);
-        when(privateTransactionResourceHandler.patch("/private/transactions/12345",
+        when(privateTransactionResourceHandler.patch("/private/transactions/" + TRANS_ID,
                 testTransaction)).thenReturn(privateTransactionPatch);
         when(internalApiClient.privateTransaction()).thenReturn(privateTransactionResourceHandler);
-        when(apiClientService.getInternalApiClient(PASSTHROUGH_HEADER)).thenReturn(
+        when(apiClientService.getInternalApiClient()).thenReturn(
                 internalApiClient);
 
         when(apiResponseVoid.getStatusCode()).thenReturn(HttpStatusCodes.STATUS_CODE_NOT_FOUND);
 
         final var thrown = assertThrows(TransactionServiceException.class,
-                () -> testService.updateTransaction(testTransaction, PASSTHROUGH_HEADER));
-        assertThat(thrown.getMessage(), is("Error Updating Transaction details for 12345: 404 Unexpected Status Code received"));
+                () -> testService.updateTransaction(testTransaction));
+        assertThat(thrown.getMessage(), is("Error Updating Transaction details for " + TRANS_ID + ": 404 Unexpected Status Code received"));
+
     }
 
     private Transaction testTransaction(String id) {

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
@@ -25,25 +26,36 @@ import uk.gov.companieshouse.pscfiling.api.mapper.FilingDataMapper;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.IndividualFilingDataDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.WithIdentificationFilingDataDto;
+import uk.gov.companieshouse.pscfiling.api.model.entity.Identification;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
 @ExtendWith(MockitoExtension.class)
-class FilingDataServiceImplTest {
-
-    private static final String FILING_ID = "6332aa6ed28ad2333c3a520a";
-    private static final String TRANS_ID = "23445657412";
+class FilingDataServiceImplTest extends TestBaseService {
     private static final String REF_PSC_ID = "12345";
     private static final String REF_ETAG = "6789";
     private static final String CEASED_ON_STR = "2022-10-05";
     private static final LocalDate CEASED_ON = LocalDate.parse("2022-10-05");
     private static final String REGISTER_ENTRY_DATE = "2022-10-05";
-    private static final String PASSTHROUGH_HEADER = "passthrough";
-    public static final String TITLE = "MR";
-    public static final String FIRSTNAME = "JOE";
-    public static final String OTHER_FORENAMES = "TOM";
-    public static final String LASTNAME = "BLOGGS";
+    private static final String TITLE = "MR";
+    private static final String FIRSTNAME = "JOE";
+    private static final String OTHER_FORENAMES = "TOM";
+    private static final String LASTNAME = "BLOGGS";
+    private static final String CORPORATE_NAME = "corporate name";
+    private static final String COUNTRY_REGISTERED = "country registered";
+    private static final String LEGAL_FORM = "legal form";
+    private static final String LEGAL_AUTHORITY = "legal authority";
+    private static final String REGISTRATION_NUMBER = "reg no";
+    private static final String PLACE_REGISTERED = "place registered";
+    private static final String LEGAL_NAME = "legal name";
+    protected static final String INDIVIDUAL = "individual";
+    protected static final String CORPORATE_ENTITY = "corporate-entity";
+    protected static final String LEGAL_PERSON = "legal-person";
+
+
     @Mock
     private PscFilingService pscFilingService;
     @Mock
@@ -67,7 +79,7 @@ class FilingDataServiceImplTest {
                 filingDataConfig, logger);
         transaction = new Transaction();
         transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber("012345678");
+        transaction.setCompanyNumber(COMPANY_NUMBER);
     }
 
     @Test
@@ -101,8 +113,9 @@ class FilingDataServiceImplTest {
         nameElementsApi.setTitle(TITLE);
         nameElementsApi.setForename(FIRSTNAME);
         nameElementsApi.setSurname(LASTNAME);
-        when(dataMapper.enhance(pscFiling, pscApi)).thenReturn(enhancedPscFiling);
-        when(dataMapper.map(enhancedPscFiling)).thenReturn(filingData);
+        when(dataMapper.enhance(pscFiling, PscTypeConstants.INDIVIDUAL, pscApi)).thenReturn(
+                enhancedPscFiling);
+        when(dataMapper.map(enhancedPscFiling, PscTypeConstants.INDIVIDUAL)).thenReturn(filingData);
 
         final var filingApi =
                 testService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL, transaction,
@@ -114,7 +127,188 @@ class FilingDataServiceImplTest {
                         REGISTER_ENTRY_DATE);
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
-        assertThat(filingApi.getKind(), is(FilingKind.PSC_CESSATION.getValue()));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), INDIVIDUAL)));
+    }
+
+    @Test
+    void generatePscCorporateEntityFilingWhenFound() {
+        final var filingData = WithIdentificationFilingDataDto.builder()
+                .name(CORPORATE_NAME)
+                .countryRegistered(COUNTRY_REGISTERED)
+                .legalForm(LEGAL_FORM)
+                .legalAuthority(LEGAL_AUTHORITY)
+                .registrationNumber(REGISTRATION_NUMBER)
+                .placeRegistered(PLACE_REGISTERED)
+                .ceasedOn(CEASED_ON_STR)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+
+        final var identification = Identification.builder()
+                .countryRegistered(COUNTRY_REGISTERED)
+                .placeRegistered(PLACE_REGISTERED)
+                .legalAuthority(LEGAL_AUTHORITY)
+                .legalForm(LEGAL_FORM)
+                .registrationNumber(REGISTRATION_NUMBER)
+                .build();
+
+        final PscCommunal pscFiling = PscWithIdentificationFiling.builder()
+                .referencePscId(REF_PSC_ID)
+                .referenceEtag(REF_ETAG)
+                .ceasedOn(CEASED_ON)
+                .build();
+
+        final PscCommunal enhancedPscFiling =
+                PscWithIdentificationFiling.builder((PscWithIdentificationFiling) pscFiling)
+                        .name("psc_name")
+                        .identification(identification)
+                        .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID,
+                PscTypeConstants.CORPORATE_ENTITY, PASSTHROUGH_HEADER)).thenReturn(pscApi);
+
+        pscApi.setName(CORPORATE_NAME);
+        when(dataMapper.enhance(pscFiling, PscTypeConstants.CORPORATE_ENTITY, pscApi)).thenReturn(
+                enhancedPscFiling);
+        when(dataMapper.map(enhancedPscFiling, PscTypeConstants.CORPORATE_ENTITY)).thenReturn(
+                filingData);
+
+        final var filingApi =
+                testService.generatePscFiling(FILING_ID, PscTypeConstants.CORPORATE_ENTITY,
+                        transaction, PASSTHROUGH_HEADER);
+
+        final Map<String, Object> expectedMap =
+                Map.of("country_registered", COUNTRY_REGISTERED, "place_registered",
+                        PLACE_REGISTERED, "registration_number", REGISTRATION_NUMBER,
+                        "legal_authority", LEGAL_AUTHORITY, "legal_form", LEGAL_FORM, "ceased_on",
+                        CEASED_ON_STR, "name", CORPORATE_NAME, "register_entry_date",
+                        REGISTER_ENTRY_DATE);
+
+        assertThat(filingApi.getData(), is(equalTo(expectedMap)));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), CORPORATE_ENTITY)));
+    }
+
+
+    @Test
+    void generatePscLegalPersonFilingWhenFound() {
+        final var filingData = WithIdentificationFilingDataDto.builder()
+                .name(LEGAL_NAME)
+                .legalForm(LEGAL_FORM)
+                .legalAuthority(LEGAL_AUTHORITY)
+                .ceasedOn(CEASED_ON_STR)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .build();
+
+        final var identification = Identification.builder()
+                .countryRegistered(COUNTRY_REGISTERED)
+                .placeRegistered(PLACE_REGISTERED)
+                .legalAuthority(LEGAL_AUTHORITY)
+                .legalForm(LEGAL_FORM)
+                .registrationNumber(REGISTRATION_NUMBER)
+                .build();
+
+        final PscCommunal pscFiling = PscWithIdentificationFiling.builder()
+                .referencePscId(REF_PSC_ID)
+                .referenceEtag(REF_ETAG)
+                .ceasedOn(CEASED_ON)
+                .build();
+
+        final PscCommunal enhancedPscFiling =
+                PscWithIdentificationFiling.builder((PscWithIdentificationFiling) pscFiling)
+                        .name("psc_name")
+                        .identification(identification)
+                        .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.LEGAL_PERSON,
+                PASSTHROUGH_HEADER)).thenReturn(pscApi);
+
+        pscApi.setName(LEGAL_NAME);
+        when(dataMapper.enhance(pscFiling, PscTypeConstants.LEGAL_PERSON, pscApi)).thenReturn(
+                enhancedPscFiling);
+        when(dataMapper.map(enhancedPscFiling, PscTypeConstants.LEGAL_PERSON)).thenReturn(
+                filingData);
+
+        final var filingApi =
+                testService.generatePscFiling(FILING_ID, PscTypeConstants.LEGAL_PERSON, transaction,
+                        PASSTHROUGH_HEADER);
+
+        final Map<String, Object> expectedMap =
+                Map.of("legal_authority", LEGAL_AUTHORITY, "legal_form", LEGAL_FORM, "ceased_on",
+                        CEASED_ON_STR, "name", LEGAL_NAME, "register_entry_date",
+                        REGISTER_ENTRY_DATE);
+
+        assertThat(filingApi.getData(), is(equalTo(expectedMap)));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), LEGAL_PERSON)));
+    }
+
+    @Test
+    void generatePscLegalPersonFilingWhenHasCorporateIdentityData() {
+        //DTO generated from the CHIPS and psc filing MongoDB data
+        final var filingDataDto = WithIdentificationFilingDataDto.builder()
+                .name(LEGAL_NAME)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .ceasedOn(CEASED_ON_STR)
+                .legalForm(LEGAL_FORM)
+                .legalAuthority(LEGAL_AUTHORITY)
+                .build();
+
+        //from sdk api
+        final var identificationApi = new uk.gov.companieshouse.api.model.psc.Identification();
+        identificationApi.setLegalAuthority(LEGAL_AUTHORITY);
+        identificationApi.setLegalForm(LEGAL_FORM);
+
+        final var pscDetails = new PscApi();
+        pscDetails.setName(LEGAL_NAME);
+        pscDetails.setIdentification(identificationApi);
+
+        //psc filing entity retrieved from psc filing api MongoDB
+        //Note contains fields that are not necessary for a legal person
+        final var identification = Identification.builder()
+                .legalAuthority(LEGAL_AUTHORITY)
+                .legalForm(LEGAL_FORM)
+                .countryRegistered(COUNTRY_REGISTERED)
+                .registrationNumber(REGISTRATION_NUMBER)
+                .placeRegistered(PLACE_REGISTERED)
+                .build();
+
+        final var pscFiling = PscWithIdentificationFiling.builder()
+                .name("entity name")
+                .referencePscId(REF_PSC_ID)
+                .referenceEtag(REF_ETAG)
+                .ceasedOn(CEASED_ON)
+                .identification(identification)
+                .build();
+
+        //adding the data from the sdk api to our data (i.e. lookup from CHIPS)
+        final PscCommunal enhancedPscFiling = PscWithIdentificationFiling.builder(pscFiling)
+                .name(LEGAL_NAME)
+                .identification(identification)
+                .build();
+
+        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(dataMapper.enhance(pscFiling, PscTypeConstants.LEGAL_PERSON, pscDetails)).thenReturn(
+                enhancedPscFiling);
+        when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.LEGAL_PERSON,
+                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
+        when(dataMapper.map(enhancedPscFiling, PscTypeConstants.LEGAL_PERSON)).thenReturn(
+                filingDataDto);
+
+        final var filingApi =
+                testService.generatePscFiling(FILING_ID, PscTypeConstants.LEGAL_PERSON, transaction,
+                        PASSTHROUGH_HEADER);
+
+        final Map<String, Object> expectedMap =
+                Map.of("ceased_on", CEASED_ON_STR, "name", LEGAL_NAME, "register_entry_date",
+                        REGISTER_ENTRY_DATE, "legal_authority", LEGAL_AUTHORITY, "legal_form",
+                        LEGAL_FORM);
+
+        assertThat(filingApi.getData(), is(equalTo(expectedMap)));
+        assertThat(filingApi.getKind(),
+                is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), LEGAL_PERSON)));
     }
 
     @Test
@@ -126,6 +320,6 @@ class FilingDataServiceImplTest {
                         transaction, PASSTHROUGH_HEADER));
 
         assertThat(exception.getMessage(),
-                is("Psc individual not found when generating filing for " + FILING_ID));
+                is("PSC filing not found when generating filing for " + FILING_ID));
     }
 }
