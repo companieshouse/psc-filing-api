@@ -32,6 +32,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     private CompanyInterceptor companyInterceptor;
+    private RequestLoggingInterceptor requestLoggingInterceptor;
 
     @Autowired
     public void setTokenPermissionsInterceptor(
@@ -44,6 +45,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
         this.companyInterceptor = companyInterceptor;
     }
 
+    @Autowired
+    public void setRequestLoggingInterceptor(final RequestLoggingInterceptor requestLoggingInterceptor) {
+        this.requestLoggingInterceptor = requestLoggingInterceptor;
+    }
+
     /**
      * Set up the interceptors to run against endpoints when the endpoints are called
      * Interceptors are executed in order of configuration
@@ -52,17 +58,13 @@ public class InterceptorConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(@NonNull final InterceptorRegistry registry) {
-        addRequestLoggingInterceptor(registry);
         addTransactionInterceptor(registry);
         addOpenTransactionInterceptor(registry);
         addCompanyInterceptor(registry);
         addTokenPermissionsInterceptor(registry);
         addRequestPermissionsInterceptor(registry);
         addTransactionClosedInterceptor(registry);
-    }
-
-    private void addRequestLoggingInterceptor(InterceptorRegistry registry) {
-        registry.addInterceptor(requestLoggingInterceptor());
+        addRequestLoggingInterceptor(registry);
     }
 
     private void addTransactionInterceptor(InterceptorRegistry registry) {
@@ -94,9 +96,8 @@ public class InterceptorConfig implements WebMvcConfigurer {
                 .addPathPatterns(FILINGS_PATH).order(6);
     }
 
-    @Bean
-    public RequestLoggingInterceptor requestLoggingInterceptor() {
-        return new RequestLoggingInterceptor();
+    private void addRequestLoggingInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(requestLoggingInterceptor).order(7);
     }
 
     @Bean
