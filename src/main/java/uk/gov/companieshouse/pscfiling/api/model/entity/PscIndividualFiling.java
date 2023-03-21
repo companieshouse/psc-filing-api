@@ -106,11 +106,6 @@ public class PscIndividualFiling implements PscCommunal {
     }
 
     @Override
-    public String getReferencePscListEtag() {
-        return pscCommon.getReferencePscListEtag();
-    }
-
-    @Override
     public LocalDate getRegisterEntryDate() {
         return pscCommon.getRegisterEntryDate();
     }
@@ -237,7 +232,6 @@ public class PscIndividualFiling implements PscCommunal {
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
-                    .referencePscListEtag(other.getReferencePscListEtag())
                     .residentialAddress(other.getResidentialAddress())
                     .residentialAddressSameAsCorrespondenceAddress(
                             other.getResidentialAddressSameAsCorrespondenceAddress())
@@ -350,12 +344,6 @@ public class PscIndividualFiling implements PscCommunal {
         public Builder referencePscId(final String value) {
 
             commonBuilder.referencePscId(value);
-            return this;
-        }
-
-        public Builder referencePscListEtag(final String value) {
-
-            commonBuilder.referencePscListEtag(value);
             return this;
         }
 

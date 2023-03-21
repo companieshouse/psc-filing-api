@@ -105,11 +105,6 @@ class PscIndividualFilingTest {
     }
 
     @Test
-    void getReferencePscListEtag() {
-        assertThat(test.getReferencePscListEtag(), is(equalTo("list")));
-    }
-
-    @Test
     void getCeasedOn() {
         assertThat(test.getCeasedOn(), is(equalTo(ceasedOn)));
     }
@@ -138,7 +133,7 @@ class PscIndividualFilingTest {
                         + "links=Links[self=self, validationStatus=valid], "
                         + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
                         + "referenceEtag='etag', referencePscId='psc', "
-                        + "referencePscListEtag='list', registerEntryDate=2022-11-05, "
+                        + "registerEntryDate=2022-11-05, "
                         + "updatedAt=2022-11-05T00:00:00Z, countryOfResidence='Wales', "
                         + "dateOfBirth=Date3Tuple[day=12, month=9, year=1970], "
                         + "nameElements=NameElements[forename='forename', otherForenames='other',"
@@ -204,7 +199,6 @@ class PscIndividualFilingTest {
                 .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
-                .referencePscListEtag("list")
                 .registerEntryDate(registerEntryDate)
                 .residentialAddress(address)
                 .residentialAddressSameAsCorrespondenceAddress(true)

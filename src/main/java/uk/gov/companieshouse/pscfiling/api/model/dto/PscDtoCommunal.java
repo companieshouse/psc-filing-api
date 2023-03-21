@@ -20,8 +20,6 @@ public interface PscDtoCommunal {
 
     String getReferencePscId();
 
-    String getReferencePscListEtag();
-
     @PastOrPresent
     LocalDate getRegisterEntryDate();
 }
