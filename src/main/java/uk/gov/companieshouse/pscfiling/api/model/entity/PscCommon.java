@@ -23,7 +23,6 @@ public class PscCommon implements PscCommunal {
     private LocalDate notifiedOn;
     private String referenceEtag;
     private String referencePscId;
-    private String referencePscListEtag;
     private LocalDate registerEntryDate;
     private Instant updatedAt;
 
@@ -88,11 +87,6 @@ public class PscCommon implements PscCommunal {
     }
 
     @Override
-    public String getReferencePscListEtag() {
-        return referencePscListEtag;
-    }
-
-    @Override
     public LocalDate getRegisterEntryDate() {
         return registerEntryDate;
     }
@@ -124,7 +118,6 @@ public class PscCommon implements PscCommunal {
                 && Objects.equals(getNotifiedOn(), pscCommon.getNotifiedOn())
                 && Objects.equals(getReferenceEtag(), pscCommon.getReferenceEtag())
                 && Objects.equals(getReferencePscId(), pscCommon.getReferencePscId())
-                && Objects.equals(getReferencePscListEtag(), pscCommon.getReferencePscListEtag())
                 && Objects.equals(getRegisterEntryDate(), pscCommon.getRegisterEntryDate())
                 && Objects.equals(getUpdatedAt(), pscCommon.getUpdatedAt());
     }
@@ -133,7 +126,7 @@ public class PscCommon implements PscCommunal {
     public int hashCode() {
         return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
                 getName(), getCreatedAt(), getEtag(), getKind(), getLinks(), getNaturesOfControl(),
-                getNotifiedOn(), getReferenceEtag(), getReferencePscId(), getReferencePscListEtag(),
+                getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
                 getRegisterEntryDate(), getUpdatedAt());
     }
 
@@ -152,7 +145,6 @@ public class PscCommon implements PscCommunal {
                 .add("notifiedOn=" + notifiedOn)
                 .add("referenceEtag='" + referenceEtag + "'")
                 .add("referencePscId='" + referencePscId + "'")
-                .add("referencePscListEtag='" + referencePscListEtag + "'")
                 .add("registerEntryDate=" + registerEntryDate)
                 .add("updatedAt=" + updatedAt)
                 .toString();
@@ -190,7 +182,6 @@ public class PscCommon implements PscCommunal {
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
-                    .referencePscListEtag(other.getReferencePscListEtag())
                     .registerEntryDate(other.getRegisterEntryDate())
                     .updatedAt(other.getUpdatedAt());
         }
@@ -269,12 +260,6 @@ public class PscCommon implements PscCommunal {
         public Builder referencePscId(final String value) {
 
             buildSteps.add(data -> data.referencePscId = value);
-            return this;
-        }
-
-        public Builder referencePscListEtag(final String value) {
-
-            buildSteps.add(data -> data.referencePscListEtag = value);
             return this;
         }
 

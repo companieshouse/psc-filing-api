@@ -85,7 +85,6 @@ endlegend
                 +getNotifiedOn(): LocalDate
                 +getReferenceEtag()
                 +getReferencePscId()
-                +getReferencePscListEtag()
                 +getRegisterEntryDate(): LocalDate
             }
 
@@ -97,7 +96,6 @@ endlegend
                 -notifiedOn: LocalDate
                 -referenceEtag
                 -referencePscId
-                -referencePscListEtag
                 -registerEntryDate: LocalDate
             }
 

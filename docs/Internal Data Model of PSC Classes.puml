@@ -89,7 +89,6 @@ end legend
                 -notifiedOn: LocalDate
                 -referenceEtag
                 -referencePscId
-                -referencePscListEtag
                 -registerEntryDate: LocalDate
                 -updatedAt: Instant
             }

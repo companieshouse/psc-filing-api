@@ -101,11 +101,6 @@ public class PscWithIdentificationFiling implements PscCommunal {
     }
 
     @Override
-    public String getReferencePscListEtag() {
-        return pscCommon.getReferencePscListEtag();
-    }
-
-    @Override
     public LocalDate getRegisterEntryDate() {
         return pscCommon.getRegisterEntryDate();
     }
@@ -195,7 +190,6 @@ public class PscWithIdentificationFiling implements PscCommunal {
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
-                    .referencePscListEtag(other.getReferencePscListEtag())
                     .statementActionDate(other.getStatementActionDate())
                     .statementType(other.getStatementType())
                     .updatedAt(other.getUpdatedAt());
@@ -284,12 +278,6 @@ public class PscWithIdentificationFiling implements PscCommunal {
         public Builder referencePscId(final String value) {
 
             commonBuilder.referencePscId(value);
-            return this;
-        }
-
-        public Builder referencePscListEtag(final String value) {
-
-            commonBuilder.referencePscListEtag(value);
             return this;
         }
 
