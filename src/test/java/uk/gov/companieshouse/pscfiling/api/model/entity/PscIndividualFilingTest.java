@@ -105,11 +105,6 @@ class PscIndividualFilingTest {
     }
 
     @Test
-    void getReferencePscListEtag() {
-        assertThat(test.getReferencePscListEtag(), is(equalTo("list")));
-    }
-
-    @Test
     void getCeasedOn() {
         assertThat(test.getCeasedOn(), is(equalTo(ceasedOn)));
     }
@@ -205,7 +200,6 @@ class PscIndividualFilingTest {
                 .notifiedOn(notifiedOn)
                 .referenceEtag("etag")
                 .referencePscId("psc")
-                .referencePscListEtag("list")
                 .registerEntryDate(registerEntryDate)
                 .residentialAddress(address)
                 .residentialAddressSameAsCorrespondenceAddress(true)

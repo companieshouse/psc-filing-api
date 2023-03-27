@@ -17,6 +17,7 @@ import uk.gov.companieshouse.api.interceptor.TokenPermissionsInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
 import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
+import uk.gov.companieshouse.pscfiling.api.interceptor.RequestLoggingInterceptor;
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
@@ -33,6 +34,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
     private CompanyInterceptor companyInterceptor;
     private InternalUserInterceptor internalUserInterceptor;
+    private RequestLoggingInterceptor requestLoggingInterceptor;
 
     @Autowired
     public void setTokenPermissionsInterceptor(
@@ -50,6 +52,11 @@ public class InterceptorConfig implements WebMvcConfigurer {
         this.internalUserInterceptor = internalUserInterceptor;
     }
 
+    @Autowired
+    public void setRequestLoggingInterceptor(final RequestLoggingInterceptor requestLoggingInterceptor) {
+        this.requestLoggingInterceptor = requestLoggingInterceptor;
+    }
+
     /**
      * Set up the interceptors to run against endpoints when the endpoints are called
      * Interceptors are executed in order of configuration
@@ -65,6 +72,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
         addRequestPermissionsInterceptor(registry);
         addTransactionClosedInterceptor(registry);
         addInternalUserInterceptor(registry);
+        addRequestLoggingInterceptor(registry);
     }
 
     private void addTransactionInterceptor(final InterceptorRegistry registry) {
@@ -99,6 +107,10 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private void addTransactionClosedInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(transactionClosedInterceptor())
                 .addPathPatterns(FILINGS_PATH).order(7);
+    }
+
+    private void addRequestLoggingInterceptor(InterceptorRegistry registry) {
+        registry.addInterceptor(requestLoggingInterceptor).order(8);
     }
 
     @Bean

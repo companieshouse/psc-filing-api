@@ -175,7 +175,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
                     .notifiedOn(other.getNotifiedOn())
                     .referenceEtag(other.getReferenceEtag())
                     .referencePscId(other.getReferencePscId())
-                    .referencePscListEtag(other.getReferencePscListEtag())
                     .residentialAddress(other.getResidentialAddress())
                     .residentialAddressSameAsCorrespondenceAddress(
                             other.getResidentialAddressSameAsCorrespondenceAddress())

@@ -44,7 +44,6 @@ class WithIdentificationFilingDataDtoTest {
             .notifiedOn(notifiedOn)
             .referenceEtag("etag")
             .referencePscId("psc")
-            .referencePscListEtag("list")
             .registerEntryDate(registerEntryDate)
             .build();
     }
@@ -80,11 +79,6 @@ class WithIdentificationFilingDataDtoTest {
     }
 
     @Test
-    void getReferencePscListEtag() {
-        assertThat(testDto.getReferencePscListEtag(), is(equalTo("list")));
-    }
-
-    @Test
     void getCeasedOn() {
         assertThat(testDto.getCeasedOn(), is(equalTo(ceasedOn)));
     }
@@ -97,8 +91,7 @@ class WithIdentificationFilingDataDtoTest {
             + "poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
             + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
             + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, referenceEtag='etag', "
-            + "referencePscId='psc', referencePscListEtag='list', "
-            + "registerEntryDate=2022-11-05, "
+            + "referencePscId='psc', registerEntryDate=2022-11-05, "
             + "identification=null, name='null']";
         assertThat(testDto.toString(), is(expected));
 
@@ -129,7 +122,6 @@ class WithIdentificationFilingDataDtoTest {
             .notifiedOn(notifiedOn)
             .referenceEtag("etag")
             .referencePscId("psc")
-            .referencePscListEtag("list")
             .registerEntryDate(registerEntryDate)
             .identification(identification)
             .name("name")
@@ -139,7 +131,7 @@ class WithIdentificationFilingDataDtoTest {
             + "poBox='poBox', postalCode='postalCode', premises='premises', region='region'], "
             + "addressSameAsRegisteredOfficeAddress=true, ceasedOn=2022-11-21, "
             + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, referenceEtag='etag', "
-            + "referencePscId='psc', referencePscListEtag='list', "
+            + "referencePscId='psc', "
             + "registerEntryDate=2022-11-05, "
             + "identification=IdentificationDto[countryRegistered='theCountry',"
             + " placeRegistered='thePlace', registrationNumber='registration',"

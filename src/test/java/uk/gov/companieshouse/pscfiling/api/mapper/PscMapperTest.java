@@ -93,7 +93,6 @@ class PscMapperTest {
                 .referenceEtag("referenceEtag")
                 .referencePscId("referencePscId")
                 .nationality("nation")
-                .referencePscListEtag("list")
                 .residentialAddress(addressDto)
                 .residentialAddressSameAsCorrespondenceAddress(true)
                 .ceasedOn(localDate1)
@@ -116,7 +115,6 @@ class PscMapperTest {
         assertThat(filing.getNationality(), is("nation"));
         assertThat(filing.getReferenceEtag(), is("referenceEtag"));
         assertThat(filing.getReferencePscId(), is("referencePscId"));
-        assertThat(filing.getReferencePscListEtag(), is("list"));
         assertThat(filing.getCeasedOn(), is(localDate1.atStartOfDay().toLocalDate()));
         assertThat(filing.getResidentialAddress(), is(equalTo(address)));
         assertThat(filing.getResidentialAddressSameAsCorrespondenceAddress(), is(true));
@@ -174,7 +172,6 @@ class PscMapperTest {
                 .nationality("nation")
                 .referenceEtag("referenceEtag")
                 .referencePscId("referencePscId")
-                .referencePscListEtag("list")
                 .residentialAddress(address)
                 .residentialAddressSameAsCorrespondenceAddress(true)
                 .ceasedOn(localDate1)
@@ -196,7 +193,6 @@ class PscMapperTest {
         assertThat(dto.getReferenceEtag(), is("referenceEtag"));
         assertThat(dto.getReferencePscId(), is("referencePscId"));
         assertThat(dto.getNationality(), is("nation"));
-        assertThat(dto.getReferencePscListEtag(), is("list"));
         assertThat(dto.getResidentialAddress(), is(equalTo(addressDto)));
         assertThat(dto.getResidentialAddressSameAsCorrespondenceAddress(), is(true));
         assertThat(dto.getCeasedOn(), is(localDate1));

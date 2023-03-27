@@ -58,11 +58,6 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
     }
 
     @Override
-    public String getReferencePscListEtag() {
-        return pscCommunal.getReferencePscListEtag();
-    }
-
-    @Override
     public LocalDate getRegisterEntryDate() {
         return pscCommunal.getRegisterEntryDate();
     }
@@ -146,11 +141,6 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
 
         public Builder referencePscId(final String value) {
             commonBuilder.referencePscId(value);
-            return this;
-        }
-
-        public Builder referencePscListEtag(final String value) {
-            commonBuilder.referencePscListEtag(value);
             return this;
         }
 
