@@ -110,7 +110,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     void updateFilingWhenReplacingFields() throws Exception {
         final var body = "{\n"
                 + " \"id\": \"unauthorised\",\n"
-                + "  \"ceased_on\": \"2022-03-03\",\n"
+                + "  \"ceased_on\": \"2023-03-03\",\n"
                 + "  \"name_elements\": {\n"
                 + "    \"surname\": \"Replaced\"\n"
                 + "  },\n"

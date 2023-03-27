@@ -18,18 +18,21 @@ public class PscIndividualFilingServiceImpl implements PscIndividualFilingServic
     private PscIndividualFilingProvider pscIndividualFilingProvider;
     private PscIndividualFilingMergeProcessor mergeProcessor;
     private PscIndividualFilingPostMergeProcessor postMergeProcessor;
+    private PscIndividualPatchValidator pscIndividualPatchValidator;
 
     @Autowired
     public PscIndividualFilingServiceImpl(final PscIndividualFilingRepository filingRepository,
             final PatchServiceProperties patchServiceProperties,
             final PscIndividualFilingProvider pscIndividualFilingProvider,
             final PscIndividualFilingMergeProcessor mergeProcessor,
-            final PscIndividualFilingPostMergeProcessor postMergeProcessor) {
+            final PscIndividualFilingPostMergeProcessor postMergeProcessor,
+            final PscIndividualPatchValidator pscIndividualPatchValidator) {
         this.filingRepository = filingRepository;
         this.patchServiceProperties = patchServiceProperties;
         this.pscIndividualFilingProvider = pscIndividualFilingProvider;
         this.mergeProcessor = mergeProcessor;
         this.postMergeProcessor = postMergeProcessor;
+        this.pscIndividualPatchValidator = pscIndividualPatchValidator;
     }
 
     @Override
@@ -49,7 +52,7 @@ public class PscIndividualFilingServiceImpl implements PscIndividualFilingServic
         try {
             patchResult =
                     patchEntity(filingId, pscIndividualFilingProvider, patchMap, mergeProcessor,
-                            postMergeProcessor);
+                            postMergeProcessor, pscIndividualPatchValidator);
         }
         catch (IOException e) {
             throw new RuntimeException(e);  // TODO InvalidPatchException?

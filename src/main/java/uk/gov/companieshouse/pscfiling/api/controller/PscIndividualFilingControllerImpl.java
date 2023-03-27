@@ -102,7 +102,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
     @Override
     @Transactional
     @PatchMapping(value = "/{filingResourceId}", produces = {"application/json"},
-            consumes = {"application/merge-patch+json"})
+            consumes = {"application/merge-patch+json", "application/json"})
     public ResponseEntity<PscIndividualFiling> updateFiling(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,

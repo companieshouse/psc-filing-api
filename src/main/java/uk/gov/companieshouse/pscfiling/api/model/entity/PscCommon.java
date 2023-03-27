@@ -2,7 +2,6 @@ package uk.gov.companieshouse.pscfiling.api.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -24,7 +23,6 @@ public class PscCommon implements PscCommunal, Touchable {
     private String kind;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Links links;
-    @JsonMerge(OptBoolean.FALSE)
     private NaturesOfControlList naturesOfControl;
     private LocalDate notifiedOn;
     private String referenceEtag;
