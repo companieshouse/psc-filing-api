@@ -19,7 +19,7 @@ public class PscCommonDto implements PscDtoCommunal {
     private String referencePscId;
     private LocalDate registerEntryDate;
 
-    private PscCommonDto() {
+    protected PscCommonDto() {
         // prevent direct instantiation
     }
 
@@ -64,6 +64,46 @@ public class PscCommonDto implements PscDtoCommunal {
         return registerEntryDate;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final PscCommonDto that = (PscCommonDto) o;
+        return Objects.equals(getAddress(), that.getAddress())
+                && Objects.equals(getAddressSameAsRegisteredOfficeAddress(),
+                that.getAddressSameAsRegisteredOfficeAddress())
+                && Objects.equals(getCeasedOn(), that.getCeasedOn())
+                && Objects.equals(getNaturesOfControl(), that.getNaturesOfControl())
+                && Objects.equals(getNotifiedOn(), that.getNotifiedOn())
+                && Objects.equals(getReferenceEtag(), that.getReferenceEtag())
+                && Objects.equals(getReferencePscId(), that.getReferencePscId())
+                && Objects.equals(getRegisterEntryDate(), that.getRegisterEntryDate());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
+                getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
+                getRegisterEntryDate());
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ").add("address=" + address)
+                .add("addressSameAsRegisteredOfficeAddress=" + addressSameAsRegisteredOfficeAddress)
+                .add("ceasedOn=" + ceasedOn)
+                .add("naturesOfControl=" + naturesOfControl)
+                .add("notifiedOn=" + notifiedOn)
+                .add("referenceEtag='" + referenceEtag + "'")
+                .add("referencePscId='" + referencePscId + "'")
+                .add("registerEntryDate=" + registerEntryDate)
+                .toString();
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -75,10 +115,10 @@ public class PscCommonDto implements PscDtoCommunal {
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<PscCommonDto>> buildSteps;
+        protected final List<Consumer<PscCommonDto>> commonBuildSteps;
 
         public Builder() {
-            this.buildSteps = new ArrayList<>();
+            this.commonBuildSteps = new ArrayList<>();
         }
 
         public Builder(final PscCommonDto other) {
@@ -96,7 +136,7 @@ public class PscCommonDto implements PscDtoCommunal {
 
         public Builder address(final AddressDto value) {
 
-            buildSteps.add(data -> data.address = Optional.ofNullable(value)
+            commonBuildSteps.add(data -> data.address = Optional.ofNullable(value)
                     .map(v -> AddressDto.builder(v)
                             .build())
                     .orElse(null));
@@ -105,93 +145,55 @@ public class PscCommonDto implements PscDtoCommunal {
 
         public Builder addressSameAsRegisteredOfficeAddress(final Boolean value) {
 
-            buildSteps.add(data -> data.addressSameAsRegisteredOfficeAddress = value);
+            commonBuildSteps.add(data -> data.addressSameAsRegisteredOfficeAddress = value);
             return this;
         }
 
         public Builder ceasedOn(final LocalDate value) {
 
-            buildSteps.add(data -> data.ceasedOn = value);
+            commonBuildSteps.add(data -> data.ceasedOn = value);
             return this;
         }
 
         public Builder naturesOfControl(final List<String> value) {
-            buildSteps.add(data -> data.naturesOfControl =
+            commonBuildSteps.add(data -> data.naturesOfControl =
                     Optional.ofNullable(value).map(NaturesOfControlListDto::new).orElse(null));
             return this;
         }
 
         public Builder notifiedOn(final LocalDate value) {
 
-            buildSteps.add(data -> data.notifiedOn = value);
+            commonBuildSteps.add(data -> data.notifiedOn = value);
             return this;
         }
 
         public Builder referenceEtag(final String value) {
 
-            buildSteps.add(data -> data.referenceEtag = value);
+            commonBuildSteps.add(data -> data.referenceEtag = value);
             return this;
         }
 
         public Builder referencePscId(final String value) {
 
-            buildSteps.add(data -> data.referencePscId = value);
+            commonBuildSteps.add(data -> data.referencePscId = value);
             return this;
         }
 
         public Builder registerEntryDate(final LocalDate value) {
 
-            buildSteps.add(data -> data.registerEntryDate = value);
+            commonBuildSteps.add(data -> data.registerEntryDate = value);
             return this;
         }
 
         public PscCommonDto build() {
 
             final var data = new PscCommonDto();
-            buildSteps.forEach(step -> step.accept(data));
+            commonBuildSteps.forEach(step -> step.accept(data));
+
 
             return data;
         }
 
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final PscCommonDto that = (PscCommonDto) o;
-        return Objects.equals(getAddress(), that.getAddress()) && Objects.equals(
-                getAddressSameAsRegisteredOfficeAddress(),
-                that.getAddressSameAsRegisteredOfficeAddress()) && Objects.equals(getCeasedOn(),
-                that.getCeasedOn()) && Objects.equals(
-                getNaturesOfControl(), that.getNaturesOfControl()) && Objects.equals(
-                getNotifiedOn(), that.getNotifiedOn()) && Objects.equals(getReferenceEtag(),
-                that.getReferenceEtag()) && Objects.equals(getReferencePscId(),
-                that.getReferencePscId()) && Objects.equals(getRegisterEntryDate(),
-                that.getRegisterEntryDate());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
-                getNaturesOfControl(), getNotifiedOn(), getReferenceEtag(),
-                getReferencePscId(), getRegisterEntryDate());
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ").add("address=" + address)
-                .add("addressSameAsRegisteredOfficeAddress=" + addressSameAsRegisteredOfficeAddress)
-                .add("ceasedOn=" + ceasedOn)
-                .add("naturesOfControl=" + naturesOfControl)
-                .add("notifiedOn=" + notifiedOn)
-                .add("referenceEtag='" + referenceEtag + "'")
-                .add("referencePscId='" + referencePscId + "'")
-                .add("registerEntryDate=" + registerEntryDate)
-                .toString();
-    }
 }

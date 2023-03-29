@@ -23,6 +23,7 @@ public class PscWithIdentificationFiling extends PscCommon implements PscCommuna
     private String id;
     @JsonMerge
     private Identification identification;
+    private String name;
     private LocalDate statementActionDate;
     private String statementType;
 
@@ -34,6 +35,10 @@ public class PscWithIdentificationFiling extends PscCommon implements PscCommuna
 
     public String getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Identification getIdentification() {
@@ -60,15 +65,16 @@ public class PscWithIdentificationFiling extends PscCommon implements PscCommuna
             return false;
         }
         final PscWithIdentificationFiling that = (PscWithIdentificationFiling) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getIdentification(),
-                that.getIdentification()) && Objects.equals(getStatementActionDate(),
-                that.getStatementActionDate()) && Objects.equals(getStatementType(),
-                that.getStatementType());
+        return Objects.equals(getId(), that.getId())
+                && Objects.equals(getIdentification(), that.getIdentification())
+                && Objects.equals(getName(), that.getName())
+                && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
+                && Objects.equals(getStatementType(), that.getStatementType());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getId(), getIdentification(),
+        return Objects.hash(super.hashCode(), getId(), getIdentification(), getName(),
                 getStatementActionDate(), getStatementType());
     }
 
@@ -164,12 +170,6 @@ public class PscWithIdentificationFiling extends PscCommon implements PscCommuna
             return this;
         }
 
-        @Override
-        public Builder name(final String value) {
-
-            commonBuilder.name(value);
-            return this;
-        }
 
         public Builder identification(final Identification value) {
             buildSteps.add(data -> data.identification = Optional.ofNullable(value)
@@ -251,6 +251,12 @@ public class PscWithIdentificationFiling extends PscCommon implements PscCommuna
         public Builder statementType(final String value) {
 
             buildSteps.add(data -> data.statementType = value);
+            return this;
+        }
+
+        public Builder name(final String value) {
+
+            buildSteps.add(data -> data.name = value);
             return this;
         }
 

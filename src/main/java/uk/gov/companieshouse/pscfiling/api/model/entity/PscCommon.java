@@ -17,7 +17,6 @@ public class PscCommon implements PscCommunal, Touchable {
     private Address address;
     private Boolean addressSameAsRegisteredOfficeAddress;
     private LocalDate ceasedOn;
-    private String name;
     private Instant createdAt;
     private String etag;
     private String kind;
@@ -43,11 +42,6 @@ public class PscCommon implements PscCommunal, Touchable {
     @Override
     public LocalDate getCeasedOn() {
         return ceasedOn;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
@@ -108,12 +102,13 @@ public class PscCommon implements PscCommunal, Touchable {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         final var pscCommon = (PscCommon) o;
+
         return Objects.equals(getAddress(), pscCommon.getAddress())
                 && Objects.equals(getAddressSameAsRegisteredOfficeAddress(),
                 pscCommon.getAddressSameAsRegisteredOfficeAddress())
                 && Objects.equals(getCeasedOn(), pscCommon.getCeasedOn())
-                && Objects.equals(getName(), pscCommon.getName())
                 && Objects.equals(getCreatedAt(), pscCommon.getCreatedAt())
                 && Objects.equals(getEtag(), pscCommon.getEtag())
                 && Objects.equals(getKind(), pscCommon.getKind())
@@ -129,7 +124,7 @@ public class PscCommon implements PscCommunal, Touchable {
     @Override
     public int hashCode() {
         return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
-                getName(), getCreatedAt(), getEtag(), getKind(), getLinks(), getNaturesOfControl(),
+                getCreatedAt(), getEtag(), getKind(), getLinks(), getNaturesOfControl(),
                 getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
                 getRegisterEntryDate(), getUpdatedAt());
     }
@@ -139,7 +134,6 @@ public class PscCommon implements PscCommunal, Touchable {
         return new StringJoiner(", ")
                 .add("address=" + address)
                 .add("addressSameAsRegisteredOfficeAddress=" + addressSameAsRegisteredOfficeAddress)
-                .add("name=" + name)
                 .add("ceasedOn=" + ceasedOn)
                 .add("createdAt=" + createdAt)
                 .add("etag='" + etag + "'")
@@ -182,7 +176,6 @@ public class PscCommon implements PscCommunal, Touchable {
             this.address(other.getAddress())
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
-                    .name(other.getName())
                     .ceasedOn(other.getCeasedOn())
                     .createdAt(other.createdAt)
                     .etag(other.getEtag())
@@ -214,12 +207,6 @@ public class PscCommon implements PscCommunal, Touchable {
         public Builder ceasedOn(final LocalDate value) {
 
             commonBuildSteps.add(data -> data.ceasedOn = value);
-            return this;
-        }
-
-        public Builder name(final String value) {
-
-            commonBuildSteps.add(data -> data.name = value);
             return this;
         }
 

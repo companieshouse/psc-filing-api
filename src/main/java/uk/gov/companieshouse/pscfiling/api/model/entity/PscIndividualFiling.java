@@ -17,6 +17,37 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling extends PscCommon implements PscCommunal, Touchable {
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final PscIndividualFiling that = (PscIndividualFiling) o;
+        return Objects.equals(getId(), that.getId())
+                && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
+                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
+                && Objects.equals(getNameElements(), that.getNameElements())
+                && Objects.equals(getNationality(), that.getNationality())
+                && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
+                && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
+                that.getResidentialAddressSameAsCorrespondenceAddress())
+                && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
+                && Objects.equals(getStatementType(), that.getStatementType());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getId(), getCountryOfResidence(), getDateOfBirth(),
+                getNameElements(), getNationality(), getResidentialAddress(),
+                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
+                getStatementType());
+    }
 
     @Id
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -76,38 +107,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        final PscIndividualFiling that = (PscIndividualFiling) o;
-        return Objects.equals(getId(), that.getId())
-                && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
-                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
-                && Objects.equals(getNameElements(), that.getNameElements())
-                && Objects.equals(getNationality(), that.getNationality())
-                && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
-                && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
-                that.getResidentialAddressSameAsCorrespondenceAddress())
-                && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
-                && Objects.equals(getStatementType(), that.getStatementType());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getId(), getCountryOfResidence(), getDateOfBirth(),
-                getNameElements(), getNationality(), getResidentialAddress(),
-                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
-                getStatementType());
-    }
-
-    @Override
     public String toString() {
         return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
                         "id='" + id + "'")
@@ -115,7 +114,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
                 .add("addressSameAsRegisteredOfficeAddress="
                         + getAddressSameAsRegisteredOfficeAddress())
                 .add("ceasedOn=" + getCeasedOn())
-                .add("name='" + getName() + "'")
                 .add("createdAt=" + getCreatedAt())
                 .add("etag='" + getEtag() + "'")
                 .add("kind='" + getKind() + "'")
@@ -161,7 +159,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
-                    .name(other.getName())
                     .countryOfResidence(other.getCountryOfResidence())
                     .createdAt(other.getCreatedAt())
                     .dateOfBirth(other.getDateOfBirth())
@@ -207,13 +204,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
         public Builder ceasedOn(final LocalDate value) {
 
             commonBuilder.ceasedOn(value);
-            return this;
-        }
-
-        @Override
-        public Builder name(final String value) {
-
-            commonBuilder.name(value);
             return this;
         }
 

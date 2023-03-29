@@ -11,55 +11,13 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 @JsonDeserialize(builder = PscWithIdentificationDto.Builder.class)
-public class PscWithIdentificationDto implements PscDtoCommunal {
-
-    private final PscDtoCommunal pscCommunal;
+public class PscWithIdentificationDto extends PscCommonDto implements PscDtoCommunal {
     private IdentificationDto identification;
     private String name;
 
-    private PscWithIdentificationDto(final PscCommonDto.Builder commonBuilder) {
-        Objects.requireNonNull(commonBuilder);
-        pscCommunal = commonBuilder.build();
-    }
-
-    @Override
-    public AddressDto getAddress() {
-        return pscCommunal.getAddress();
-    }
-
-    @Override
-    public Boolean getAddressSameAsRegisteredOfficeAddress() {
-        return pscCommunal.getAddressSameAsRegisteredOfficeAddress();
-    }
-
-    @Override
-    public LocalDate getCeasedOn() {
-        return pscCommunal.getCeasedOn();
-    }
-
-    @Override
-    public List<String> getNaturesOfControl() {
-        return pscCommunal.getNaturesOfControl();
-    }
-
-    @Override
-    public LocalDate getNotifiedOn() {
-        return pscCommunal.getNotifiedOn();
-    }
-
-    @Override
-    public String getReferenceEtag() {
-        return pscCommunal.getReferenceEtag();
-    }
-
-    @Override
-    public String getReferencePscId() {
-        return pscCommunal.getReferencePscId();
-    }
-
-    @Override
-    public LocalDate getRegisterEntryDate() {
-        return pscCommunal.getRegisterEntryDate();
+    private PscWithIdentificationDto() {
+        PscCommonDto.builder()
+                .build();
     }
 
     public IdentificationDto getIdentification() {
@@ -76,20 +34,23 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         final PscWithIdentificationDto that = (PscWithIdentificationDto) o;
-        return Objects.equals(pscCommunal, that.pscCommunal) && Objects.equals(getIdentification(),
-                that.getIdentification());
+        return Objects.equals(getIdentification(), that.getIdentification()) && Objects.equals(
+                getName(), that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pscCommunal, getIdentification(), getName());
+        return Objects.hash(super.hashCode(), getIdentification(), getName());
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", PscWithIdentificationDto.class.getSimpleName() + "[",
-                "]").add(pscCommunal.toString())
+                "]").add(super.toString())
                 .add("identification=" + identification)
                 .add("name='" + name +"'")
                 .toString();
@@ -100,7 +61,7 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
     }
 
     @JsonPOJOBuilder(withPrefix = "")
-    public static class Builder {
+    public static class Builder extends PscCommonDto.Builder {
 
         private final List<Consumer<PscWithIdentificationDto>> buildSteps;
         private final PscCommonDto.Builder commonBuilder = PscCommonDto.builder();
@@ -109,41 +70,49 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
             this.buildSteps = new ArrayList<>();
         }
 
+        @Override
         public Builder address(final AddressDto value) {
             commonBuilder.address(value);
             return this;
         }
 
+        @Override
         public Builder addressSameAsRegisteredOfficeAddress(final Boolean value) {
             commonBuilder.addressSameAsRegisteredOfficeAddress(value);
             return this;
         }
 
+        @Override
         public Builder ceasedOn(final LocalDate value) {
             commonBuilder.ceasedOn(value);
             return this;
         }
 
+        @Override
         public Builder naturesOfControl(final List<String> value) {
             commonBuilder.naturesOfControl(value);
             return this;
         }
 
+        @Override
         public Builder notifiedOn(final LocalDate value) {
             commonBuilder.notifiedOn(value);
             return this;
         }
 
+        @Override
         public Builder referenceEtag(final String value) {
             commonBuilder.referenceEtag(value);
             return this;
         }
 
+        @Override
         public Builder referencePscId(final String value) {
             commonBuilder.referencePscId(value);
             return this;
         }
 
+        @Override
         public Builder registerEntryDate(final LocalDate value) {
             commonBuilder.registerEntryDate(value);
             return this;
@@ -162,9 +131,11 @@ public class PscWithIdentificationDto implements PscDtoCommunal {
             return this;
         }
 
+        @Override
         public PscWithIdentificationDto build() {
 
-            final var data = new PscWithIdentificationDto(commonBuilder);
+            final var data = new PscWithIdentificationDto();
+            commonBuilder.commonBuildSteps.forEach(s -> s.accept(data));
             buildSteps.forEach(step -> step.accept(data));
 
             return data;

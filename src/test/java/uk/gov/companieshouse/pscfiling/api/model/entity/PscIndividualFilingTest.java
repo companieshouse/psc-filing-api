@@ -128,7 +128,7 @@ class PscIndividualFilingTest {
                         + "locality='locality', poBox='poBox', postalCode='postalCode', "
                         + "premises='premises', region='region'], "
                         + "addressSameAsRegisteredOfficeAddress=true, "
-                        + "ceasedOn=2022-11-21, name='name', "
+                        + "ceasedOn=2022-11-21, "
                         + "createdAt=2019-11-05T00:00:00Z, etag='etag', kind='kind', "
                         + "links=Links[self=self, validationStatus=valid], "
                         + "naturesOfControl=[type1, type2], notifiedOn=2022-11-10, "
@@ -193,7 +193,6 @@ class PscIndividualFilingTest {
                 .etag("etag")
                 .kind("kind")
                 .links(links)
-                .name("name")
                 .nameElements(nameElements)
                 .nationality("nationality")
                 .naturesOfControl(List.of("type1", "type2"))
