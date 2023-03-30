@@ -16,8 +16,7 @@ public class PscWithIdentificationDto extends PscCommonDto implements PscDtoComm
     private String name;
 
     private PscWithIdentificationDto() {
-        PscCommonDto.builder()
-                .build();
+        // prevent instantiation
     }
 
     public IdentificationDto getIdentification() {

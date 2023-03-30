@@ -21,8 +21,7 @@ public class PscIndividualDto extends PscCommonDto implements PscDtoCommunal {
     private Boolean residentialAddressSameAsCorrespondenceAddress;
 
     private PscIndividualDto() {
-        PscCommonDto.builder()
-                .build();
+        // prevent instantiation
     }
 
     public String getCountryOfResidence() {
