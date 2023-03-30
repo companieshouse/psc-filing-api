@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -11,103 +13,30 @@ import java.util.StringJoiner;
 import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Unwrapped;
 
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PscWithIdentificationFiling implements PscCommunal {
+public class PscWithIdentificationFiling extends PscCommon implements PscCommunal, Touchable {
 
     @Id
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String id;
-    @Unwrapped.Empty
-    private PscCommon pscCommon;
+    @JsonMerge
     private Identification identification;
+    private String name;
     private LocalDate statementActionDate;
     private String statementType;
 
     public PscWithIdentificationFiling() {
         // required by Spring JPA
-        pscCommon = PscCommon.builder()
-                .build();
-    }
-
-    private PscWithIdentificationFiling(final PscCommon.Builder commonBuilder) {
-        Objects.requireNonNull(commonBuilder);
-        pscCommon = commonBuilder.build();
     }
 
     public String getId() {
         return id;
     }
 
-    @Override
-    public Address getAddress() {
-        return pscCommon.getAddress();
-    }
-
-    @Override
-    public Boolean getAddressSameAsRegisteredOfficeAddress() {
-        return pscCommon.getAddressSameAsRegisteredOfficeAddress();
-    }
-
-    @Override
-    public LocalDate getCeasedOn() {
-        return pscCommon.getCeasedOn();
-    }
-
-    @Override
     public String getName() {
-        return pscCommon.getName();
-    }
-
-    @Override
-    public Instant getCreatedAt() {
-        return pscCommon.getCreatedAt();
-    }
-
-    @Override
-    public String getEtag() {
-        return pscCommon.getEtag();
-    }
-
-    @Override
-    public String getKind() {
-        return pscCommon.getKind();
-    }
-
-    @Override
-    public Links getLinks() {
-        return pscCommon.getLinks();
-    }
-
-    @Override
-    public List<String> getNaturesOfControl() {
-        return pscCommon.getNaturesOfControl();
-    }
-
-    @Override
-    public LocalDate getNotifiedOn() {
-        return pscCommon.getNotifiedOn();
-    }
-
-    @Override
-    public String getReferenceEtag() {
-        return pscCommon.getReferenceEtag();
-    }
-
-    @Override
-    public String getReferencePscId() {
-        return pscCommon.getReferencePscId();
-    }
-
-    @Override
-    public LocalDate getRegisterEntryDate() {
-        return pscCommon.getRegisterEntryDate();
-    }
-
-    @Override
-    public Instant getUpdatedAt() {
-        return pscCommon.getUpdatedAt();
+        return name;
     }
 
     public Identification getIdentification() {
@@ -130,17 +59,20 @@ public class PscWithIdentificationFiling implements PscCommunal {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         final PscWithIdentificationFiling that = (PscWithIdentificationFiling) o;
         return Objects.equals(getId(), that.getId())
-                && Objects.equals(pscCommon, that.pscCommon)
                 && Objects.equals(getIdentification(), that.getIdentification())
+                && Objects.equals(getName(), that.getName())
                 && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
                 && Objects.equals(getStatementType(), that.getStatementType());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), pscCommon, getIdentification(),
+        return Objects.hash(super.hashCode(), getId(), getIdentification(), getName(),
                 getStatementActionDate(), getStatementType());
     }
 
@@ -148,7 +80,8 @@ public class PscWithIdentificationFiling implements PscCommunal {
     public String toString() {
         return new StringJoiner(", ", PscWithIdentificationFiling.class.getSimpleName() + "[", "]").add(
                         "id='" + id + "'")
-                .add(pscCommon.toString())
+                .add(super.toString())
+                .add("name='" + name + "'")
                 .add("identification='" + identification + "'")
                 .add("statementActionDate=" + statementActionDate)
                 .add("statementType='" + statementType + "'")
@@ -163,7 +96,7 @@ public class PscWithIdentificationFiling implements PscCommunal {
         return new Builder(other);
     }
 
-    public static class Builder {
+    public static class Builder extends PscCommon.Builder {
 
         private final List<Consumer<PscWithIdentificationFiling>> buildSteps;
         private final PscCommon.Builder commonBuilder = PscCommon.builder();
@@ -201,29 +134,27 @@ public class PscWithIdentificationFiling implements PscCommunal {
             return this;
         }
 
+        @Override
         public Builder address(final Address value) {
 
             commonBuilder.address(value);
             return this;
         }
 
+        @Override
         public Builder addressSameAsRegisteredOfficeAddress(final Boolean value) {
 
             commonBuilder.addressSameAsRegisteredOfficeAddress(value);
             return this;
         }
 
+        @Override
         public Builder ceasedOn(final LocalDate value) {
 
             commonBuilder.ceasedOn(value);
             return this;
         }
 
-        public Builder name(final String value) {
-
-            commonBuilder.name(value);
-            return this;
-        }
 
         public Builder identification(final Identification value) {
             buildSteps.add(data -> data.identification = Optional.ofNullable(value)
@@ -233,54 +164,63 @@ public class PscWithIdentificationFiling implements PscCommunal {
             return this;
         }
 
+        @Override
         public Builder createdAt(final Instant value) {
 
             commonBuilder.createdAt(value);
             return this;
         }
 
+        @Override
         public Builder etag(final String value) {
 
             commonBuilder.etag(value);
             return this;
         }
 
+        @Override
         public Builder kind(final String value) {
 
             commonBuilder.kind(value);
             return this;
         }
 
+        @Override
         public Builder links(final Links value) {
 
             commonBuilder.links(value);
             return this;
         }
 
+        @Override
         public Builder naturesOfControl(final List<String> value) {
 
             commonBuilder.naturesOfControl(value);
             return this;
         }
 
+        @Override
         public Builder notifiedOn(final LocalDate value) {
 
             commonBuilder.notifiedOn(value);
             return this;
         }
 
+        @Override
         public Builder referenceEtag(final String value) {
 
             commonBuilder.referenceEtag(value);
             return this;
         }
 
+        @Override
         public Builder referencePscId(final String value) {
 
             commonBuilder.referencePscId(value);
             return this;
         }
 
+        @Override
         public Builder registerEntryDate(final LocalDate value) {
 
             commonBuilder.registerEntryDate(value);
@@ -299,14 +239,23 @@ public class PscWithIdentificationFiling implements PscCommunal {
             return this;
         }
 
+        public Builder name(final String value) {
+
+            buildSteps.add(data -> data.name = value);
+            return this;
+        }
+
+        @Override
         public Builder updatedAt(final Instant value) {
 
             commonBuilder.updatedAt(value);
             return this;
         }
 
+        @Override
         public PscWithIdentificationFiling build() {
-            final var data = new PscWithIdentificationFiling(commonBuilder);
+            final var data = new PscWithIdentificationFiling();
+            commonBuilder.commonBuildSteps.forEach(s -> s.accept(data));
             buildSteps.forEach(s -> s.accept(data));
 
             return data;

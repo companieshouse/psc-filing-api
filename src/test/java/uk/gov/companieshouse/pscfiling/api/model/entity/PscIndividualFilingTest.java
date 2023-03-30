@@ -127,7 +127,7 @@ class PscIndividualFilingTest {
                         + "addressLine2='line2', careOf='careOf', country='country', "
                         + "locality='locality', poBox='poBox', postalCode='postalCode', "
                         + "premises='premises', region='region'], "
-                        + "addressSameAsRegisteredOfficeAddress=true, name=null, "
+                        + "addressSameAsRegisteredOfficeAddress=true, "
                         + "ceasedOn=2022-11-21, "
                         + "createdAt=2019-11-05T00:00:00Z, etag='etag', kind='kind', "
                         + "links=Links[self=self, validationStatus=valid], "

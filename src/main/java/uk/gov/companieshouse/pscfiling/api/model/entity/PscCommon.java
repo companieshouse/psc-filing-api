@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -10,14 +12,15 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
-public class PscCommon implements PscCommunal {
+public class PscCommon implements PscCommunal, Touchable {
+    @JsonMerge
     private Address address;
     private Boolean addressSameAsRegisteredOfficeAddress;
     private LocalDate ceasedOn;
-    private String name;
     private Instant createdAt;
     private String etag;
     private String kind;
+    @JsonProperty(access= JsonProperty.Access.READ_ONLY)
     private Links links;
     private NaturesOfControlList naturesOfControl;
     private LocalDate notifiedOn;
@@ -39,11 +42,6 @@ public class PscCommon implements PscCommunal {
     @Override
     public LocalDate getCeasedOn() {
         return ceasedOn;
-    }
-
-    @Override
-    public String getName() {
-        return name;
     }
 
     @Override
@@ -104,12 +102,13 @@ public class PscCommon implements PscCommunal {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         final var pscCommon = (PscCommon) o;
+
         return Objects.equals(getAddress(), pscCommon.getAddress())
                 && Objects.equals(getAddressSameAsRegisteredOfficeAddress(),
                 pscCommon.getAddressSameAsRegisteredOfficeAddress())
                 && Objects.equals(getCeasedOn(), pscCommon.getCeasedOn())
-                && Objects.equals(getName(), pscCommon.getName())
                 && Objects.equals(getCreatedAt(), pscCommon.getCreatedAt())
                 && Objects.equals(getEtag(), pscCommon.getEtag())
                 && Objects.equals(getKind(), pscCommon.getKind())
@@ -125,7 +124,7 @@ public class PscCommon implements PscCommunal {
     @Override
     public int hashCode() {
         return Objects.hash(getAddress(), getAddressSameAsRegisteredOfficeAddress(), getCeasedOn(),
-                getName(), getCreatedAt(), getEtag(), getKind(), getLinks(), getNaturesOfControl(),
+                getCreatedAt(), getEtag(), getKind(), getLinks(), getNaturesOfControl(),
                 getNotifiedOn(), getReferenceEtag(), getReferencePscId(),
                 getRegisterEntryDate(), getUpdatedAt());
     }
@@ -135,7 +134,6 @@ public class PscCommon implements PscCommunal {
         return new StringJoiner(", ")
                 .add("address=" + address)
                 .add("addressSameAsRegisteredOfficeAddress=" + addressSameAsRegisteredOfficeAddress)
-                .add("name=" + name)
                 .add("ceasedOn=" + ceasedOn)
                 .add("createdAt=" + createdAt)
                 .add("etag='" + etag + "'")
@@ -158,13 +156,19 @@ public class PscCommon implements PscCommunal {
         return new Builder(other);
     }
 
+    @Override
+    public void touch(final Instant instant) {
+        this.updatedAt = instant;
+    }
+
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
-        private final List<Consumer<PscCommon>> buildSteps;
+
+        protected final List<Consumer<PscCommon>> commonBuildSteps;
 
         public Builder() {
-            this.buildSteps = new ArrayList<>();
+            this.commonBuildSteps = new ArrayList<>();
         }
 
         public Builder(final PscCommon other) {
@@ -172,7 +176,6 @@ public class PscCommon implements PscCommunal {
             this.address(other.getAddress())
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
-                    .name(other.getName())
                     .ceasedOn(other.getCeasedOn())
                     .createdAt(other.createdAt)
                     .etag(other.getEtag())
@@ -188,7 +191,7 @@ public class PscCommon implements PscCommunal {
 
         public Builder address(final Address value) {
 
-            buildSteps.add(data -> data.address = Optional.ofNullable(value)
+            commonBuildSteps.add(data -> data.address = Optional.ofNullable(value)
                     .map(v -> Address.builder(v)
                             .build())
                     .orElse(null));
@@ -197,88 +200,82 @@ public class PscCommon implements PscCommunal {
 
         public Builder addressSameAsRegisteredOfficeAddress(final Boolean value) {
 
-            buildSteps.add(data -> data.addressSameAsRegisteredOfficeAddress = value);
+            commonBuildSteps.add(data -> data.addressSameAsRegisteredOfficeAddress = value);
             return this;
         }
 
         public Builder ceasedOn(final LocalDate value) {
 
-            buildSteps.add(data -> data.ceasedOn = value);
-            return this;
-        }
-
-        public Builder name(final String value) {
-
-            buildSteps.add(data -> data.name = value);
+            commonBuildSteps.add(data -> data.ceasedOn = value);
             return this;
         }
 
         public Builder createdAt(final Instant value) {
 
-            buildSteps.add(data -> data.createdAt = value);
+            commonBuildSteps.add(data -> data.createdAt = value);
             return this;
         }
 
         public Builder etag(final String value) {
 
-            buildSteps.add(data -> data.etag = value);
+            commonBuildSteps.add(data -> data.etag = value);
             return this;
         }
 
         public Builder kind(final String value) {
 
-            buildSteps.add(data -> data.kind = value);
+            commonBuildSteps.add(data -> data.kind = value);
             return this;
         }
 
         public Builder links(final Links value) {
 
-            buildSteps.add(data -> data.links = Optional.ofNullable(value)
+            commonBuildSteps.add(data -> data.links = Optional.ofNullable(value)
                     .map(v -> new Links(v.getSelf(), v.getValidationStatus()))
                     .orElse(null));
             return this;
         }
 
         public Builder naturesOfControl(final List<String> value) {
-            buildSteps.add(data -> data.naturesOfControl =
+            commonBuildSteps.add(data -> data.naturesOfControl =
                     Optional.ofNullable(value).map(NaturesOfControlList::new).orElse(null));
             return this;
         }
 
         public Builder notifiedOn(final LocalDate value) {
 
-            buildSteps.add(data -> data.notifiedOn = value);
+            commonBuildSteps.add(data -> data.notifiedOn = value);
             return this;
         }
 
         public Builder referenceEtag(final String value) {
 
-            buildSteps.add(data -> data.referenceEtag = value);
+            commonBuildSteps.add(data -> data.referenceEtag = value);
             return this;
         }
 
         public Builder referencePscId(final String value) {
 
-            buildSteps.add(data -> data.referencePscId = value);
+            commonBuildSteps.add(data -> data.referencePscId = value);
             return this;
         }
 
         public Builder registerEntryDate(final LocalDate value) {
 
-            buildSteps.add(data -> data.registerEntryDate = value);
+            commonBuildSteps.add(data -> data.registerEntryDate = value);
             return this;
         }
 
         public Builder updatedAt(final Instant value) {
 
-            buildSteps.add(data -> data.updatedAt = value);
+            commonBuildSteps.add(data -> data.updatedAt = value);
             return this;
         }
 
         public PscCommon build() {
 
             final var data = new PscCommon();
-            buildSteps.forEach(step -> step.accept(data));
+            commonBuildSteps.forEach(step -> step.accept(data));
 
             return data;
         }

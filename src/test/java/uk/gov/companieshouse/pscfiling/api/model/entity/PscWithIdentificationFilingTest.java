@@ -150,13 +150,13 @@ class PscWithIdentificationFilingTest {
                         + "addressLine2='line2', careOf='careOf', country='country', "
                         + "locality='locality', poBox='poBox', postalCode='postalCode', "
                         + "premises='premises', region='region'], "
-                        + "addressSameAsRegisteredOfficeAddress=true, name=name, "
+                        + "addressSameAsRegisteredOfficeAddress=true, "
                         + "ceasedOn=2022-11-21, createdAt=2019-11-05T00:00:00Z, etag='etag', "
                         + "kind='kind', links=Links[self=self, "
                         + "validationStatus=validationStatus], naturesOfControl=[type1, type2], "
                         + "notifiedOn=2022-11-10, referenceEtag='etag', referencePscId='psc', "
                         + "registerEntryDate=2022-11-05, "
-                        + "updatedAt=2022-11-05T00:00:00Z, "
+                        + "updatedAt=2022-11-05T00:00:00Z, name='name', "
                         + "identification='Identification[countryRegistered='theCountry', "
                         + "legalAuthority='theAuthority', legalForm='theForm', "
                         + "placeRegistered='thePlace', registrationNumber='registration']', "
@@ -170,14 +170,6 @@ class PscWithIdentificationFilingTest {
 
         System.out.println(json);
     }
-
-//    @Test
-//    void builder() {
-//    }
-//
-//    @Test
-//    void testBuilder() {
-//    }
 
     private PscWithIdentificationFiling createPscWithIdentificationFiling() {
 
