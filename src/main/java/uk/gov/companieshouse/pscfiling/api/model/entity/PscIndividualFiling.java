@@ -17,42 +17,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling extends PscCommon implements PscCommunal, Touchable {
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        final PscIndividualFiling that = (PscIndividualFiling) o;
-        return Objects.equals(getId(), that.getId())
-                && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
-                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
-                && Objects.equals(getNameElements(), that.getNameElements())
-                && Objects.equals(getNationality(), that.getNationality())
-                && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
-                && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
-                that.getResidentialAddressSameAsCorrespondenceAddress())
-                && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
-                && Objects.equals(getStatementType(), that.getStatementType());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getId(), getCountryOfResidence(), getDateOfBirth(),
-                getNameElements(), getNationality(), getResidentialAddress(),
-                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
-                getStatementType());
-    }
-
     @Id
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String id;
+
     private String countryOfResidence;
+
     @JsonMerge
     private Date3Tuple dateOfBirth;
     @JsonMerge
@@ -63,13 +33,9 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     private Boolean residentialAddressSameAsCorrespondenceAddress;
     private LocalDate statementActionDate;
     private String statementType;
-
     public PscIndividualFiling() {
         // required by Spring JPA
-        PscCommon.builder()
-                .build();
     }
-
     public String getId() {
         return id;
     }
@@ -107,23 +73,42 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     }
 
     @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        final PscIndividualFiling that = (PscIndividualFiling) o;
+        return Objects.equals(getId(), that.getId())
+                && Objects.equals(getCountryOfResidence(), that.getCountryOfResidence())
+                && Objects.equals(getDateOfBirth(), that.getDateOfBirth())
+                && Objects.equals(getNameElements(), that.getNameElements())
+                && Objects.equals(getNationality(), that.getNationality())
+                && Objects.equals(getResidentialAddress(), that.getResidentialAddress())
+                && Objects.equals(getResidentialAddressSameAsCorrespondenceAddress(),
+                that.getResidentialAddressSameAsCorrespondenceAddress())
+                && Objects.equals(getStatementActionDate(), that.getStatementActionDate())
+                && Objects.equals(getStatementType(), that.getStatementType());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getId(), getCountryOfResidence(), getDateOfBirth(),
+                getNameElements(), getNationality(), getResidentialAddress(),
+                getResidentialAddressSameAsCorrespondenceAddress(), getStatementActionDate(),
+                getStatementType());
+    }
+
+    @Override
     public String toString() {
         return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
                         "id='" + id + "'")
-                .add("address=" + getAddress())
-                .add("addressSameAsRegisteredOfficeAddress="
-                        + getAddressSameAsRegisteredOfficeAddress())
-                .add("ceasedOn=" + getCeasedOn())
-                .add("createdAt=" + getCreatedAt())
-                .add("etag='" + getEtag() + "'")
-                .add("kind='" + getKind() + "'")
-                .add("links=" + getLinks())
-                .add("naturesOfControl=" + getNaturesOfControl())
-                .add("notifiedOn=" + getNotifiedOn())
-                .add("referenceEtag='" + getReferenceEtag() + "'")
-                .add("referencePscId='" + getReferencePscId() + "'")
-                .add("registerEntryDate=" + getRegisterEntryDate())
-                .add("updatedAt=" + getUpdatedAt())
+                .add(super.toString())
                 .add("countryOfResidence='" + countryOfResidence + "'")
                 .add("dateOfBirth=" + dateOfBirth)
                 .add("nameElements=" + nameElements)
@@ -143,8 +128,8 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     public static Builder builder(final PscIndividualFiling other) {
         return new Builder(other);
     }
-
     public static class Builder extends PscCommon.Builder {
+
         private final List<Consumer<PscIndividualFiling>> buildSteps;
         private final PscCommon.Builder commonBuilder = PscCommon.builder();
 
