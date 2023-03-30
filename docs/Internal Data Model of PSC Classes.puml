@@ -1,19 +1,26 @@
 @startuml
 
 title PSC Filing API: Internal Data Model Class Structure
-
+scale 0.5
 'skinparam style strictuml
+hide empty members
 
 legend right
 |=Revision |=Date |
-|    0.3    |     22/03/2023    |
+|    0.3    |     30/03/2023    |
 end legend
 
     package "model" {
 
         package "entity" {
 
-           class PscCommon {
+        interface PscCommunal
+
+        interface Touchable {
+            +touch() : void
+        }
+
+           class PscCommon implements PscCommunal, Touchable {
              -address: Address
              -addressSameAsRegisteredOfficeAddress: Boolean
              -ceasedOn: LocalDate
@@ -38,7 +45,7 @@ end legend
            }
 
            note "This models the corporate entity (RLE) and \nlegal person (ORP) types of PSC" as Note1
-           PscWithIdentificationFiling .. Note1
+           PscWithIdentificationFiling -u- Note1
 
            class PscIndividualFiling extends PscCommon {
                 -countryOfResidence

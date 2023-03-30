@@ -1,0 +1,66 @@
+@startuml
+'https://plantuml.com/class-diagram
+'skinparam linetype polyline
+skinparam nodesep 50 /' horizontal separator '/
+skinparam ranksep 100 /' vertical separator '/
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 1
+skinparam titleBorderColor black
+skinparam titleBackgroundColor AliceBlue
+skinparam groupInheritance 1
+skinparam legendBackgroundColor AliceBlue
+
+'skinparam style strictuml
+
+'scale 800 width
+scale 0.5
+hide empty members
+'hide circle'
+skinparam titleFontSize 18
+
+'top to bottom direction
+'left to right direction
+
+title PSC Filing API: Target Data Model Class Structure
+
+legend right
+|=Revision |=Date |
+|    0.1    |     30/03/2023    |
+endlegend
+
+    package "model" {
+
+        package "dto" {
+          class PscStatementDto {
+                -referenceEtag
+                -referenceStatementId
+                -restrictionsNoticeWithdrawlReason
+                -statementActionDate: LocalDate
+                -statementType
+            }
+
+            note "Required for PSC09" as Note2
+
+          Note2 - PscStatementDto::referenceStatementId
+
+        interface FilingDtoCommunal <<marker>> {}
+
+        class IndividualFilingDataDto implements FilingDtoCommunal {
+           +getTitle() : String
+           +getFirstName() : String
+           +getOtherForenames() : String
+           +getLastName() : String
+           +getDateOfBirth() : String
+           +getCeasedOn() : String
+           +getRegisterEntryDate() : String
+        }
+
+        class WithIdentificationFilingDataDto implements FilingDtoCommunal {
+           +getIdentification() : IdentificationDto
+           +getName() : String
+        }
+
+        }
+    }
+
+@enduml
