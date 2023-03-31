@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -58,9 +60,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String CAUSE = "cause";
     private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$", Pattern.MULTILINE);
 
+    @Autowired
+    @Qualifier(value = "validation")
+    protected Map<String, String> validation;
     private final Logger chLogger;
 
-    public RestExceptionHandler(final Logger logger) {
+    public RestExceptionHandler(Map<String, String> validation, final Logger logger) {
+        this.validation = validation;
         this.chLogger = logger;
     }
 
@@ -139,12 +145,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(FilingResourceNotFoundException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Resource not found")
-    public ResponseEntity<Void> handleResourceNotFoundException(
-            final FilingResourceNotFoundException ex, final WebRequest request) {
-        logError(request, "Resource not found", ex);
-        return ResponseEntity.notFound()
-                .build();
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Not Found")
+    @ResponseBody
+    public ApiErrors handleResourceNotFoundException(final FilingResourceNotFoundException ex,
+                                                     final WebRequest request) {
+        final var error = new ApiError(validation.get("filing-resource-not-found"), getRequestURI(request),
+                LocationType.RESOURCE.getValue(), ErrorType.VALIDATION.getType());
+
+        Optional.ofNullable(ex.getMessage()).ifPresent(m -> error.addErrorValue("{filing-resource-id}", m));
+
+        final var errorList = List.of(error);
+        logError(request, ex.getMessage(), ex, errorList);
+        return new ApiErrors(errorList);
     }
 
     @ExceptionHandler({PscServiceException.class, TransactionServiceException.class, CompanyProfileServiceException.class})

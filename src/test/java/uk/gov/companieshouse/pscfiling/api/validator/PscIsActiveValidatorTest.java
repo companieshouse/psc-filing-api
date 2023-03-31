@@ -10,11 +10,14 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -22,10 +25,10 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest()
 class PscIsActiveValidatorTest {
 
-    @Mock
+    @MockBean
     private PscDetailsService pscDetailsService;
     @Mock
     private PscApi pscApi;
@@ -37,6 +40,9 @@ class PscIsActiveValidatorTest {
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
+    @Autowired
+    @Qualifier(value = "validation")
+    private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final LocalDate CEASED_ON = LocalDate.of(2023,1,21);
@@ -48,7 +54,7 @@ class PscIsActiveValidatorTest {
         pscType = PscTypeConstants.INDIVIDUAL;
         passthroughHeader = "passthroughHeader";
 
-        testValidator = new PscIsActiveValidator(pscDetailsService);
+        testValidator = new PscIsActiveValidator(pscDetailsService, validation);
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader )).thenReturn(pscApi);
     }
@@ -68,7 +74,7 @@ class PscIsActiveValidatorTest {
 
         var fieldError = new FieldError("object", "ceased_on", CEASED_ON, false,
             new String[]{null, "date.ceased_on"}, null,
-            "PSC is not active as a ceased on date is present");
+            "PSC is already ceased");
 
         when(dto.getCeasedOn()).thenReturn(CEASED_ON);
         when(pscApi.getCeasedOn()).thenReturn(CEASED_ON);

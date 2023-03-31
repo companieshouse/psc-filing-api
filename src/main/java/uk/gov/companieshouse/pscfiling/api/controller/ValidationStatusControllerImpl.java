@@ -85,8 +85,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
         var finalTransaction = transaction;
         return maybePscIndividualFiling.map(f -> isValid(f, passthroughHeader, finalTransaction))
-                .orElseThrow(() -> new FilingResourceNotFoundException(
-                        "Filing resource not found: " + filingResource));
+                .orElseThrow(() -> new FilingResourceNotFoundException(filingResource));
     }
 
     private ValidationStatusResponse isValid(final PscCommunal pscFiling,

@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
@@ -16,7 +17,8 @@ public class PscEtagValidator extends BaseFilingValidator
 
     private final PscDetailsService pscDetailsService;
 
-    public PscEtagValidator(PscDetailsService pscDetailsService) {
+    public PscEtagValidator(PscDetailsService pscDetailsService, Map<String, String> validation) {
+        super(validation);
         this.pscDetailsService = pscDetailsService;
     }
 
@@ -31,7 +33,7 @@ public class PscEtagValidator extends BaseFilingValidator
             validationContext.getErrors()
                     .add(new FieldError("object", "reference_etag", validationContext.getDto().getReferenceEtag(),
                             false, new String[]{null, "notMatch.reference_etag"}, null,
-                            "Etag for PSC does not match latest value"));
+                            validation.get("etag-not-match")));
         }
 
         super.validate(validationContext);

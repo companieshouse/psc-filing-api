@@ -10,11 +10,14 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -32,6 +35,9 @@ class TerminationRequiredFieldsValidatorTest {
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
+    @Autowired
+    @Qualifier(value = "validation")
+    private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final String ETAG = "1234567";
@@ -48,7 +54,7 @@ class TerminationRequiredFieldsValidatorTest {
         when(dto.getRegisterEntryDate()).thenReturn(DATE);
         when(dto.getReferenceEtag()).thenReturn(ETAG);
 
-        testValidator = new TerminationRequiredFieldsValidator();
+        testValidator = new TerminationRequiredFieldsValidator(validation);
     }
 
     @Test

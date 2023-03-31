@@ -9,11 +9,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -22,10 +25,10 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class PscExistsValidatorTest {
 
-    @Mock
+    @MockBean
     private PscDetailsService pscDetailsService;
     @Mock
     private Transaction transaction;
@@ -38,6 +41,9 @@ class PscExistsValidatorTest {
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
+    @Autowired
+    @Qualifier(value = "validation")
+    private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
 
@@ -48,7 +54,7 @@ class PscExistsValidatorTest {
         pscType = PscTypeConstants.INDIVIDUAL;
         passthroughHeader = "passthroughHeader";
 
-        testValidator = new PscExistsValidator(pscDetailsService);
+        testValidator = new PscExistsValidator(pscDetailsService, validation);
     }
 
     @Test
@@ -67,7 +73,7 @@ class PscExistsValidatorTest {
 
         var fieldError = new FieldError("object", "reference_psc_id", PSC_ID, false,
                 new String[]{null, "notFound.reference_psc_id"}, null,
-                "PSC with that reference ID was not found");
+                "Reference ID for PSC not found");
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType,
                 passthroughHeader)).thenThrow(new FilingResourceNotFoundException(

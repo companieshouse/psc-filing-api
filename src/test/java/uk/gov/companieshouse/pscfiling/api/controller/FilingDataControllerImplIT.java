@@ -20,11 +20,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -34,6 +36,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
 @WebMvcTest(controllers = FilingDataControllerImpl.class)
+@Import(PscFilingConfig.class)
 class FilingDataControllerImplIT extends BaseControllerIT {
     @MockBean
     private FilingDataService filingDataService;
@@ -116,7 +119,7 @@ class FilingDataControllerImplIT extends BaseControllerIT {
                         httpHeaders).requestAttr(AttributeName.TRANSACTION.getValue(), transaction))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason(is("Resource not found")))
+                .andExpect(status().reason(is("Not Found")))
                 .andExpect(jsonPath("$").doesNotExist());
     }
     @Test

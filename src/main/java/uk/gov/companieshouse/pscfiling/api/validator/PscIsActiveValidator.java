@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
@@ -12,7 +13,8 @@ public class PscIsActiveValidator extends BaseFilingValidator {
 
     private final PscDetailsService pscDetailsService;
 
-    public PscIsActiveValidator(PscDetailsService pscDetailsService) {
+    public PscIsActiveValidator(PscDetailsService pscDetailsService, Map<String, String> validation) {
+        super(validation);
         this.pscDetailsService = pscDetailsService;
     }
 
@@ -28,7 +30,7 @@ public class PscIsActiveValidator extends BaseFilingValidator {
             validationContext.getErrors()
                 .add(new FieldError("object", "ceased_on", validationContext.getDto().getCeasedOn(),
                     false, new String[]{null, "date.ceased_on"}, null,
-                    "PSC is not active as a ceased on date is present"));
+                    validation.get("psc-is-ceased")));
         }
 
         super.validate(validationContext);
