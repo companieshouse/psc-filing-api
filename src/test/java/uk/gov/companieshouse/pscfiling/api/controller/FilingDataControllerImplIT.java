@@ -119,8 +119,10 @@ class FilingDataControllerImplIT extends BaseControllerIT {
                         httpHeaders).requestAttr(AttributeName.TRANSACTION.getValue(), transaction))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason(is("Not Found")))
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].error", is("Filing resource {filing-resource-id} not found")))
+                .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
+                .andExpect(jsonPath("$.errors[0].location_type", is("resource")));
     }
     @Test
     void getFilingsWhenNotFoundAndTransactionNull() throws Exception {
