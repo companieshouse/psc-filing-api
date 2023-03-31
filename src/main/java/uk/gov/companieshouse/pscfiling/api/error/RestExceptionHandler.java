@@ -145,7 +145,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(FilingResourceNotFoundException.class)
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Not Found")
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ResponseBody
     public ApiErrors handleResourceNotFoundException(final FilingResourceNotFoundException ex,
                                                      final WebRequest request) {
