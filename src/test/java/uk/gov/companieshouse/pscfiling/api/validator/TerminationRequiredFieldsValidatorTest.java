@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -30,14 +28,13 @@ class TerminationRequiredFieldsValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
 
     TerminationRequiredFieldsValidator testValidator;
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
-    @Autowired
-    @Qualifier(value = "validation")
-    private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final String ETAG = "1234567";

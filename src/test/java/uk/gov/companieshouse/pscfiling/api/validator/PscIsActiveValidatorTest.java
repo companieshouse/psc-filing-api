@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -25,10 +23,10 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
-@SpringBootTest()
+@ExtendWith(MockitoExtension.class)
 class PscIsActiveValidatorTest {
 
-    @MockBean
+    @Mock
     private PscDetailsService pscDetailsService;
     @Mock
     private PscApi pscApi;
@@ -36,13 +34,13 @@ class PscIsActiveValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
+
     PscIsActiveValidator testValidator;
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
-    @Autowired
-    @Qualifier(value = "validation")
-    private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final LocalDate CEASED_ON = LocalDate.of(2023,1,21);
@@ -73,11 +71,11 @@ class PscIsActiveValidatorTest {
     void validateWhenPSCisNotActive() {
 
         var fieldError = new FieldError("object", "ceased_on", CEASED_ON, false,
-            new String[]{null, "date.ceased_on"}, null,
-            "PSC is already ceased");
+                new String[]{null, "date.ceased_on"}, null, "is ceased default message");
 
         when(dto.getCeasedOn()).thenReturn(CEASED_ON);
         when(pscApi.getCeasedOn()).thenReturn(CEASED_ON);
+        when(validation.get("psc-is-ceased")).thenReturn("is ceased default message");
 
         testValidator.validate(
             new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));

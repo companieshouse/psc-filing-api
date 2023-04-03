@@ -4,12 +4,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Map;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 
-@SpringBootTest()
+@Tag("web")
+@WebMvcTest
+@ContextConfiguration(classes = ConstantsConfig.class)
 class ConstantsConfigTest {
 
     @Autowired
@@ -21,7 +25,7 @@ class ConstantsConfigTest {
     private Map<String, String> companyType;
 
     @Test
-    public void constants() {
+    void constants() {
         assertThat(companyStatus.get("dissolved"),
                 is("Dissolved"));
 

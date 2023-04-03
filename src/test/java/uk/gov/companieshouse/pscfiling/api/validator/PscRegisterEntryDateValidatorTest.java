@@ -15,26 +15,26 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class PscRegisterEntryDateValidatorTest {
 
-    @MockBean
+    @Mock
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
 
     PscRegisterEntryDateValidator testValidator;
     private PscTypeConstants pscType;
@@ -43,9 +43,6 @@ class PscRegisterEntryDateValidatorTest {
     private static final LocalDate DATE = LocalDate.of(2023, 1, 21);
     private static final LocalDate BEFORE_DATE = LocalDate.of(2023, 1, 20);
     private static final LocalDate AFTER_DATE = LocalDate.of(2023, 1, 22);
-    @Autowired
-    @Qualifier(value = "validation")
-    private Map<String, String> validation;
 
     @BeforeEach
     void setUp() {
@@ -62,9 +59,11 @@ class PscRegisterEntryDateValidatorTest {
     void validateWhenPscRegisterEntryDateBeforeCessationDate() {
         var fieldError = new FieldError("object", "register_entry_date", BEFORE_DATE, false,
                 new String[]{null, "date.register_entry_date"}, null,
-                "PSC register entry date must be on or after the date the PSC was ceased");
+                "before-date default message");
 
         when(dto.getRegisterEntryDate()).thenReturn(BEFORE_DATE);
+        when(validation.get("register-date-before-ceased-date")).thenReturn(
+                "before-date default message");
 
         testValidator.validate(
                 new FilingValidationContext<>(dto, errors, transaction, pscType, passThroughHeader));

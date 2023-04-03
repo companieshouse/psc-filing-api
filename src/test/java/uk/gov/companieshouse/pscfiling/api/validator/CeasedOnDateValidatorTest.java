@@ -14,14 +14,12 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -29,9 +27,9 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class CeasedOnDateValidatorTest {
-    @MockBean
+    @Mock
     private PscDetailsService pscDetailsService;
     @Mock
     private PscApi pscApi;
@@ -44,8 +42,7 @@ class CeasedOnDateValidatorTest {
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
-    @Autowired
-    @Qualifier(value = "validation")
+    @Mock
     private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
@@ -79,6 +76,10 @@ class CeasedOnDateValidatorTest {
         when(dto.getCeasedOn()).thenReturn(ceasedOn);
         if (ceasedOn != null) {
             when(pscApi.getNotifiedOn()).thenReturn(notifiedOn);
+            if (notifiedOn != null && ceasedOn.isBefore(notifiedOn)) {
+                when(validation.get("ceased-date-before-notified-date")).thenReturn(
+                        "date-before default message");
+            }
         }
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
@@ -89,9 +90,10 @@ class CeasedOnDateValidatorTest {
     @Test
     void validateWhenCeasedOnBeforeNotifiedOn() {
         final var fieldError = new FieldError("object", "ceased_on", DATE, false, new String[]{null, "date.ceased_on"},
-                null, "Ceased date must be on or after the date the PSC was added");
+                null, "date-before default message");
         when(dto.getCeasedOn()).thenReturn(DATE);
         when(pscApi.getNotifiedOn()).thenReturn(DAY_AFTER_DATE);
+        when(validation.get("ceased-date-before-notified-date")).thenReturn("date-before default message");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
@@ -22,25 +21,19 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @Component
 public class CompanyInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    @Qualifier(value = "validation")
     private Map<String, String> validation;
-    @Autowired
-    @Qualifier(value = "company")
-    private  Map<String, List<String>> company;
-    @Autowired
-    @Qualifier(value = "companyStatus")
+    private Map<String, List<String>> company;
     private Map<String, String> companyStatus;
-    @Autowired
-    @Qualifier(value = "companyType")
     private Map<String, String> companyType;
 
     private CompanyProfileService companyProfileService;
     private final Logger logger;
 
-    public CompanyInterceptor(CompanyProfileService companyProfileService, Map<String, String> validation,
-                              Map<String, List<String>> company, Map<String, String> companyStatus,
-                              Map<String, String> companyType, Logger logger) {
+    public CompanyInterceptor(CompanyProfileService companyProfileService,
+            @Qualifier(value = "validation") Map<String, String> validation,
+            @Qualifier(value = "company") Map<String, List<String>> company,
+            @Qualifier(value = "companyStatus") Map<String, String> companyStatus,
+            @Qualifier(value = "companyType") Map<String, String> companyType, Logger logger) {
         this.companyProfileService = companyProfileService;
         this.validation = validation;
         this.company = company;

@@ -12,10 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
@@ -25,7 +24,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.service.CompanyProfileService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class CompanyInterceptorTest {
 
     private static final String PASSTHROUGH_HEADER = "passthrough";
@@ -41,21 +40,17 @@ class CompanyInterceptorTest {
     Logger logger;
     @Mock
     private Transaction transaction;
+    @Mock
+    private Map<String, String> validation;
+    @Mock
+    private  Map<String, List<String>> company;
+    @Mock
+    private Map<String, String> companyStatus;
+    @Mock
+    private Map<String, String> companyType;
 
     private CompanyProfileApi companyProfileApi;
     private CompanyInterceptor testCompanyInterceptor;
-    @Autowired
-    @Qualifier(value = "validation")
-    private Map<String, String> validation;
-    @Autowired
-    @Qualifier(value = "company")
-    private  Map<String, List<String>> company;
-    @Autowired
-    @Qualifier(value = "companyStatus")
-    private Map<String, String> companyStatus;
-    @Autowired
-    @Qualifier(value = "companyType")
-    private Map<String, String> companyType;
 
     @BeforeEach
     void setUp() {
@@ -73,7 +68,11 @@ class CompanyInterceptorTest {
     @Test
     void preHandleNoValidationErrors() {
         expectHeaderWithCompanyProfile();
+        when(company.get("type-allowed")).thenReturn(List.of("ltd"));
+        when(company.get("status-not-allowed")).thenReturn(List.of("dissolved"));
+
         var result = testCompanyInterceptor.preHandle(request, response, handler);
+
         assertTrue(result);
     }
 
@@ -81,9 +80,10 @@ class CompanyInterceptorTest {
     void preHandleWhenCompanyHasSuperSecurePscs() {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setHasSuperSecurePscs(Boolean.TRUE);
+        when(validation.get("super-secure-company")).thenReturn("Super secure default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "A PSC for this company has details protected. You can only file for this company on paper");
+                null, "Super secure default message");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -96,9 +96,11 @@ class CompanyInterceptorTest {
     void preHandleWhenCompanyTypeNotAllowed() {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setType("not-proper");
+        when(company.get("type-allowed")).thenReturn(List.of("ltd"));
+        when(validation.get("company-type-not-allowed")).thenReturn("Invalid type default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "This filing cannot be submitted for a " + companyType.get(companyProfileApi.getType()));
+                null, "Invalid type default message" + companyType.get(companyProfileApi.getType()));
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -111,9 +113,13 @@ class CompanyInterceptorTest {
     void preHandleWhenCompanyStatusNotAllowed() {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setCompanyStatus("dissolved");
+        when(company.get("type-allowed")).thenReturn(List.of("ltd"));
+        when(company.get("status-not-allowed")).thenReturn(List.of("dissolved"));
+        when(validation.get("company-status-not-allowed")).thenReturn(
+                "Invalid status default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "You cannot submit a filing for a company that is " + companyStatus.get(companyProfileApi.getCompanyStatus()));
+                null, "Invalid status default message" + companyStatus.get(companyProfileApi.getCompanyStatus()));
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
