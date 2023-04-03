@@ -46,7 +46,6 @@ public interface PscIndividualFilingController {
      * @param pscType        the PSC type
      * @param filingResource the PSC Filing ID
      * @param mergePatch     details of the merge-patch to apply (RFC 7396)
-     * @param result         the MVC binding result (with any validation errors)
      * @param request        the servlet request
      * @throws NotImplementedException implementing classes must perform work
      * @see <a href="https://www.rfc-editor.org/rfc/rfc7396">RFC7396</a>
@@ -55,8 +54,7 @@ public interface PscIndividualFilingController {
     default ResponseEntity<PscIndividualFiling> updateFiling(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType, @PathVariable("filingResource") String filingResource,
-            @RequestBody final @NotNull Map<String, Object> mergePatch,
-            final BindingResult result, final HttpServletRequest request) {
+            @RequestBody final @NotNull Map<String, Object> mergePatch, final HttpServletRequest request) {
         throw new NotImplementedException();
     }
 

@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -104,6 +105,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         }
         logError(request, String.format("Message not readable: %s", message), ex);
         return ResponseEntity.badRequest().body(new ApiErrors(List.of(error)));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
+            final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
+            final HttpStatus status, final WebRequest request) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .header(HttpHeaders.ACCEPT_PATCH, "application/merge-patch+json")
+                .header("Accept-Post", "application/json")
+                .build();
     }
 
     @ExceptionHandler(InvalidFilingException.class)

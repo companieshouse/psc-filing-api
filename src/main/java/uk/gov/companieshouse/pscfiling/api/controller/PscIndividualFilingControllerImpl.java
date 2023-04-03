@@ -1,10 +1,8 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -13,7 +11,6 @@ import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +23,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.error.RetrievalFailureReason;
-import uk.gov.companieshouse.pscfiling.api.exception.InvalidPatchException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -95,32 +91,20 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
      * @param pscType        the PSC type
      * @param filingResource the Filing resource ID (RFC 7396)
      * @param mergePatch     details of the merge-patch to apply
-     * @param bindingResult  the MVC binding result (with any validation errors)
      * @param request        the servlet request
      * @return CREATED response containing the populated Filing resource
      */
     @Override
     @Transactional
     @PatchMapping(value = "/{filingResourceId}", produces = {"application/json"},
-            consumes = {"application/merge-patch+json", "application/json"})
+            consumes = "application/merge-patch+json")
     public ResponseEntity<PscIndividualFiling> updateFiling(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
-            @RequestBody final @NotNull Map<String, Object> mergePatch,
-            final BindingResult bindingResult, final HttpServletRequest request) {
+            @RequestBody final @NotNull Map<String, Object> mergePatch, final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
-
-        final var validationErrors = Optional.ofNullable(bindingResult)
-                .map(Errors::getFieldErrors)
-                .map(ArrayList::new)
-                .orElseGet(ArrayList::new);
-
-        if (!validationErrors.isEmpty()) {
-            throw new InvalidPatchException(validationErrors);
-        }
-
         final var patchResult =
                 pscIndividualFilingService.updateFiling(filingResource, mergePatch);
 
