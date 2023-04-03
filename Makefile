@@ -9,6 +9,13 @@ clean:
 	rm -rf ./build-*
 	rm -rf ./build.log-*
 
+.PHONY: submodules
+submodules: api-enumerations/.git
+
+.PHONY: api-enumerations/.git
+	git submodule init
+	git submodule update
+
 FAIL_BUILD_CVSS_LIMIT ?= 0
 
 .PHONY: security-check
@@ -43,12 +50,13 @@ endif
 	$(eval tmpdir:=$(shell mktemp -d build-XXXXXXXXXX))
 	cp ./start.sh $(tmpdir)
 	cp ./routes.yaml $(tmpdir)
+	cp -r ./api-enumerations $(tmpdir)
 	cp ./$(artifact_name).jar $(tmpdir)/$(artifact_name).jar
 	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
 	rm -rf $(tmpdir)
 
 .PHONY: build
-build: clean
+build: clean submodules
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	mvn package
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
