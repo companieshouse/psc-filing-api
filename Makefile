@@ -50,7 +50,7 @@ endif
 	$(eval tmpdir:=$(shell mktemp -d build-XXXXXXXXXX))
 	cp ./start.sh $(tmpdir)
 	cp ./routes.yaml $(tmpdir)
-	cp -r ./src/main/resources/api-enumerations $(tmpdir)/src/main/resources
+	cp -r ./src/main/resources/api-enumerations $(tmpdir)
 	cp ./$(artifact_name).jar $(tmpdir)/$(artifact_name).jar
 	cd $(tmpdir); zip -r ../$(artifact_name)-$(version).zip *
 	rm -rf $(tmpdir)
