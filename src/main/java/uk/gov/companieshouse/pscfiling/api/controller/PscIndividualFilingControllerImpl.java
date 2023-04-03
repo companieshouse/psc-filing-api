@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
@@ -12,7 +11,6 @@ import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,8 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.error.RetrievalFailureReason;
-import uk.gov.companieshouse.pscfiling.api.exception.InvalidPatchException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -122,26 +118,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
                             .build());
         }
         else {
-            if (patchResult.failedValidation()) {
-                throw new InvalidPatchException(
-                        List.of((FieldError) patchResult.getValidationErrors()));
-
-            }
-            else if (patchResult.failedRetrieval()) {
-                final var reason = (RetrievalFailureReason) patchResult.getRetrievalFailureReason();
-
-                logMap.put("error", "retrieval failure: " + reason);
-                logger.debugRequest(request, "PATCH", logMap);
-
-                return ResponseEntity.notFound()
-                        .build();
-            }
-            else {
-                logMap.put("status", "patch invalid");
-                logger.errorContext(transId, "patch failed", null, logMap);
-                return ResponseEntity.internalServerError().build();
-            }
-
+            throw handlePatchFailed(transId, filingResource, request, logMap, patchResult);
         }
 
     }

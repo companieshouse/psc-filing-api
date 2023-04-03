@@ -16,24 +16,24 @@ import uk.gov.companieshouse.pscfiling.api.utils.PatchServiceProperties;
 public class PscWithIdentificationFilingServiceImpl implements PscWithIdentificationFilingService {
     private final PscWithIdentificationFilingRepository filingRepository;
     private final PatchServiceProperties patchServiceProperties;
-    private PscWithIdentificationFilingProvider PscWithIdentificationFilingProvider;
+    private PscWithIdentificationFilingProvider pscWithIdentificationFilingProvider;
     private PscWithIdentificationFilingMergeProcessor mergeProcessor;
     private PscWithIdentificationFilingPostMergeProcessor postMergeProcessor;
-    private PscWithIdentificationPatchValidator PscWithIdentificationPatchValidator;
+    private PscWithIdentificationPatchValidator pscWithIdentificationPatchValidator;
 
     @Autowired
     public PscWithIdentificationFilingServiceImpl(final PscWithIdentificationFilingRepository filingRepository,
             final PatchServiceProperties patchServiceProperties,
-            final PscWithIdentificationFilingProvider PscWithIdentificationFilingProvider,
+            final PscWithIdentificationFilingProvider pscWithIdentificationFilingProvider,
             final PscWithIdentificationFilingMergeProcessor mergeProcessor,
             final PscWithIdentificationFilingPostMergeProcessor postMergeProcessor,
-            final PscWithIdentificationPatchValidator PscWithIdentificationPatchValidator) {
+            final PscWithIdentificationPatchValidator pscWithIdentificationPatchValidator) {
         this.filingRepository = filingRepository;
         this.patchServiceProperties = patchServiceProperties;
-        this.PscWithIdentificationFilingProvider = PscWithIdentificationFilingProvider;
+        this.pscWithIdentificationFilingProvider = pscWithIdentificationFilingProvider;
         this.mergeProcessor = mergeProcessor;
         this.postMergeProcessor = postMergeProcessor;
-        this.PscWithIdentificationPatchValidator = PscWithIdentificationPatchValidator;
+        this.pscWithIdentificationPatchValidator = pscWithIdentificationPatchValidator;
     }
 
     @Override
@@ -52,8 +52,8 @@ public class PscWithIdentificationFilingServiceImpl implements PscWithIdentifica
 
         try {
             patchResult =
-                    patchEntity(filingId, PscWithIdentificationFilingProvider, patchMap, mergeProcessor,
-                            postMergeProcessor, PscWithIdentificationPatchValidator);
+                    patchEntity(filingId, pscWithIdentificationFilingProvider, patchMap, mergeProcessor,
+                            postMergeProcessor, pscWithIdentificationPatchValidator);
         }
         catch (final IOException e) {
             throw new MergePatchException("Failed to merge patch request", e);

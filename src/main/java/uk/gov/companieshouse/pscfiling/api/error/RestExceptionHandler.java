@@ -39,6 +39,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceExcept
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscFilingServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -117,6 +118,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
             final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
             final HttpStatus status, final WebRequest request) {
+        logError(request, String.format("Media type not supported: %s", ex.getContentType()), ex);
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                 .header(HttpHeaders.ACCEPT_PATCH, "application/merge-patch+json")
                 .header("Accept-Post", "application/json")
@@ -170,7 +172,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
-    @ExceptionHandler({PscServiceException.class, TransactionServiceException.class, CompanyProfileServiceException.class})
+    @ExceptionHandler({
+            PscServiceException.class,
+            TransactionServiceException.class,
+            CompanyProfileServiceException.class,
+            PscFilingServiceException.class
+    })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiErrors handleServiceException(final Exception ex,
