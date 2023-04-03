@@ -17,11 +17,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling extends PscCommon implements PscCommunal, Touchable {
-
     @Id
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String id;
     private String countryOfResidence;
+    @JsonMerge
     private Date3Tuple dateOfBirth;
     @JsonMerge
     private NameElements nameElements;
@@ -34,7 +34,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
 
     public PscIndividualFiling() {
         // required by Spring JPA
-        PscCommon.builder().build();
     }
 
     public String getId() {
@@ -109,22 +108,7 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     public String toString() {
         return new StringJoiner(", ", PscIndividualFiling.class.getSimpleName() + "[", "]").add(
                         "id='" + id + "'")
-                .add("address=" + getAddress())
-                .add("addressSameAsRegisteredOfficeAddress="
-                        + getAddressSameAsRegisteredOfficeAddress())
-                .add("ceasedOn=" + getCeasedOn())
-                .add("name='" + getName() + "'")
-                .add("createdAt=" + getCreatedAt())
-                .add("etag='" + getEtag() + "'")
-                .add("kind='" + getKind() + "'")
-                .add("links=" + getLinks())
-                .add("naturesOfControl=" + getNaturesOfControl())
-                .add("notifiedOn=" + getNotifiedOn())
-                .add("referenceEtag='" + getReferenceEtag() + "'")
-                .add("referencePscId='" + getReferencePscId() + "'")
-                .add("referencePscListEtag='" + getReferencePscListEtag() + "'")
-                .add("registerEntryDate=" + getRegisterEntryDate())
-                .add("updatedAt=" + getUpdatedAt())
+                .add(super.toString())
                 .add("countryOfResidence='" + countryOfResidence + "'")
                 .add("dateOfBirth=" + dateOfBirth)
                 .add("nameElements=" + nameElements)
@@ -144,7 +128,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     public static Builder builder(final PscIndividualFiling other) {
         return new Builder(other);
     }
-
     public static class Builder extends PscCommon.Builder {
 
         private final List<Consumer<PscIndividualFiling>> buildSteps;
@@ -161,7 +144,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
-                    .name(other.getName())
                     .countryOfResidence(other.getCountryOfResidence())
                     .createdAt(other.getCreatedAt())
                     .dateOfBirth(other.getDateOfBirth())
@@ -207,13 +189,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
         public Builder ceasedOn(final LocalDate value) {
 
             commonBuilder.ceasedOn(value);
-            return this;
-        }
-
-        @Override
-        public Builder name(final String value) {
-
-            commonBuilder.name(value);
             return this;
         }
 
@@ -299,13 +274,6 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
         public Builder referencePscId(final String value) {
 
             commonBuilder.referencePscId(value);
-            return this;
-        }
-
-        @Override
-        public Builder referencePscListEtag(final String value) {
-
-            commonBuilder.referencePscListEtag(value);
             return this;
         }
 

@@ -1,0 +1,114 @@
+@startuml
+'https://plantuml.com/class-diagram
+'skinparam linetype polyline
+skinparam nodesep 50 /' horizontal separator '/
+skinparam ranksep 100 /' vertical separator '/
+skinparam titleBorderRoundCorner 15
+skinparam titleBorderThickness 1
+skinparam titleBorderColor black
+skinparam titleBackgroundColor AliceBlue
+skinparam groupInheritance 1
+skinparam legendBackgroundColor AliceBlue
+
+'skinparam style strictuml
+
+'scale 800 width
+scale 0.5
+hide empty members
+'hide circle'
+skinparam titleFontSize 18
+
+'top to bottom direction
+'left to right direction
+
+title PSC Filing API: Target Data Model Class Structure
+
+legend right
+|=Revision |=Date |
+|    0.3    |     30/03/2023    |
+endlegend
+
+    package "model" {
+
+        package "dto" {
+
+            class AddressDto {
+                -addressLine1
+                -addressLine2
+                -careOf
+                -country
+                -locality
+                -poBox
+                -postalCode
+                -premises
+                -region
+            }
+
+            interface PscDtoCommunal {
+                +getAddress():  AddressDto
+                +getAddressSameAsRegisteredOfficeAddress(): Boolean
+                +getCeasedOn(): LocalDate
+                +getNaturesOfControl(): String[]
+                +getNotifiedOn(): LocalDate
+                +getReferenceEtag()
+                +getReferencePscId()
+                +getRegisterEntryDate(): LocalDate
+            }
+
+            class PscCommonDto implements PscDtoCommunal {
+            }
+
+            class PscWithIdentificationDto extends PscCommonDto {
+                -pscDtoCommunal: PscDtoCommunal
+                -name
+                -identification:IdentificationDto
+            }
+
+            note "For corporate entity (RLE) and \nlegal person (ORP) PSCs" as Note1
+                            PscWithIdentificationDto -- Note1
+
+            class PscIndividualDto extends PscCommonDto {
+                -pscDtoCommunal: PscDtoCommunal
+                -countryOfResidence
+                -dateOfBirth: Date3TupleDto
+                -nationality
+                -residentialAddress: AddressDto
+                -residentialAddressSameAsCorrespondenceAddress: Boolean
+                -nameElements: NameElementsDto
+            }
+
+            class Date3TupleDto {
+                -day:int {nullable}
+                -month:int
+                -year:int
+            }
+
+            class IdentificationDto {
+                -countryRegistered
+                -placeRegistered
+                -registrationNumber
+                -legalAuthority
+                -legalForm
+            }
+
+            class NameElementsDto {
+                -forename
+                -otherForenames
+                -surname
+                -title
+            }
+
+            Date3TupleDto o-u- PscIndividualDto::dateOfBirth
+            NameElementsDto o-u- PscIndividualDto::nameElements
+            PscWithIdentificationDto::identification --o IdentificationDto
+            AddressDto o-l- PscCommonDto::address
+            PscIndividualDto::residentialAddress -o AddressDto
+
+            together {
+            class PscIndividualDto
+            class PscWithIdentificationDto
+            }
+        }
+    }
+
+@enduml

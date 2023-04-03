@@ -33,7 +33,6 @@ public interface PscMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "kind", ignore = true)
     @Mapping(target = "links", ignore = true)
-    @Mapping(target = "name", ignore = true)
     @Mapping(target = "statementActionDate", ignore = true)
     @Mapping(target = "statementType", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

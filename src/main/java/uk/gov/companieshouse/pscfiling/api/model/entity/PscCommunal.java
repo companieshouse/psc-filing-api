@@ -14,8 +14,6 @@ public interface PscCommunal {
 
     LocalDate getCeasedOn();
 
-    String getName();
-
     Instant getCreatedAt();
 
     String getEtag();
