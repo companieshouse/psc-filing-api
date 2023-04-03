@@ -62,7 +62,7 @@ build: clean submodules
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
 .PHONY: dist
-dist: clean coverage package
+dist: clean coverage submodules package
 
 .PHONY: coverage
 coverage:
