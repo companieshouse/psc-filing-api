@@ -102,6 +102,7 @@ class PscWithIdentificationFilingControllerImplTest {
                 .referencePscId(PSC_ID)
                 .referenceEtag("etag")
                 .ceasedOn(LocalDate.parse("2022-09-13"))
+                .createdAt(FIRST_INSTANT)
                 .build();
         final var builder = UriComponentsBuilder.fromUri(REQUEST_URI);
         links = new Links(builder.pathSegment(FILING_ID)

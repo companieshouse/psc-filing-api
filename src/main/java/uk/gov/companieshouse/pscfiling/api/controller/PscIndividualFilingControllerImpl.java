@@ -104,7 +104,9 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
     private PscIndividualFiling saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
                                                     final HttpServletRequest request,
                                                     final Map<String, Object> logMap) {
-        final var saved = pscFilingService.save(entity, transId);
+
+        final var entityWithCreated = PscIndividualFiling.builder(entity).createdAt(clock.instant()).build();
+        final var saved = pscFilingService.save(entityWithCreated, transId);
         final var links = buildLinks(request, saved);
         final var updated = PscIndividualFiling.builder(saved).links(links)
                 .build();

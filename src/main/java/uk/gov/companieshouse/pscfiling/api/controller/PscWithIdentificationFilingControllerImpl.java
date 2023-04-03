@@ -106,7 +106,8 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
                                                             final String transId, final HttpServletRequest request,
                                                             final Map<String, Object> logMap,
                                                             PscTypeConstants pscType) {
-        final var saved = pscFilingService.save(entity, transId);
+        final var entityWithCreated = PscWithIdentificationFiling.builder(entity).createdAt(clock.instant()).build();
+        final var saved = pscFilingService.save(entityWithCreated, transId);
         final var links = buildLinks(request, saved.getId(), pscType);
         final var updated = PscWithIdentificationFiling.builder(saved).links(links)
                 .build();
