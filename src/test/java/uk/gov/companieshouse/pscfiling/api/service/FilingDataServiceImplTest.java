@@ -76,6 +76,15 @@ class FilingDataServiceImplTest extends TestBaseService {
     private Transaction transaction;
     private FilingDataService testService;
 
+    @BeforeEach
+    void setUp() {
+        testService = new FilingDataServiceImpl(pscFilingService, dataMapper, pscDetailsService,
+                filingDataConfig, logger);
+        transaction = new Transaction();
+        transaction.setId(TRANS_ID);
+        transaction.setCompanyNumber(COMPANY_NUMBER);
+    }
+
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {OTHER_FORENAMES})
@@ -139,15 +148,6 @@ class FilingDataServiceImplTest extends TestBaseService {
         assertThat(filingApi.getKind(),
                 is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), INDIVIDUAL)));
         assertThat(filingApi.getDescription(), is(expectedDescription));
-    }
-
-    @BeforeEach
-    void setUp() {
-        testService = new FilingDataServiceImpl(pscFilingService, dataMapper, pscDetailsService,
-                filingDataConfig, logger);
-        transaction = new Transaction();
-        transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber(COMPANY_NUMBER);
     }
 
     @Test
