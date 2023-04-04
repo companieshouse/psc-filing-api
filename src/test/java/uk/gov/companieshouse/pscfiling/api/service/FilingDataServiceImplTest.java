@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.model.psc.NameElementsApi;
@@ -73,21 +76,14 @@ class FilingDataServiceImplTest extends TestBaseService {
     private Transaction transaction;
     private FilingDataService testService;
 
-    @BeforeEach
-    void setUp() {
-        testService = new FilingDataServiceImpl(pscFilingService, dataMapper, pscDetailsService,
-                filingDataConfig, logger);
-        transaction = new Transaction();
-        transaction.setId(TRANS_ID);
-        transaction.setCompanyNumber(COMPANY_NUMBER);
-    }
-
-    @Test
-    void generatePscIndividualFilingWhenFound() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {OTHER_FORENAMES})
+    void generatePscIndividualFilingWhenFound(String otherForenames) {
         final var filingData = IndividualFilingDataDto.builder()
                 .title(TITLE)
                 .firstName(FIRSTNAME)
-                .otherForenames(OTHER_FORENAMES)
+                .otherForenames(otherForenames)
                 .lastName(LASTNAME)
                 .ceasedOn(CEASED_ON_STR)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
@@ -116,19 +112,42 @@ class FilingDataServiceImplTest extends TestBaseService {
         when(dataMapper.enhance(pscFiling, PscTypeConstants.INDIVIDUAL, pscApi)).thenReturn(
                 enhancedPscFiling);
         when(dataMapper.map(enhancedPscFiling, PscTypeConstants.INDIVIDUAL)).thenReturn(filingData);
+        when(filingDataConfig.getPsc07Description()).thenReturn(
+                "(PSC07) Notice of ceasing to be a Person of Significant Control for {0} on {1}");
 
         final var filingApi =
                 testService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL, transaction,
                         PASSTHROUGH_HEADER);
 
-        final Map<String, Object> expectedMap =
-                Map.of("title", TITLE, "first_name", FIRSTNAME, "other_forenames", OTHER_FORENAMES,
-                        "last_name", LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date",
-                        REGISTER_ENTRY_DATE);
-
+        Map<String, Object> expectedMap;
+        String expectedDescription;
+        if (otherForenames == null) {
+            expectedMap = Map.of("title", TITLE, "first_name", FIRSTNAME, "last_name",
+                            LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date", REGISTER_ENTRY_DATE);
+            expectedDescription =
+                    "(PSC07) Notice of ceasing to be a Person of Significant Control for " + TITLE + " " +
+                            FIRSTNAME + " " + LASTNAME + " on 05/10/2022";
+        }
+        else {
+            expectedMap = Map.of("title", TITLE, "first_name", FIRSTNAME, "other_forenames", otherForenames, "last_name",
+                            LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date", REGISTER_ENTRY_DATE);
+            expectedDescription =
+                    "(PSC07) Notice of ceasing to be a Person of Significant Control for " + TITLE + " " +
+                            FIRSTNAME + " " + OTHER_FORENAMES + " " + LASTNAME + " on 05/10/2022";
+        }
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(),
                 is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), INDIVIDUAL)));
+        assertThat(filingApi.getDescription(), is(expectedDescription));
+    }
+
+    @BeforeEach
+    void setUp() {
+        testService = new FilingDataServiceImpl(pscFilingService, dataMapper, pscDetailsService,
+                filingDataConfig, logger);
+        transaction = new Transaction();
+        transaction.setId(TRANS_ID);
+        transaction.setCompanyNumber(COMPANY_NUMBER);
     }
 
     @Test
@@ -173,6 +192,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                 enhancedPscFiling);
         when(dataMapper.map(enhancedPscFiling, PscTypeConstants.CORPORATE_ENTITY)).thenReturn(
                 filingData);
+        when(filingDataConfig.getPsc07Description()).thenReturn(
+                "(PSC07) Notice of ceasing to be a Person of Significant Control for {0} on {1}");
 
         final var filingApi =
                 testService.generatePscFiling(FILING_ID, PscTypeConstants.CORPORATE_ENTITY,
@@ -184,10 +205,14 @@ class FilingDataServiceImplTest extends TestBaseService {
                         "legal_authority", LEGAL_AUTHORITY, "legal_form", LEGAL_FORM, "ceased_on",
                         CEASED_ON_STR, "name", CORPORATE_NAME, "register_entry_date",
                         REGISTER_ENTRY_DATE);
+        final String expectedDescription =
+                "(PSC07) Notice of ceasing to be a Person of Significant Control for " +
+                        CORPORATE_NAME + " on 05/10/2022";
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(),
                 is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), CORPORATE_ENTITY)));
+        assertThat(filingApi.getDescription(), is(expectedDescription));
     }
 
 
@@ -230,6 +255,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                 enhancedPscFiling);
         when(dataMapper.map(enhancedPscFiling, PscTypeConstants.LEGAL_PERSON)).thenReturn(
                 filingData);
+        when(filingDataConfig.getPsc07Description()).thenReturn(
+                "(PSC07) Notice of ceasing to be a Person of Significant Control for {0} on {1}");
 
         final var filingApi =
                 testService.generatePscFiling(FILING_ID, PscTypeConstants.LEGAL_PERSON, transaction,
@@ -239,10 +266,14 @@ class FilingDataServiceImplTest extends TestBaseService {
                 Map.of("legal_authority", LEGAL_AUTHORITY, "legal_form", LEGAL_FORM, "ceased_on",
                         CEASED_ON_STR, "name", LEGAL_NAME, "register_entry_date",
                         REGISTER_ENTRY_DATE);
+        final String expectedDescription =
+                "(PSC07) Notice of ceasing to be a Person of Significant Control for " +
+                        LEGAL_NAME + " on 05/10/2022";
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(),
                 is(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), LEGAL_PERSON)));
+        assertThat(filingApi.getDescription(), is(expectedDescription));
     }
 
     @Test
@@ -296,6 +327,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(dataMapper.map(enhancedPscFiling, PscTypeConstants.LEGAL_PERSON)).thenReturn(
                 filingDataDto);
+        when(filingDataConfig.getPsc07Description()).thenReturn(
+                "(PSC07) Notice of ceasing to be a Person of Significant Control for {0} on {1}");
 
         final var filingApi =
                 testService.generatePscFiling(FILING_ID, PscTypeConstants.LEGAL_PERSON, transaction,
