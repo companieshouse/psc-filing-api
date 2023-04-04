@@ -76,15 +76,14 @@ public class FilingDataServiceImpl implements FilingDataService {
     }
 
     private void setFilingDescription(FilingApi filing, final PscTypeConstants pscType) {
-        String name = "";
+        var name = "";
         switch (pscType) {
             case INDIVIDUAL:
-                String[] names = {
-                        (String) filing.getData().get("title"),
+                var names = new String[]{(String) filing.getData().get("title"),
                         (String) filing.getData().get("first_name"),
                         (String) filing.getData().get("other_forenames"),
                         (String) filing.getData().get("last_name")};
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 for (String str : names)
                     if (str != null) {
                         sb.append(str).append(" ");
@@ -98,8 +97,8 @@ public class FilingDataServiceImpl implements FilingDataService {
                 name = (String) filing.getData().get("name");
         }
 
-        LocalDate date = LocalDate.parse(filing.getData().get("ceased_on").toString());
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var date = LocalDate.parse(filing.getData().get("ceased_on").toString());
+        var fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String strDate = date.format(fmt);
         filing.setDescription(MessageFormat.format(filingDataConfig.getPsc07Description(), name, strDate));
     }
