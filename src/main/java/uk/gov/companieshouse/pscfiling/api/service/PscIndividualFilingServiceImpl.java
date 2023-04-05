@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.patch.model.PatchResult;
+import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
@@ -54,8 +55,8 @@ public class PscIndividualFilingServiceImpl implements PscIndividualFilingServic
                     patchEntity(filingId, pscIndividualFilingProvider, patchMap, mergeProcessor,
                             postMergeProcessor, pscIndividualPatchValidator);
         }
-        catch (IOException e) {
-            throw new RuntimeException(e);  // TODO InvalidPatchException?
+        catch (final IOException e) {
+            throw new MergePatchException("Failed to merge patch request", e);
         }
 
         return patchResult;

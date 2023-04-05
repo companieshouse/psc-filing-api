@@ -16,6 +16,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -107,10 +108,11 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("Expect to update or replace existing fields that are not read only")
     void updateFilingWhenReplacingFields() throws Exception {
         final var body = "{\n"
                 + " \"id\": \"unauthorised\",\n"
-                + "  \"ceased_on\": \"2023-03-03\",\n"
+                + "  \"ceased_on\": \"2022-03-03\",\n"
                 + "  \"name_elements\": {\n"
                 + "    \"surname\": \"Replaced\"\n"
                 + "  },\n"
@@ -153,6 +155,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("Expect to add new fields to existing filing")
     void updateFilingWhenAddingFields() throws Exception {
         final var body = "{\n"
                 + "  \"ceased_on\": \"2022-10-05\",\n"
@@ -198,6 +201,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("Expected: top level and nested fields are deleted with 'null' and read only fields are unchanged")
     void updateFilingWhenDeletingFields() throws Exception {
         final var body = "{\n"
                 + " \"id\": null,\n"
@@ -245,6 +249,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("Expect updatedAt is updated even if there are no other changes in the PATCH request ")
     void updateFilingWhenFieldsAbsentThenTouchedButUnchanged() throws Exception {
         final var body = "{ }";
         final var filing = PscIndividualFiling.builder()
@@ -282,6 +287,34 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     }
 
     @Test
+    @DisplayName("Expect PATCH validation to return an error when validation fails")
+    void updateFilingWhenDateInFuture() throws Exception {
+        final var body = "{\n"
+                + " \"ceased_on\": \"2023-11-05\", \n"
+                + " \"register_entry_date\": \"2023-11-05\" \n"
+                + "}";
+        final var filing = PscIndividualFiling.builder()
+                .id(FILING_ID)
+                .referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .links(links)
+                .build();
+
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
+                        .contentType(APPLICATION_JSON_MERGE_PATCH)
+                        .requestAttr("transaction", transaction)
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+        //TODO - add expectation for JSON body wrt ceased_on, register_entry_date and updated_at
+    }
+
+    @Test
+    @DisplayName("If the submission ID does not match then return a 404 Not Found response")
     void updateFilingWhenNotFoundThen404() throws Exception {
         final var body = "{ }";
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());

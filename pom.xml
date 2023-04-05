@@ -48,6 +48,7 @@
         <sonar.dependencyCheck.jsonReportPath>
             ${project.basedir}/target/dependency-check-report.json
         </sonar.dependencyCheck.jsonReportPath>
+        <api-helper-java.version>1.4.5</api-helper-java.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -111,7 +112,7 @@
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-helper-java</artifactId>
-            <version>1.4.5</version>
+            <version>${api-helper-java.version}</version>
         </dependency>
 
         <!-- test -->

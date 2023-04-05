@@ -2,6 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.service;
 
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
@@ -17,19 +18,19 @@ public class PscIndividualPatchValidatorImpl implements PscIndividualPatchValida
         this.clock = clock;
     }
 
+    //TODO - should also check register_entry_date is not in the future
     @Override
     public ValidationResult validate(final PscIndividualFiling pscIndividualFiling) {
         final var today = clock.instant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        if (pscIndividualFiling.getCeasedOn().isAfter(today)) {
-            return new ValidationResult(
-                    new FieldError("patch", "ceasedOn", pscIndividualFiling.getCeasedOn(), false,
-                            new String[]{
-                                    "ceased_on",
-                                    "patch.ceased_on"}, null,
-                                    "date cannot be in the future"));
-        }
-        return new ValidationResult();
+        return Optional.ofNullable(pscIndividualFiling)
+                .map(PscIndividualFiling::getCeasedOn)
+                .filter(d -> d.isAfter(today)).map(d -> new ValidationResult(
+                        new FieldError("patch", "ceasedOn", d,
+                                false, new String[]{
+                                "ceased_on", "patch.ceased_on"
+                        }, null, "date cannot be in the future")))
+                .orElseGet(ValidationResult::new);
     }
 
 }

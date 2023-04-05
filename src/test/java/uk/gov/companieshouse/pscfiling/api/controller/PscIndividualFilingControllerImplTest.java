@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +39,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.patch.model.PatchResult;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -246,5 +250,20 @@ class PscIndividualFilingControllerImplTest {
 
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
+
+    @Test
+    void updateFiling() {
+        final var success = new PatchResult();
+
+        when(pscIndividualFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(success);
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+
+        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(), request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(filing));
+
+    }
+
 }
 
