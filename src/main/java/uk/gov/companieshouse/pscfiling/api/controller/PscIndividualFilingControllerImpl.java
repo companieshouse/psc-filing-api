@@ -95,7 +95,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
      * @param filingResource the Filing resource ID (RFC 7396)
      * @param mergePatch     details of the merge-patch to apply
      * @param request        the servlet request
-     * @return CREATED response containing the populated Filing resource
+     * @return OK response containing the populated Filing resource
      */
     @Override
     @Transactional

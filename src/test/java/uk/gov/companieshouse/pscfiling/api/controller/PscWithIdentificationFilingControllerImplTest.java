@@ -44,6 +44,8 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
@@ -85,6 +87,8 @@ class PscWithIdentificationFilingControllerImplTest {
     private FilingForPscTypeValidChain filingForPscTypeValidChain;
     @Mock
     private FilingValidationService filingValidationService;
+    @Mock
+    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
 
     private PscWithIdentificationFiling filing;
     private Links links;
@@ -96,7 +100,7 @@ class PscWithIdentificationFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController = new PscWithIdentificationFilingControllerImpl(transactionService, pscFilingService,
-                filingMapper, clock, logger) {
+                pscWithIdentificationFilingService, filingMapper, clock, logger) {
         };
         filing = PscWithIdentificationFiling.builder()
                 .referencePscId(PSC_ID)

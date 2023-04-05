@@ -89,19 +89,7 @@ class PscIndividualFilingControllerImplTest {
     @Mock
     private Transaction transaction;
     @Mock
-    private PscExistsValidator pscExistsValidator;
-    @Mock
-    private FilingForPscTypeValidChain filingForPscTypeValidChain;
-    @Mock
-    private FilingValidationService filingValidationService;
-    @Mock
     private PscIndividualFilingService pscIndividualFilingService;
-    @Mock
-    private PscIndividualFilingProvider pscIndividualFilingProvider;
-    @Mock
-    private PscIndividualFilingMergeProcessor mergeProcessor;
-    @Mock
-    private PscIndividualFilingPostMergeProcessor postMergeProcessor;
 
     private PscIndividualFiling filing;
     private Links links;
