@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,14 @@ class CompanyInterceptorTest {
     Logger logger;
     @Mock
     private Transaction transaction;
+    @Mock
+    private Map<String, String> validation;
+    @Mock
+    private  Map<String, List<String>> company;
+    @Mock
+    private Map<String, String> companyStatus;
+    @Mock
+    private Map<String, String> companyType;
 
     private CompanyProfileApi companyProfileApi;
     private CompanyInterceptor testCompanyInterceptor;
@@ -50,7 +59,8 @@ class CompanyInterceptorTest {
         companyProfileApi.setType("ltd");
         companyProfileApi.setCompanyStatus("active");
 
-        testCompanyInterceptor = createTestInterceptor();
+        testCompanyInterceptor =new CompanyInterceptor(companyProfileService, validation, company, companyStatus,
+                companyType, logger);
 
         when(request.getAttribute(AttributeName.TRANSACTION.getValue())).thenReturn(transaction);
     }
@@ -58,7 +68,11 @@ class CompanyInterceptorTest {
     @Test
     void preHandleNoValidationErrors() {
         expectHeaderWithCompanyProfile();
+        when(company.get("type-allowed")).thenReturn(List.of("ltd"));
+        when(company.get("status-not-allowed")).thenReturn(List.of("dissolved"));
+
         var result = testCompanyInterceptor.preHandle(request, response, handler);
+
         assertTrue(result);
     }
 
@@ -66,9 +80,10 @@ class CompanyInterceptorTest {
     void preHandleWhenCompanyHasSuperSecurePscs() {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setHasSuperSecurePscs(Boolean.TRUE);
+        when(validation.get("super-secure-company")).thenReturn("Super secure default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "Super secure");
+                null, "Super secure default message");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -81,9 +96,11 @@ class CompanyInterceptorTest {
     void preHandleWhenCompanyTypeNotAllowed() {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setType("not-proper");
+        when(company.get("type-allowed")).thenReturn(List.of("ltd"));
+        when(validation.get("company-type-not-allowed")).thenReturn("Invalid type default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "PSC form cannot be filed for this company type: " + companyProfileApi.getType());
+                null, "Invalid type default message" + companyType.get(companyProfileApi.getType()));
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -96,9 +113,13 @@ class CompanyInterceptorTest {
     void preHandleWhenCompanyStatusNotAllowed() {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setCompanyStatus("dissolved");
+        when(company.get("type-allowed")).thenReturn(List.of("ltd"));
+        when(company.get("status-not-allowed")).thenReturn(List.of("dissolved"));
+        when(validation.get("company-status-not-allowed")).thenReturn(
+                "Invalid status default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "Form cannot be filed for a company status that is " + companyProfileApi.getCompanyStatus());
+                null, "Invalid status default message" + companyStatus.get(companyProfileApi.getCompanyStatus()));
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -121,17 +142,6 @@ class CompanyInterceptorTest {
         final var thrown = assertThrows(NullPointerException.class,
                 () -> testCompanyInterceptor.preHandle(request, response, handler));
         assertThat(thrown.getMessage(), is("Transaction missing from request"));
-    }
-
-
-    private CompanyInterceptor createTestInterceptor() {
-        final var interceptor = new CompanyInterceptor(companyProfileService, logger);
-        interceptor.setCompanyHasSuperSecurePscsMessage("Super secure");
-        interceptor.setCompanyTypeNotAlllowedMesssage("PSC form cannot be filed for this company type: ");
-        interceptor.setCompanyStatusNotAllowedMessage("Form cannot be filed for a company status that is ");
-        interceptor.setCompanyStatusNotAllowed(List.of("dissolved"));
-        interceptor.setAllowedCompanyTypes(List.of("ltd"));
-        return interceptor;
     }
 
     private void expectHeaderWithCompanyProfile() {

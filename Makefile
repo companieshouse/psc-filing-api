@@ -9,6 +9,11 @@ clean:
 	rm -rf ./build-*
 	rm -rf ./build.log-*
 
+.PHONY: submodules
+submodules:
+	git submodule init
+	git submodule update
+
 FAIL_BUILD_CVSS_LIMIT ?= 0
 
 .PHONY: security-check
@@ -48,13 +53,13 @@ endif
 	rm -rf $(tmpdir)
 
 .PHONY: build
-build: clean
+build: clean submodules
 	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false
 	mvn package
 	cp ./target/$(artifact_name)-$(version).jar ./$(artifact_name).jar
 
 .PHONY: dist
-dist: clean coverage package
+dist: clean coverage submodules package
 
 .PHONY: coverage
 coverage:

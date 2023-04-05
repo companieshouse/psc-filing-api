@@ -69,7 +69,7 @@ class ValidationStatusControllerImplTest {
     @BeforeEach
     void setUp() {
         testController = new ValidationStatusControllerImpl(pscFilingService,
-                filingValidationService, transactionService, filingMapper, errorMapper, true, logger);
+                filingValidationService, filingMapper, errorMapper, true, logger);
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
                 PASSTHROUGH_HEADER);
     }
@@ -77,7 +77,7 @@ class ValidationStatusControllerImplTest {
     @Test
     void validateWhenClosableFlagFalse() {
         testController = new ValidationStatusControllerImpl(pscFilingService,
-                filingValidationService, transactionService, filingMapper, errorMapper, false, logger);
+                filingValidationService, filingMapper, errorMapper, false, logger);
         final var filing = PscIndividualFiling.builder()
                 .build();
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));

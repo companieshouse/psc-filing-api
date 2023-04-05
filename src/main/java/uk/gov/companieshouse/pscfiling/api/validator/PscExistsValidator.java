@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
@@ -12,7 +13,8 @@ public class PscExistsValidator extends BaseFilingValidator
 
     private final PscDetailsService pscDetailsService;
 
-    public PscExistsValidator(PscDetailsService pscDetailsService) {
+    public PscExistsValidator(PscDetailsService pscDetailsService, Map<String, String> validation) {
+        super(validation);
         this.pscDetailsService = pscDetailsService;
     }
 
@@ -29,7 +31,7 @@ public class PscExistsValidator extends BaseFilingValidator
         catch (FilingResourceNotFoundException e) {
             validationContext.getErrors().add(
                     new FieldError("object", "reference_psc_id", validationContext.getDto().getReferencePscId(), false,
-                            new String[]{null, "notFound.reference_psc_id"}, null, "PSC with that reference ID was not found"));
+                            new String[]{null, "notFound.reference_psc_id"}, null, validation.get("psc-reference-id-not-found")));
         }
     }
 
