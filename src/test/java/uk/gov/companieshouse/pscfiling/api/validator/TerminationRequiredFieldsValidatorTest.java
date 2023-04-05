@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,8 @@ class TerminationRequiredFieldsValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
 
     TerminationRequiredFieldsValidator testValidator;
     private PscTypeConstants pscType;
@@ -48,7 +51,7 @@ class TerminationRequiredFieldsValidatorTest {
         when(dto.getRegisterEntryDate()).thenReturn(DATE);
         when(dto.getReferenceEtag()).thenReturn(ETAG);
 
-        testValidator = new TerminationRequiredFieldsValidator();
+        testValidator = new TerminationRequiredFieldsValidator(validation);
     }
 
     @Test

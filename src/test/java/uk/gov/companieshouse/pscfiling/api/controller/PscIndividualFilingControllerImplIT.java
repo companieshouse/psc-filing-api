@@ -35,6 +35,7 @@ import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
@@ -50,8 +51,8 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@Import(PscExistsValidator.class)
 @WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
+@Import({PscExistsValidator.class, PscFilingConfig.class})
 class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;

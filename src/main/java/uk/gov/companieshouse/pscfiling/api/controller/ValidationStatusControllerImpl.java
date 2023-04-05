@@ -41,7 +41,6 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
     private final PscFilingService pscFilingService;
     private final FilingValidationService filingValidationService;
-    private final TransactionService transactionService;
     private final PscMapper filingMapper;
     private final ErrorMapper errorMapper;
     private final Logger logger;
@@ -49,12 +48,10 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
     public ValidationStatusControllerImpl(final PscFilingService pscFilingService,
                                           final FilingValidationService filingValidationService,
-                                          final TransactionService transactionService,
                                           final PscMapper filingMapper, final ErrorMapper errorMapper, @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled,
                                           Logger logger) {
         this.pscFilingService = pscFilingService;
         this.filingValidationService = filingValidationService;
-        this.transactionService = transactionService;
         this.filingMapper = filingMapper;
         this.errorMapper = errorMapper;
         this.isTransactionsCloseableEnabled = isTransactionsClosableEnabled;
@@ -85,8 +82,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
         var finalTransaction = transaction;
         return maybePscIndividualFiling.map(f -> isValid(f, passthroughHeader, finalTransaction))
-                .orElseThrow(() -> new FilingResourceNotFoundException(
-                        "Filing resource not found: " + filingResource));
+                .orElseThrow(() -> new FilingResourceNotFoundException(filingResource));
     }
 
     private ValidationStatusResponse isValid(final PscCommunal pscFiling,

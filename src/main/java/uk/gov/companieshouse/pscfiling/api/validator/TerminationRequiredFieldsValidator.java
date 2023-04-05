@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
@@ -10,6 +11,10 @@ public class TerminationRequiredFieldsValidator extends BaseFilingValidator
 
     protected static final String OBJECT_NAME = "object";
     protected static final String DEFAULT_MESSAGE = "must not be null";
+
+    public TerminationRequiredFieldsValidator(Map<String, String> validation) {
+        super(validation);
+    }
 
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {

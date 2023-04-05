@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,11 +33,14 @@ class PscEtagValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
 
     PscEtagValidator testValidator;
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
+
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final String ETAG = "1234567";
@@ -51,7 +55,7 @@ class PscEtagValidatorTest {
         when(dto.getReferenceEtag()).thenReturn(ETAG);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader )).thenReturn(pscApi);
 
-        testValidator = new PscEtagValidator(pscDetailsService);
+        testValidator = new PscEtagValidator(pscDetailsService, validation);
     }
 
     @Test
@@ -67,9 +71,9 @@ class PscEtagValidatorTest {
     @Test
     void validateWhenEtagDoesNotMatch() {
         var fieldError = new FieldError("object", "reference_etag", ETAG, false,
-                new String[]{null, "notMatch.reference_etag"}, null,
-                "Etag for PSC does not match latest value");
+                new String[]{null, "notMatch.reference_etag"}, null, "not-match default message");
         when(pscApi.getEtag()).thenReturn("some other etag value");
+        when(validation.get("etag-not-match")).thenReturn("not-match default message");
 
         testValidator.validate(
                 new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));

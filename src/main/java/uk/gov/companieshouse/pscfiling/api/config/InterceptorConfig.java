@@ -21,7 +21,6 @@ import uk.gov.companieshouse.pscfiling.api.interceptor.RequestLoggingInterceptor
 
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
-@PropertySource("classpath:validation.properties")
 public class InterceptorConfig implements WebMvcConfigurer {
 
     public static final String COMMON_INTERCEPTOR_PATH =

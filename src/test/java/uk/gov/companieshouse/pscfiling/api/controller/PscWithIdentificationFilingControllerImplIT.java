@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
@@ -45,8 +46,8 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@Import(PscExistsValidator.class)
 @WebMvcTest(controllers = uk.gov.companieshouse.pscfiling.api.controller.PscWithIdentificationFilingControllerImpl.class)
+@Import({PscExistsValidator.class, PscFilingConfig.class})
 class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;

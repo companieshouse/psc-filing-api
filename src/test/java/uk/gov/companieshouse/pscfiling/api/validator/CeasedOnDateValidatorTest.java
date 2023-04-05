@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
+
 @ExtendWith(MockitoExtension.class)
 class CeasedOnDateValidatorTest {
     @Mock
@@ -36,10 +38,12 @@ class CeasedOnDateValidatorTest {
     @Mock
     private PscIndividualDto dto;
 
-    CeasedOnDateValidator testValidator;
+    private CeasedOnDateValidator testValidator;
     private PscTypeConstants pscType;
     private List<FieldError> errors;
     private String passthroughHeader;
+    @Mock
+    private Map<String, String> validation;
 
     private static final String PSC_ID = "1kdaTltWeaP1EB70SSD9SLmiK5Y";
     private static final LocalDate DATE = LocalDate.of(2020, 5, 10);
@@ -53,7 +57,7 @@ class CeasedOnDateValidatorTest {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader)).thenReturn(pscApi);
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
 
-        testValidator = new CeasedOnDateValidator(pscDetailsService);
+        testValidator = new CeasedOnDateValidator(pscDetailsService, validation);
     }
 
     public static Stream<Arguments> provideDates() {
@@ -72,6 +76,10 @@ class CeasedOnDateValidatorTest {
         when(dto.getCeasedOn()).thenReturn(ceasedOn);
         if (ceasedOn != null) {
             when(pscApi.getNotifiedOn()).thenReturn(notifiedOn);
+            if (notifiedOn != null && ceasedOn.isBefore(notifiedOn)) {
+                when(validation.get("ceased-date-before-notified-date")).thenReturn(
+                        "date-before default message");
+            }
         }
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
@@ -82,9 +90,10 @@ class CeasedOnDateValidatorTest {
     @Test
     void validateWhenCeasedOnBeforeNotifiedOn() {
         final var fieldError = new FieldError("object", "ceased_on", DATE, false, new String[]{null, "date.ceased_on"},
-                null,"Ceased on date cannot be before the date the PSC was notified on");
+                null, "date-before default message");
         when(dto.getCeasedOn()).thenReturn(DATE);
         when(pscApi.getNotifiedOn()).thenReturn(DAY_AFTER_DATE);
+        when(validation.get("ceased-date-before-notified-date")).thenReturn("date-before default message");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 

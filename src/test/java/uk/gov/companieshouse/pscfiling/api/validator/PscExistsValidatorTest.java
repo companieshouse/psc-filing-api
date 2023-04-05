@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,8 @@ class PscExistsValidatorTest {
     private PscIndividualDto dto;
     @Mock
     private ApiErrorResponseException errorResponseException;
+    @Mock
+    private Map<String, String> validation;
 
     PscExistsValidator testValidator;
     private PscTypeConstants pscType;
@@ -48,7 +51,7 @@ class PscExistsValidatorTest {
         pscType = PscTypeConstants.INDIVIDUAL;
         passthroughHeader = "passthroughHeader";
 
-        testValidator = new PscExistsValidator(pscDetailsService);
+        testValidator = new PscExistsValidator(pscDetailsService, validation);
     }
 
     @Test
@@ -67,11 +70,12 @@ class PscExistsValidatorTest {
 
         var fieldError = new FieldError("object", "reference_psc_id", PSC_ID, false,
                 new String[]{null, "notFound.reference_psc_id"}, null,
-                "PSC with that reference ID was not found");
+                "not-exists default message");
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType,
                 passthroughHeader)).thenThrow(new FilingResourceNotFoundException(
                 "PSC Details not found for " + PSC_ID + ": 404 Not Found", errorResponseException));
+        when(validation.get("psc-reference-id-not-found")).thenReturn("not-exists default message");
 
         testValidator.validate(
                 new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));

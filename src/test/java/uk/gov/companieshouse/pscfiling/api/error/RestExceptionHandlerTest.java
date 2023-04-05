@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -71,9 +72,12 @@ class RestExceptionHandlerTest {
     @Mock
     private JsonMappingException.Reference mappingReference;
 
+    private Map<String, String> validation;
+
     @BeforeEach
     void setUp() {
-        testExceptionHandler = new RestExceptionHandler(logger);
+        validation = Map.of("filing-resource-not-found", "Filing resource {filing-resource-id} not found");
+        testExceptionHandler = new RestExceptionHandler(validation, logger);
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURI("/path/to/resource");
         when(request.getRequest()).thenReturn(servletRequest);
@@ -223,13 +227,14 @@ class RestExceptionHandlerTest {
 
     @Test
     void handleResourceNotFoundException() {
-        final var exception = new FilingResourceNotFoundException("test resource missing");
+        final var exception = new FilingResourceNotFoundException("Filing resource {filing-resource-id} not found");
 
-        final var response =
-                testExceptionHandler.handleResourceNotFoundException(exception, request);
+        final var apiErrors = testExceptionHandler.handleResourceNotFoundException(exception, request);
+        final var expectedError = new ApiError("Filing resource {filing-resource-id} not found", null, "resource", "ch:validation");
 
-        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(response.hasBody(), is(false));
+        expectedError.addErrorValue("{filing-resource-id}", "Filing resource {filing-resource-id} not found");
+
+        assertThat(apiErrors.getErrors(), contains(expectedError));
     }
 
     @Test

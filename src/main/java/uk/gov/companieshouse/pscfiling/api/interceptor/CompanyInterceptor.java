@@ -1,11 +1,11 @@
 package uk.gov.companieshouse.pscfiling.api.interceptor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -21,42 +21,25 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @Component
 public class CompanyInterceptor implements HandlerInterceptor {
 
-    private List<String> allowedCompanyTypes;
-    private List<String> companyStatusNotAllowed;
-    private String companyHasSuperSecurePscsMessage;
-    private String companyTypeNotAlllowedMesssage;
-    private String companyStatusNotAllowedMessage;
-    CompanyProfileService companyProfileService;
+    private Map<String, String> validation;
+    private Map<String, List<String>> company;
+    private Map<String, String> companyStatus;
+    private Map<String, String> companyType;
+
+    private CompanyProfileService companyProfileService;
     private final Logger logger;
 
-    public CompanyInterceptor(CompanyProfileService companyProfileService, Logger logger) {
+    public CompanyInterceptor(CompanyProfileService companyProfileService,
+            @Qualifier(value = "validation") Map<String, String> validation,
+            @Qualifier(value = "company") Map<String, List<String>> company,
+            @Qualifier(value = "companyStatus") Map<String, String> companyStatus,
+            @Qualifier(value = "companyType") Map<String, String> companyType, Logger logger) {
         this.companyProfileService = companyProfileService;
+        this.validation = validation;
+        this.company = company;
+        this.companyStatus = companyStatus;
+        this.companyType = companyType;
         this.logger = logger;
-    }
-
-    @Autowired
-    public void setCompanyHasSuperSecurePscsMessage(@Value("${super.secure.message:not-defined}") String companyHasSuperSecurePscsMessage) {
-        this.companyHasSuperSecurePscsMessage = companyHasSuperSecurePscsMessage;
-    }
-
-    @Autowired
-    public void setCompanyTypeNotAlllowedMesssage(@Value("${company.type.not.allowed.message}") String companyTypeNotAlllowedMesssage) {
-        this.companyTypeNotAlllowedMesssage = companyTypeNotAlllowedMesssage;
-    }
-
-    @Autowired
-    public void setCompanyStatusNotAllowedMessage(@Value("${company.status.not.allowed.message}") String companyStatusNotAllowedMessage) {
-        this.companyStatusNotAllowedMessage = companyStatusNotAllowedMessage;
-    }
-
-    @Autowired
-    public void setAllowedCompanyTypes(@Value("#{${allowed.company.types}}") List<String> allowedCompanyTypes) {
-        this.allowedCompanyTypes = allowedCompanyTypes;
-    }
-
-    @Autowired
-    public void setCompanyStatusNotAllowed(@Value("#{${company.status.not.allowed}}") List<String> companyStatusNotAllowed) {
-        this.companyStatusNotAllowed = companyStatusNotAllowed;
     }
 
     @Override
@@ -73,23 +56,24 @@ public class CompanyInterceptor implements HandlerInterceptor {
         if (companyProfile != null) {
             if (companyProfile.hasSuperSecurePscs()) {
                 logger.info("Company has Super Secure PSCs");
-                throw new ConflictingFilingException(createValidationError(companyHasSuperSecurePscsMessage));
+                throw new ConflictingFilingException(createValidationError(validation.get("super-secure-company")));
             }
 
-            if (!allowedCompanyTypes.contains(companyProfile.getType())) {
+            if (!company.get("type-allowed").contains(companyProfile.getType())) {
                 logMap.put("company_number", transaction.getCompanyNumber());
                 logMap.put("company_type", companyProfile.getType());
                 logger.info("Company Type not allowed", logMap);
-                throw new ConflictingFilingException(
-                        createValidationError(companyTypeNotAlllowedMesssage + companyProfile.getType()));
+                throw new ConflictingFilingException(createValidationError(
+                        validation.get("company-type-not-allowed") + companyType.get(companyProfile.getType())));
             }
 
-            if (companyStatusNotAllowed.contains(companyProfile.getCompanyStatus())) {
+            if (company.get("status-not-allowed").contains(companyProfile.getCompanyStatus())) {
                 logMap.put("company_number", transaction.getCompanyNumber());
                 logMap.put("company_status", companyProfile.getCompanyStatus());
                 logger.info("Company status not allowed", logMap);
-                throw new ConflictingFilingException(
-                        createValidationError(companyStatusNotAllowedMessage + companyProfile.getCompanyStatus()));
+                throw new ConflictingFilingException(createValidationError(
+                        validation.get("company-status-not-allowed") +
+                                companyStatus.get(companyProfile.getCompanyStatus())));
             }
         }
         return true;
