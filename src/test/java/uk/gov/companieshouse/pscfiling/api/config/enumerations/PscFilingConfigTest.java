@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig;
+package uk.gov.companieshouse.pscfiling.api.config.enumerations;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
