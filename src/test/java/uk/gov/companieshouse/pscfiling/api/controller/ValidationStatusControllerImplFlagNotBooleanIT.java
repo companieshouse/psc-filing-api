@@ -19,7 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig.PscFilingConfig;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;

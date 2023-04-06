@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig;
+package uk.gov.companieshouse.pscfiling.api.config.enumerations;
 
 import java.util.HashMap;
 import java.util.List;

@@ -26,7 +26,7 @@ import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
 import uk.gov.companieshouse.api.model.transaction.TransactionStatus;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.config.ApiEnumerationsConfig.PscFilingConfig;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.FilingKind;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
