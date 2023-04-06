@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -13,13 +12,12 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class PscCommon implements PscCommunal, Touchable {
     @JsonMerge
     private Address address;
     private Boolean addressSameAsRegisteredOfficeAddress;
     private LocalDate ceasedOn;
-    @JsonProperty(access= JsonProperty.Access.READ_ONLY)
+    @JsonProperty(value = "created_at", access= JsonProperty.Access.READ_ONLY)
     private Instant createdAt;
     private String etag;
     private String kind;
@@ -30,6 +28,7 @@ public class PscCommon implements PscCommunal, Touchable {
     private String referenceEtag;
     private String referencePscId;
     private LocalDate registerEntryDate;
+    @JsonProperty(value = "updated_at", access= JsonProperty.Access.READ_ONLY)
     private Instant updatedAt;
 
     @Override

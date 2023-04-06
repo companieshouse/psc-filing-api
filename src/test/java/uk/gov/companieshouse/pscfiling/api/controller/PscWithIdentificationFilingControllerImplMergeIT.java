@@ -113,12 +113,12 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
     void updateFilingWhenReplacingFields() throws Exception {
         final var body = "{\n"
                 + " \"id\": \"unauthorised\",\n"
-
                 + " \"created_at\": \""
+                + SECOND_INSTANT
+                + "\",\n"
+                + " \"updated_at\": \""
                 + FIRST_INSTANT
                 + "\",\n"
-                //+ " \"updated_at\": \"2022-03-03\",\n"
-
                 + "  \"ceased_on\": \"2022-03-03\",\n"
                 + "  \"identification\": {\n"
                 + "    \"country_registered\": \"Replaced\"\n"
@@ -131,6 +131,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .id(FILING_ID)
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
+                .createdAt(FIRST_INSTANT)
+                .updatedAt(FIRST_INSTANT)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .name(CORPORATE_NAME)
@@ -144,7 +146,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         when(pscFilingService.save(any(PscWithIdentificationFiling.class),
                 eq(TRANS_ID))).thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                 .build()); // copy of first argument
-        when(clock.instant()).thenReturn(FIRST_INSTANT);
+        when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -160,7 +162,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.identification.registration_number", is("regNo")))
                 .andExpect(jsonPath("$.identification.country_registered", is("Replaced")))
                 .andExpect(jsonPath("$.natures_of_control", containsInAnyOrder("type4")))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
+                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())));
     }
 
     @Test

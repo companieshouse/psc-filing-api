@@ -56,12 +56,12 @@ class InterceptorConfigTest {
         testConfig.setRequestLoggingInterceptor(requestLoggingInterceptor);
         testConfig.addInterceptors(interceptorRegistry);
 
-        verify(interceptorRegistry.addInterceptor(any(TransactionInterceptor.class)))
-                .order(1);
+        verify(interceptorRegistry.addInterceptor(any(TransactionInterceptor.class))).order(1);
         verify(interceptorRegistry.addInterceptor(any(OpenTransactionInterceptor.class))
                 .addPathPatterns(
                         "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
-                                + "(?:individual|corporate-entity|legal-person)}")).order(2);
+                                + "(?:individual|corporate-entity|legal-person)"
+                                + "}/{filing_resource_id}")).order(2);
         verify(interceptorRegistry.addInterceptor(companyInterceptor)).order(3);
         verify(interceptorRegistry.addInterceptor(tokenPermissionsInterceptor)).order(4);
         verify(interceptorRegistry.addInterceptor(any(MappablePermissionsInterceptor.class)))

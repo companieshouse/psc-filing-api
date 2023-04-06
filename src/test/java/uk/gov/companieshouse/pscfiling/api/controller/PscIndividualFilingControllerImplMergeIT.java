@@ -113,6 +113,12 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         final var body = "{\n"
                 + " \"id\": \"unauthorised\",\n"
                 + "  \"ceased_on\": \"2022-03-03\",\n"
+                + " \"created_at\": \""
+                + SECOND_INSTANT
+                + "\",\n"
+                + " \"updated_at\": \""
+                + FIRST_INSTANT
+                + "\",\n"
                 + "  \"name_elements\": {\n"
                 + "    \"surname\": \"Replaced\"\n"
                 + "  },\n"
@@ -122,6 +128,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 + "}";
         final var filing = PscIndividualFiling.builder()
                 .id(FILING_ID)
+                .createdAt(FIRST_INSTANT)
+                .updatedAt(FIRST_INSTANT)
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
@@ -136,7 +144,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
                 i -> PscIndividualFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
-        when(clock.instant()).thenReturn(FIRST_INSTANT);
+        when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -151,7 +159,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.name_elements.title", is("Sir")))
                 .andExpect(jsonPath("$.name_elements.surname", is("Replaced")))
                 .andExpect(jsonPath("$.natures_of_control", containsInAnyOrder("type4")))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
+                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())));
     }
 
     @Test
