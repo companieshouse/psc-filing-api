@@ -65,8 +65,10 @@ class TerminationRequiredFieldsValidatorTest {
     void validatePscIdNotPresent() {
         var fieldError =
                 new FieldError("object", "reference_psc_id", null, false, new String[]{null, "reference_psc_id"}, null,
-                        "must not be null");
+                        "Reference PSC ID must be entered");
         when(dto.getReferencePscId()).thenReturn(null);
+        when(validation.get("reference-psc-id-missing")).thenReturn(
+                "Reference PSC ID must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -78,8 +80,10 @@ class TerminationRequiredFieldsValidatorTest {
     void validateEtagNotPresent() {
         var fieldError =
                 new FieldError("object", "reference_etag", null, false, new String[]{null, "reference_etag"}, null,
-                        "must not be null");
+                        "Reference ETag must be entered");
         when(dto.getReferenceEtag()).thenReturn(null);
+        when(validation.get("reference-etag-missing")).thenReturn(
+                "Reference ETag must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -90,8 +94,10 @@ class TerminationRequiredFieldsValidatorTest {
     @Test
     void validateCeasedOnDateNotPresent() {
         var fieldError = new FieldError("object", "ceased_on", null, false, new String[]{null, "ceased_on"}, null,
-                "must not be null");
+                "Ceased date must be entered");
         when(dto.getCeasedOn()).thenReturn(null);
+        when(validation.get("ceased-date-missing")).thenReturn(
+                "Ceased date must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -102,8 +108,10 @@ class TerminationRequiredFieldsValidatorTest {
     @Test
     void validateRegisterEntryDateNotPresent() {
         var fieldError = new FieldError("object", "register_entry_date", null, false, new String[]{null, "register_entry_date"}, null,
-                "must not be null");
+                "Register entry date must be entered");
         when(dto.getRegisterEntryDate()).thenReturn(null);
+        when(validation.get("register-date-missing")).thenReturn(
+                "Register entry date must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
