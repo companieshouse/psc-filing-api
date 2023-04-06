@@ -30,14 +30,14 @@ public class TerminationRequiredFieldsValidator extends BaseFilingValidator
                             new String[]{null, "register_entry_date"},
                             null, validation.get("register-date-missing")));
         }
-        if (validationContext.getDto().getReferencePscId() == null) {
+        if (validationContext.getDto().getReferencePscId() == null || validationContext.getDto().getReferencePscId().isEmpty()) {
             validationContext.getErrors()
                     .add(new FieldError(
                             OBJECT_NAME, "reference_psc_id", null, false,
                             new String[]{null, "reference_psc_id"},
                             null, validation.get("reference-psc-id-missing")));
         }
-        if (validationContext.getDto().getReferenceEtag() == null) {
+        if (validationContext.getDto().getReferenceEtag() == null || validationContext.getDto().getReferenceEtag().isEmpty()) {
             validationContext.getErrors()
                     .add(new FieldError(OBJECT_NAME, "reference_etag", null, false,
                             new String[]{null, "reference_etag"},
