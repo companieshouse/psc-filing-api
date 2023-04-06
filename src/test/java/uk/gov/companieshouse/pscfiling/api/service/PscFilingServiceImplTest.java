@@ -51,11 +51,19 @@ class PscFilingServiceImplTest extends TestBaseService {
     }
 
     @Test
-    void saveIndividual() {
+    void saveStringStringIndividual() {
         testService.save(filing, TRANS_ID);
 
         verify(individualFilingRepository).save(filing);
     }
+
+    @Test
+    void saveStringIndividual() {
+        testService.save(filing);
+
+        verify(individualFilingRepository).save(filing);
+    }
+
 
     @Test
     void saveWithIdentification() {

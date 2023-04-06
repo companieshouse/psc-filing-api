@@ -21,11 +21,11 @@ public class Identification {
         // prevent direct instantiation
     }
 
-    public Identification(@JsonProperty("countryRegistered") final String countryRegistered,
-                          @JsonProperty("legalAuthority") final String legalAuthority,
-                          @JsonProperty("legalForm") final String legalForm,
-                          @JsonProperty("placeRegistered") final String placeRegistered,
-                          @JsonProperty("registrationNumber") final String registrationNumber) {
+    public Identification(final String countryRegistered,
+                          final String legalAuthority,
+                          final String legalForm,
+                          final String placeRegistered,
+                          final String registrationNumber) {
         this.countryRegistered = countryRegistered;
         this.legalAuthority = legalAuthority;
         this.legalForm = legalForm;

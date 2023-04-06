@@ -30,6 +30,7 @@ public class BaseControllerIT {
     protected static final String URL_PSC_INDIVIDUAL = URL_PSC + "/individual";
     protected static final String URL_PSC_INDIVIDUAL_RESOURCE = URL_PSC_INDIVIDUAL + "/{filingResourceId}";
     protected static final String URL_PSC_CORPORATE_ENTITY = URL_PSC + "/corporate-entity";
+    protected static final String URL_PSC_CORPORATE_RESOURCE = URL_PSC_CORPORATE_ENTITY + "/{filingResourceId}";
     protected static final String URL_VALIDATION_STATUS =
             "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId"
                     + "}/validation_status";

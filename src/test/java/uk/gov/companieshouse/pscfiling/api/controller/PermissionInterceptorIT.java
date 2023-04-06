@@ -46,12 +46,6 @@ class PermissionInterceptorIT extends BaseControllerIT {
     @MockBean
     private PscIndividualFilingService pscIndividualFilingService;
     @MockBean
-    private PscIndividualFilingProvider pscIndividualFilingProvider;
-    @MockBean
-    private PscIndividualFilingMergeProcessor pscIndividualFilingMergeProcessor;
-    @MockBean
-    private PscIndividualFilingPostMergeProcessor pscIndividualFilingPostMergeProcessor;
-    @MockBean
     private PscMapper filingMapper;
     @MockBean
     private Clock clock;
