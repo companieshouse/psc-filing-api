@@ -95,6 +95,8 @@ public class FilingDataServiceImpl implements FilingDataService {
                 // fall through
             case LEGAL_PERSON:
                 name = (String) filing.getData().get("name");
+                break;
+
         }
 
         var date = LocalDate.parse(filing.getData().get("ceased_on").toString());
