@@ -14,6 +14,9 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
@@ -61,12 +64,14 @@ class TerminationRequiredFieldsValidatorTest {
         assertThat(errors, is(empty()));
     }
 
-    @Test
-    void validatePscIdNotPresent() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "")
+    void validatePscIdNotPresent(String pscId) {
         var fieldError =
                 new FieldError("object", "reference_psc_id", null, false, new String[]{null, "reference_psc_id"}, null,
                         "Reference PSC ID must be entered");
-        when(dto.getReferencePscId()).thenReturn(null);
+        when(dto.getReferencePscId()).thenReturn(pscId);
         when(validation.get("reference-psc-id-missing")).thenReturn(
                 "Reference PSC ID must be entered");
 
@@ -76,12 +81,14 @@ class TerminationRequiredFieldsValidatorTest {
         assertThat(errors, contains(fieldError));
     }
 
-    @Test
-    void validateEtagNotPresent() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "")
+    void validateEtagNotPresent(String etag) {
         var fieldError =
                 new FieldError("object", "reference_etag", null, false, new String[]{null, "reference_etag"}, null,
                         "Reference ETag must be entered");
-        when(dto.getReferenceEtag()).thenReturn(null);
+        when(dto.getReferenceEtag()).thenReturn(etag);
         when(validation.get("reference-etag-missing")).thenReturn(
                 "Reference ETag must be entered");
 
