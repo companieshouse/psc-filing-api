@@ -25,8 +25,6 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @ExtendWith(MockitoExtension.class)
 class FilingDataControllerImplTest extends BaseControllerIT {
     @Mock
-    private TransactionService transactionService;
-    @Mock
     private FilingDataService filingDataService;
     @Mock
     private Logger logger;
@@ -39,7 +37,7 @@ class FilingDataControllerImplTest extends BaseControllerIT {
     @BeforeEach
     void setUp() throws Exception {
         testController =
-                new FilingDataControllerImpl(transactionService, filingDataService, logger);
+                new FilingDataControllerImpl(filingDataService, logger);
         filingsTransaction = new Transaction();
         filingsTransaction.setId(TRANS_ID);
         filingsTransaction.setCompanyNumber(COMPANY_NUMBER);

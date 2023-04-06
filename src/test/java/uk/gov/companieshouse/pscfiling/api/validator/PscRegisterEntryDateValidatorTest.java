@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,8 @@ class PscRegisterEntryDateValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
 
     PscRegisterEntryDateValidator testValidator;
     private PscTypeConstants pscType;
@@ -47,7 +50,7 @@ class PscRegisterEntryDateValidatorTest {
         pscType = PscTypeConstants.INDIVIDUAL;
 
         passThroughHeader = "passThroughHeader";
-        testValidator = new PscRegisterEntryDateValidator();
+        testValidator = new PscRegisterEntryDateValidator(validation);
 
         when(dto.getCeasedOn()).thenReturn(DATE);
     }
@@ -56,9 +59,11 @@ class PscRegisterEntryDateValidatorTest {
     void validateWhenPscRegisterEntryDateBeforeCessationDate() {
         var fieldError = new FieldError("object", "register_entry_date", BEFORE_DATE, false,
                 new String[]{null, "date.register_entry_date"}, null,
-                "PSC register entry date cannot be before the cessation date");
+                "before-date default message");
 
         when(dto.getRegisterEntryDate()).thenReturn(BEFORE_DATE);
+        when(validation.get("register-date-before-ceased-date")).thenReturn(
+                "before-date default message");
 
         testValidator.validate(
                 new FilingValidationContext<>(dto, errors, transaction, pscType, passThroughHeader));

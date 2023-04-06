@@ -19,12 +19,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.config.ValidatorConfig;
 import uk.gov.companieshouse.pscfiling.api.error.RestExceptionHandler;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
@@ -42,6 +44,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
         FilingValidationServiceImpl.class,
         RestExceptionHandler.class
 }, properties = {"feature.flag.transactions.closable=true"})
+@Import(PscFilingConfig.class)
 @EnableWebMvc
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {ValidatorConfig.class})
@@ -120,7 +123,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", is("PSC with that reference ID was not found")))
+                .andExpect(jsonPath("$.errors[0].error", is("Reference ID for PSC not found")))
                 .andExpect(jsonPath("$.errors[0].location", is("$.reference_psc_id")))
                 .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
                 .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));
@@ -142,7 +145,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", is("Etag for PSC does not match latest value")))
+                .andExpect(jsonPath("$.errors[0].error", is("ETag for PSC must match the latest value")))
                 .andExpect(jsonPath("$.errors[0].location", is("$.reference_etag")))
                 .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
                 .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));
@@ -165,7 +168,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", is("Ceased on date cannot be before the date the PSC was notified on")))
+                .andExpect(jsonPath("$.errors[0].error", is("Ceased date must be on or after the date the PSC was added")))
                 .andExpect(jsonPath("$.errors[0].location", is("$.ceased_on")))
                 .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
                 .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));
@@ -193,7 +196,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", is("PSC register entry date cannot be before the cessation date")))
+                .andExpect(jsonPath("$.errors[0].error", is("PSC register entry date must be on or after the date the PSC was ceased")))
                 .andExpect(jsonPath("$.errors[0].location", is("$.register_entry_date")))
                 .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
                 .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));
@@ -217,7 +220,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.is_valid", is(false)))
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", is("PSC is not active as a ceased on date is present")))
+                .andExpect(jsonPath("$.errors[0].error", is("PSC is already ceased")))
                 .andExpect(jsonPath("$.errors[0].location", is("$.ceased_on")))
                 .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
                 .andExpect(jsonPath("$.errors[0].location_type", is("json-path")));

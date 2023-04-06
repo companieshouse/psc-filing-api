@@ -17,8 +17,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -29,6 +31,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 //Using Spring Web MVC
 @Tag("web")
 @WebMvcTest(controllers = ValidationStatusControllerImpl.class)
+@Import(PscFilingConfig.class)
 class ValidationStatusControllerImplFlagUndefinedIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;

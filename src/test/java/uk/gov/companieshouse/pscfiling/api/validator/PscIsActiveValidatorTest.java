@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,9 @@ class PscIsActiveValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
+
     PscIsActiveValidator testValidator;
     private PscTypeConstants pscType;
     private List<FieldError> errors;
@@ -48,7 +52,7 @@ class PscIsActiveValidatorTest {
         pscType = PscTypeConstants.INDIVIDUAL;
         passthroughHeader = "passthroughHeader";
 
-        testValidator = new PscIsActiveValidator(pscDetailsService);
+        testValidator = new PscIsActiveValidator(pscDetailsService, validation);
         when(dto.getReferencePscId()).thenReturn(PSC_ID);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, pscType, passthroughHeader )).thenReturn(pscApi);
     }
@@ -67,11 +71,11 @@ class PscIsActiveValidatorTest {
     void validateWhenPSCisNotActive() {
 
         var fieldError = new FieldError("object", "ceased_on", CEASED_ON, false,
-            new String[]{null, "date.ceased_on"}, null,
-            "PSC is not active as a ceased on date is present");
+                new String[]{null, "date.ceased_on"}, null, "is ceased default message");
 
         when(dto.getCeasedOn()).thenReturn(CEASED_ON);
         when(pscApi.getCeasedOn()).thenReturn(CEASED_ON);
+        when(validation.get("psc-is-ceased")).thenReturn("is ceased default message");
 
         testValidator.validate(
             new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));

@@ -37,6 +37,7 @@ import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapperImpl;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -54,7 +55,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@Import({PscExistsValidator.class, PscMapperImpl.class})
+@Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class})
 @WebMvcTest(controllers = PscWithIdentificationFilingControllerImpl.class)
 class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @MockBean
@@ -409,6 +410,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
 
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
+
         final var dto = PscWithIdentificationDto.builder().referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)

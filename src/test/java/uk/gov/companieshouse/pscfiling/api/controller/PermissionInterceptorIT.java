@@ -14,9 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
@@ -29,6 +31,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("web")
 @WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
+@Import(PscFilingConfig.class)
 class PermissionInterceptorIT extends BaseControllerIT {
     @Autowired
     private MockMvc mockMvc;

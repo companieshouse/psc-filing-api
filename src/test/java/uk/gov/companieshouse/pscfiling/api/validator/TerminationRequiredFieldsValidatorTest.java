@@ -10,9 +10,13 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.FieldError;
@@ -27,6 +31,8 @@ class TerminationRequiredFieldsValidatorTest {
     private Transaction transaction;
     @Mock
     private PscIndividualDto dto;
+    @Mock
+    private Map<String, String> validation;
 
     TerminationRequiredFieldsValidator testValidator;
     private PscTypeConstants pscType;
@@ -48,7 +54,7 @@ class TerminationRequiredFieldsValidatorTest {
         when(dto.getRegisterEntryDate()).thenReturn(DATE);
         when(dto.getReferenceEtag()).thenReturn(ETAG);
 
-        testValidator = new TerminationRequiredFieldsValidator();
+        testValidator = new TerminationRequiredFieldsValidator(validation);
     }
 
     @Test
@@ -58,12 +64,16 @@ class TerminationRequiredFieldsValidatorTest {
         assertThat(errors, is(empty()));
     }
 
-    @Test
-    void validatePscIdNotPresent() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "")
+    void validatePscIdNotPresent(String pscId) {
         var fieldError =
                 new FieldError("object", "reference_psc_id", null, false, new String[]{null, "reference_psc_id"}, null,
-                        "must not be null");
-        when(dto.getReferencePscId()).thenReturn(null);
+                        "Reference PSC ID must be entered");
+        when(dto.getReferencePscId()).thenReturn(pscId);
+        when(validation.get("reference-psc-id-missing")).thenReturn(
+                "Reference PSC ID must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -71,12 +81,16 @@ class TerminationRequiredFieldsValidatorTest {
         assertThat(errors, contains(fieldError));
     }
 
-    @Test
-    void validateEtagNotPresent() {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = "")
+    void validateEtagNotPresent(String etag) {
         var fieldError =
                 new FieldError("object", "reference_etag", null, false, new String[]{null, "reference_etag"}, null,
-                        "must not be null");
-        when(dto.getReferenceEtag()).thenReturn(null);
+                        "Reference ETag must be entered");
+        when(dto.getReferenceEtag()).thenReturn(etag);
+        when(validation.get("reference-etag-missing")).thenReturn(
+                "Reference ETag must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -87,8 +101,10 @@ class TerminationRequiredFieldsValidatorTest {
     @Test
     void validateCeasedOnDateNotPresent() {
         var fieldError = new FieldError("object", "ceased_on", null, false, new String[]{null, "ceased_on"}, null,
-                "must not be null");
+                "Ceased date must be entered");
         when(dto.getCeasedOn()).thenReturn(null);
+        when(validation.get("ceased-date-missing")).thenReturn(
+                "Ceased date must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 
@@ -99,8 +115,10 @@ class TerminationRequiredFieldsValidatorTest {
     @Test
     void validateRegisterEntryDateNotPresent() {
         var fieldError = new FieldError("object", "register_entry_date", null, false, new String[]{null, "register_entry_date"}, null,
-                "must not be null");
+                "Register entry date must be entered");
         when(dto.getRegisterEntryDate()).thenReturn(null);
+        when(validation.get("register-date-missing")).thenReturn(
+                "Register entry date must be entered");
 
         testValidator.validate(new FilingValidationContext<>(dto, errors, transaction, pscType, passthroughHeader));
 

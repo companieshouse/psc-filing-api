@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
@@ -12,7 +13,8 @@ public class CeasedOnDateValidator extends BaseFilingValidator
 
     private final PscDetailsService pscDetailsService;
 
-    public CeasedOnDateValidator(PscDetailsService pscDetailsService) {
+    public CeasedOnDateValidator(PscDetailsService pscDetailsService, Map<String, String> validation) {
+        super(validation);
         this.pscDetailsService = pscDetailsService;
     }
 
@@ -28,7 +30,7 @@ public class CeasedOnDateValidator extends BaseFilingValidator
         if (notifiedOn != null && ceasedOn.isBefore(notifiedOn)) {
             validationContext.getErrors()
                     .add(new FieldError("object", "ceased_on", ceasedOn, false, new String[]{null, "date.ceased_on"},
-                            null, "Ceased on date cannot be before the date the PSC was notified on"));
+                            null, validation.get("ceased-date-before-notified-date")));
         }
         super.validate(validationContext);
     }

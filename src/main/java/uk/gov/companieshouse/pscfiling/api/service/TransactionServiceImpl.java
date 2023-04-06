@@ -99,7 +99,7 @@ public class TransactionServiceImpl implements TransactionService {
                             transaction.getId(), e.getStatusCode(), e.getStatusMessage()), e);
 
         }
-        catch (final IOException | URIValidationException e) {
+        catch (final URIValidationException e) {
             logger.errorContext(transaction.getId(), UNEXPECTED_STATUS_CODE, e, logMap);
             throw new TransactionServiceException(
                     MessageFormat.format("Error Updating Transaction {0}: {1}", transaction.getId(),

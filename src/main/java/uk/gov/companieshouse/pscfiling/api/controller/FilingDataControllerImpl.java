@@ -12,7 +12,6 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
-import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
@@ -22,11 +21,9 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
                 + "(?:individual|corporate-entity|legal-person)}")
 public class FilingDataControllerImpl implements FilingDataController {
     private final FilingDataService filingDataService;
-    private final TransactionService transactionService;
     private final Logger logger;
 
-    public FilingDataControllerImpl(final TransactionService transactionService, final FilingDataService filingDataService, final Logger logger) {
-        this.transactionService = transactionService;
+    public FilingDataControllerImpl(final FilingDataService filingDataService, final Logger logger) {
         this.filingDataService = filingDataService;
         this.logger = logger;
     }
