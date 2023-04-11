@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import java.util.Collections;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,4 +42,14 @@ class PscWithIdentificationFilingControllerTest {
                 () -> testController.getFilingForReview("trans-id", PscTypeConstants.CORPORATE_ENTITY,
                         "filing-resource-id", request));
     }
+
+    @Test
+    void updateFiling() {
+        Map<String,Object> map = Collections.emptyMap();
+
+        assertThrows(NotImplementedException.class,
+                () -> testController.updateFiling("trans-id", PscTypeConstants.CORPORATE_ENTITY, "filingResourceId",
+                        map, request));
+    }
+
 }

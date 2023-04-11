@@ -37,17 +37,18 @@
         <api-sdk-manager-java-library.version>1.0.4</api-sdk-manager-java-library.version>
         <api-security-java.version>0.4.0</api-security-java.version>
         <!--sonar configuration-->
-        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml,
-            ${project.build.directory}/site/jacoco-it/jacoco.xml
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
+            ${project.basedir}/target/site/jacoco-it/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.jacoco.reports>${project.build.directory}/site</sonar.jacoco.reports>
+        <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
         <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
         <sonar.dependencyCheck.htmlReportPath>
-            ${project.build.directory}/dependency-check-report.html
+            ${project.basedir}/target/dependency-check-report.html
         </sonar.dependencyCheck.htmlReportPath>
         <sonar.dependencyCheck.jsonReportPath>
-            ${project.build.directory}/dependency-check-report.json
+            ${project.basedir}/target/dependency-check-report.json
         </sonar.dependencyCheck.jsonReportPath>
+        <api-helper-java.version>1.4.5</api-helper-java.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -107,6 +108,11 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-security-java</artifactId>
             <version>${api-security-java.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>api-helper-java</artifactId>
+            <version>${api-helper-java.version}</version>
         </dependency>
 
         <!-- test -->

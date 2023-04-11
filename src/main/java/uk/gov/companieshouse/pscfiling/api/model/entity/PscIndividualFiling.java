@@ -20,9 +20,7 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     @Id
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String id;
-
     private String countryOfResidence;
-
     @JsonMerge
     private Date3Tuple dateOfBirth;
     @JsonMerge
@@ -33,9 +31,11 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
     private Boolean residentialAddressSameAsCorrespondenceAddress;
     private LocalDate statementActionDate;
     private String statementType;
+
     public PscIndividualFiling() {
         // required by Spring JPA
     }
+
     public String getId() {
         return id;
     }

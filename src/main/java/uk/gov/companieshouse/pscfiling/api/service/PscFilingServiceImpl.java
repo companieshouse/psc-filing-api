@@ -48,6 +48,11 @@ public class PscFilingServiceImpl implements PscFilingService {
         return filingRepository.findById(pscFilingId);
     }
 
+    @Override
+    public Optional<PscCommunal> get(final String pscFilingId) {
+        return filingRepository.findById(pscFilingId);
+    }
+
     /**
      * Store a PSCIndividualFiling entity in persistence layer.
      *
@@ -61,6 +66,11 @@ public class PscFilingServiceImpl implements PscFilingService {
 
         logger.debugContext(transactionId, "saving PSC filing", logMap);
 
+        return individualFilingRepository.save(filing);
+    }
+
+    @Override
+    public PscIndividualFiling save(final PscIndividualFiling filing) {
         return individualFilingRepository.save(filing);
     }
 

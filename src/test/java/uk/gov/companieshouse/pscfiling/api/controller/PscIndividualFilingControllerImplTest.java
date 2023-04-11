@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,19 +39,17 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.patch.model.PatchResult;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValidChain;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
-import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,11 +83,7 @@ class PscIndividualFilingControllerImplTest {
     @Mock
     private Transaction transaction;
     @Mock
-    private PscExistsValidator pscExistsValidator;
-    @Mock
-    private FilingForPscTypeValidChain filingForPscTypeValidChain;
-    @Mock
-    private FilingValidationService filingValidationService;
+    private PscIndividualFilingService pscIndividualFilingService;
 
     private PscIndividualFiling filing;
     private Links links;
@@ -98,7 +95,7 @@ class PscIndividualFilingControllerImplTest {
     @BeforeEach
     void setUp() {
         testController = new PscIndividualFilingControllerImpl(transactionService, pscFilingService,
-                filingMapper, clock, logger) {
+                pscIndividualFilingService, filingMapper, clock, logger) {
         };
         filing = PscIndividualFiling.builder()
                 .referencePscId(PSC_ID)
@@ -207,10 +204,9 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void getFilingForReviewWhenFound() {
 
-        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
-        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(true);
+        when(filingMapper.map(filing)).thenReturn(dto);
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -220,9 +216,7 @@ class PscIndividualFilingControllerImplTest {
 
     @Test
     void getFilingForReviewWhenFoundButResourceNotMatched() {
-        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(false);
-
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -232,11 +226,26 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void getFilingForReviewNotFound() {
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.empty());
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
+
+    @Test
+    void updateFiling() {
+        final var success = new PatchResult();
+
+        when(pscIndividualFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(success);
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+
+        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(), request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody(), is(filing));
+
+    }
+
 }
 

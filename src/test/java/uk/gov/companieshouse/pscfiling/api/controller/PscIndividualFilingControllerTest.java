@@ -2,6 +2,8 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Collections;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,4 +42,14 @@ class PscIndividualFilingControllerTest {
                 () -> testController.getFilingForReview("trans-id", PscTypeConstants.INDIVIDUAL,
                         "filing-resource-id", request));
     }
+
+    @Test
+    void updateFiling() {
+        Map<String,Object> map = Collections.emptyMap();
+
+        assertThrows(NotImplementedException.class,
+                () -> testController.updateFiling("trans-id", PscTypeConstants.INDIVIDUAL, "filingResourceId",
+                        map, request));
+    }
+
 }

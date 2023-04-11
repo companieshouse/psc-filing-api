@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.service;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -61,10 +62,9 @@ public class FilingDataServiceImpl implements FilingDataService {
                 pscDetailsService.getPscDetails(transaction, pscFiling.getReferencePscId(), pscType,
                         passthroughHeader);
         final PscCommunal enhancedPscFiling = dataMapper.enhance(pscFiling, pscType, pscDetails);
-
         final var filingData = dataMapper.map(enhancedPscFiling, pscType);
-        final var dataMap = MapHelper.convertObject(filingData);
-
+        final var dataMap =
+                MapHelper.convertObject(filingData, PropertyNamingStrategies.SNAKE_CASE);
         final var logMap = LogHelper.createLogMap(transactionId, filingId);
 
         logMap.put("Data to submit", dataMap);

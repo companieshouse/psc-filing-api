@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -38,6 +39,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceExcept
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.PscFilingServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -112,6 +114,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(new ApiErrors(List.of(error)));
     }
 
+    @Override
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
+            final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
+            final HttpStatus status, final WebRequest request) {
+        logError(request, String.format("Media type not supported: %s", ex.getContentType()), ex);
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .header(HttpHeaders.ACCEPT_PATCH, "application/merge-patch+json")
+                .header("Accept-Post", "application/json")
+                .build();
+    }
+
     @ExceptionHandler(InvalidFilingException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -159,7 +172,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
-    @ExceptionHandler({PscServiceException.class, TransactionServiceException.class, CompanyProfileServiceException.class})
+    @ExceptionHandler({
+            PscServiceException.class,
+            TransactionServiceException.class,
+            CompanyProfileServiceException.class,
+            PscFilingServiceException.class
+    })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiErrors handleServiceException(final Exception ex,

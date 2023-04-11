@@ -17,6 +17,7 @@ public class PscCommon implements PscCommunal, Touchable {
     private Address address;
     private Boolean addressSameAsRegisteredOfficeAddress;
     private LocalDate ceasedOn;
+    @JsonProperty(value = "created_at", access= JsonProperty.Access.READ_ONLY)
     private Instant createdAt;
     private String etag;
     private String kind;
@@ -27,6 +28,7 @@ public class PscCommon implements PscCommunal, Touchable {
     private String referenceEtag;
     private String referencePscId;
     private LocalDate registerEntryDate;
+    @JsonProperty(value = "updated_at", access= JsonProperty.Access.READ_ONLY)
     private Instant updatedAt;
 
     @Override
@@ -95,6 +97,11 @@ public class PscCommon implements PscCommunal, Touchable {
     }
 
     @Override
+    public void touch(final Instant instant) {
+        this.updatedAt = instant;
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -156,11 +163,6 @@ public class PscCommon implements PscCommunal, Touchable {
         return new Builder(other);
     }
 
-    @Override
-    public void touch(final Instant instant) {
-        this.updatedAt = instant;
-    }
-
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
 
@@ -177,7 +179,7 @@ public class PscCommon implements PscCommunal, Touchable {
                     .addressSameAsRegisteredOfficeAddress(
                             other.getAddressSameAsRegisteredOfficeAddress())
                     .ceasedOn(other.getCeasedOn())
-                    .createdAt(other.createdAt)
+                    .createdAt(other.getCreatedAt())
                     .etag(other.getEtag())
                     .kind(other.getKind())
                     .links(other.getLinks())

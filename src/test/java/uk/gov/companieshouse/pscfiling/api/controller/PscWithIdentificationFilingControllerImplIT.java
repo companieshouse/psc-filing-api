@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,30 +25,38 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
+import uk.gov.companieshouse.pscfiling.api.mapper.PscMapperImpl;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
+import uk.gov.companieshouse.pscfiling.api.provider.PscWithIdentificationFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingMergeProcessor;
+import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingPostMergeProcessor;
+import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@WebMvcTest(controllers = uk.gov.companieshouse.pscfiling.api.controller.PscWithIdentificationFilingControllerImpl.class)
-@Import({PscExistsValidator.class, PscFilingConfig.class})
+@Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class})
+@WebMvcTest(controllers = PscWithIdentificationFilingControllerImpl.class)
 class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private TransactionService transactionService;
@@ -58,11 +67,23 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @MockBean
     private PscFilingService pscFilingService;
     @MockBean
+    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
+    @MockBean
+    private PscWithIdentificationFilingProvider pscWithIdentificationFilingProvider;
+    @MockBean
+    private PscWithIdentificationFilingMergeProcessor pscWithIdentificationFilingMergeProcessor;
+    @MockBean
+    private PscWithIdentificationFilingPostMergeProcessor
+            pscWithIdentificationFilingPostMergeProcessor;
+    @SpyBean
     private PscMapper filingMapper;
     @MockBean
     private Clock clock;
     @MockBean
     private Logger logger;
+
+    @Mock
+    private ApiErrorResponseException errorResponseException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -102,7 +123,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         "persons-with-significant-control/corporate-entity", FILING_ID)
                 .build();
 
-        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.CORPORATE_ENTITY,
@@ -364,7 +384,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         "persons-with-significant-control/corporate-entity", FILING_ID)
                 .build();
 
-        when(filingMapper.map(dto)).thenReturn(filing);
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -415,8 +434,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 eq(filing))).thenReturn(true);
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
-        mockMvc.perform(
-                        get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
+        mockMvc.perform(get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reference_etag", is(ETAG)))
@@ -433,6 +451,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+        verifyNoInteractions(filingMapper);
     }
 
     private ApiError createExpectedValidationError(final String msg, final String location,

@@ -29,10 +29,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.context.request.ServletWebRequest;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
@@ -223,6 +225,21 @@ class RestExceptionHandlerTest {
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         assertThat(actualError, is(samePropertyValuesAs(expectedError)));
+    }
+
+    @Test
+    void handleHttpMediaTypeNotSupported() {
+        final var mediaMergePatch = MediaType.parseMediaType("application/merge-patch+json");
+        final var exception = new HttpMediaTypeNotSupportedException(MediaType.APPLICATION_PDF,
+                List.of(MediaType.APPLICATION_JSON, mediaMergePatch));
+
+        final var response =
+                testExceptionHandler.handleHttpMediaTypeNotSupported(exception, headers,
+                        HttpStatus.UNSUPPORTED_MEDIA_TYPE, request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.UNSUPPORTED_MEDIA_TYPE));
+        assertThat(response.getHeaders().getAcceptPatch(), contains(mediaMergePatch));
+        assertThat(response.getHeaders().get("Accept-Post"), contains(MediaType.APPLICATION_JSON.toString()));
     }
 
     @Test

@@ -4,6 +4,5 @@ import java.time.Instant;
 
 @FunctionalInterface
 public interface Touchable {
-    void touch (Instant instant);
-
+    void touch(Instant instant);
 }

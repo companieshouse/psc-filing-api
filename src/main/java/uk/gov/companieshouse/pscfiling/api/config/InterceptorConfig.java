@@ -21,12 +21,13 @@ import uk.gov.companieshouse.pscfiling.api.interceptor.RequestLoggingInterceptor
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
 public class InterceptorConfig implements WebMvcConfigurer {
-
     public static final String COMMON_INTERCEPTOR_PATH =
             "/transactions/{transaction_id}/persons-with-significant-control/{pscType:"
                     + "(?:individual|corporate-entity|legal-person)}";
+    public static final String COMMON_INTERCEPTOR_RESOURCE_PATH =
+            COMMON_INTERCEPTOR_PATH + "/{filing_resource_id}";
     public static final String FILINGS_PATH =
-            "/private" + COMMON_INTERCEPTOR_PATH + "/{filing_resource_id}/filings";
+            "/private" + COMMON_INTERCEPTOR_RESOURCE_PATH + "/filings";
     private static final String PSC_FILING_API = "psc-filing-api";
 
     private TokenPermissionsInterceptor tokenPermissionsInterceptor;
@@ -80,7 +81,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
 
     private void addOpenTransactionInterceptor(final InterceptorRegistry registry) {
         registry.addInterceptor(openTransactionInterceptor())
-                .addPathPatterns(COMMON_INTERCEPTOR_PATH).order(2);
+                .addPathPatterns(COMMON_INTERCEPTOR_RESOURCE_PATH).order(2);
     }
 
     private void addCompanyInterceptor(final InterceptorRegistry registry) {
