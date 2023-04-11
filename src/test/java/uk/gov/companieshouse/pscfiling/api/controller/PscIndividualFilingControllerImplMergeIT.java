@@ -40,7 +40,7 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.utils.PatchServiceProperties;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 
 @Tag("app")
 @SpringBootTest

@@ -23,7 +23,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
-import uk.gov.companieshouse.pscfiling.api.utils.PatchServiceProperties;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 
 @ExtendWith(MockitoExtension.class)
 class PscIndividualFilingServiceImplTest {

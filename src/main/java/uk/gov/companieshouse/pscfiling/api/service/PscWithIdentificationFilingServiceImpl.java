@@ -10,7 +10,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscWithIdentificationFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
-import uk.gov.companieshouse.pscfiling.api.utils.PatchServiceProperties;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 
 @Service
 public class PscWithIdentificationFilingServiceImpl implements PscWithIdentificationFilingService {

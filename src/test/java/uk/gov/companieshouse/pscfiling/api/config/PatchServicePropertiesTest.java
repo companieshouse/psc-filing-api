@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.utils;
+package uk.gov.companieshouse.pscfiling.api.config;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

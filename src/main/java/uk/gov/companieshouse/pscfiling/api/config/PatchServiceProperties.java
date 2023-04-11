@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.utils;
+package uk.gov.companieshouse.pscfiling.api.config;
 
 import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
