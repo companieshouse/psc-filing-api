@@ -100,7 +100,7 @@ public class FilingDataServiceImpl implements FilingDataService {
         }
 
         var date = LocalDate.parse(filing.getData().get("ceased_on").toString());
-        var fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        var fmt = DateTimeFormatter.ofPattern("d MMMM yyyy");
         String strDate = date.format(fmt);
         filing.setDescription(MessageFormat.format(filingDataConfig.getPsc07Description(), name, strDate));
     }

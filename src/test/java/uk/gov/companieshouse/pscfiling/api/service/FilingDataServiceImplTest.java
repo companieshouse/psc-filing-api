@@ -135,14 +135,14 @@ class FilingDataServiceImplTest extends TestBaseService {
                             LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date", REGISTER_ENTRY_DATE);
             expectedDescription =
                     "(PSC07) Notice of ceasing to be a Person of Significant Control for " + TITLE + " " +
-                            FIRSTNAME + " " + LASTNAME + " on 05/10/2022";
+                            FIRSTNAME + " " + LASTNAME + " on 5 October 2022";
         }
         else {
             expectedMap = Map.of("title", TITLE, "first_name", FIRSTNAME, "other_forenames", otherForenames, "last_name",
                             LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date", REGISTER_ENTRY_DATE);
             expectedDescription =
                     "(PSC07) Notice of ceasing to be a Person of Significant Control for " + TITLE + " " +
-                            FIRSTNAME + " " + OTHER_FORENAMES + " " + LASTNAME + " on 05/10/2022";
+                            FIRSTNAME + " " + OTHER_FORENAMES + " " + LASTNAME + " on 5 October 2022";
         }
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(),
@@ -207,7 +207,7 @@ class FilingDataServiceImplTest extends TestBaseService {
                         REGISTER_ENTRY_DATE);
         final String expectedDescription =
                 "(PSC07) Notice of ceasing to be a Person of Significant Control for " +
-                        CORPORATE_NAME + " on 05/10/2022";
+                        CORPORATE_NAME + " on 5 October 2022";
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(),
@@ -268,7 +268,7 @@ class FilingDataServiceImplTest extends TestBaseService {
                         REGISTER_ENTRY_DATE);
         final String expectedDescription =
                 "(PSC07) Notice of ceasing to be a Person of Significant Control for " +
-                        LEGAL_NAME + " on 05/10/2022";
+                        LEGAL_NAME + " on 5 October 2022";
 
         assertThat(filingApi.getData(), is(equalTo(expectedMap)));
         assertThat(filingApi.getKind(),
