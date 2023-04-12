@@ -46,8 +46,6 @@ class CompanyInterceptorTest {
     private  Map<String, List<String>> company;
     @Mock
     private Map<String, String> companyStatus;
-    @Mock
-    private Map<String, String> companyType;
 
     private CompanyProfileApi companyProfileApi;
     private CompanyInterceptor testCompanyInterceptor;
@@ -59,8 +57,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setType("ltd");
         companyProfileApi.setCompanyStatus("active");
 
-        testCompanyInterceptor =new CompanyInterceptor(companyProfileService, validation, company, companyStatus,
-                companyType, logger);
+        testCompanyInterceptor =new CompanyInterceptor(companyProfileService, validation, company, companyStatus, logger);
 
         when(request.getAttribute(AttributeName.TRANSACTION.getValue())).thenReturn(transaction);
     }
@@ -100,7 +97,7 @@ class CompanyInterceptorTest {
         when(validation.get("company-type-not-allowed")).thenReturn("Invalid type default message");
         final var error = new FieldError("object", "reference_psc_id",
                 null, false, new String[]{null, "reference_psc_id"},
-                null, "Invalid type default message" + companyType.get(companyProfileApi.getType()));
+                null, "Invalid type default message");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,

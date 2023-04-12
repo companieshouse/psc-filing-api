@@ -24,8 +24,6 @@ public class CompanyInterceptor implements HandlerInterceptor {
     private Map<String, String> validation;
     private Map<String, List<String>> company;
     private Map<String, String> companyStatus;
-    private Map<String, String> companyType;
-
     private CompanyProfileService companyProfileService;
     private final Logger logger;
 
@@ -33,12 +31,11 @@ public class CompanyInterceptor implements HandlerInterceptor {
             @Qualifier(value = "validation") Map<String, String> validation,
             @Qualifier(value = "company") Map<String, List<String>> company,
             @Qualifier(value = "companyStatus") Map<String, String> companyStatus,
-            @Qualifier(value = "companyType") Map<String, String> companyType, Logger logger) {
+            Logger logger) {
         this.companyProfileService = companyProfileService;
         this.validation = validation;
         this.company = company;
         this.companyStatus = companyStatus;
-        this.companyType = companyType;
         this.logger = logger;
     }
 
@@ -64,7 +61,7 @@ public class CompanyInterceptor implements HandlerInterceptor {
                 logMap.put("company_type", companyProfile.getType());
                 logger.info("Company Type not allowed", logMap);
                 throw new ConflictingFilingException(createValidationError(
-                        validation.get("company-type-not-allowed") + companyType.get(companyProfile.getType())));
+                        validation.get("company-type-not-allowed")));
             }
 
             if (company.get("status-not-allowed").contains(companyProfile.getCompanyStatus())) {
