@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.controller;
+package uk.gov.companieshouse.pscfiling.api.controller.impl;
 
 import java.time.Clock;
 import java.util.Map;
@@ -22,30 +22,33 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.controller.impl.BaseFilingControllerImpl;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
+import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
-import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
+import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @RestController
-@RequestMapping(
-        "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
-                + "(?:individual)}")
-public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl implements PscIndividualFilingController {
-    private PscIndividualFilingService pscIndividualFilingService;
+@RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType:"
+        + "(?:legal-person|corporate-entity)}")
+public class PscWithIdentificationFilingControllerImpl extends BaseFilingControllerImpl
+        implements PscWithIdentificationFilingController {
 
-    public PscIndividualFilingControllerImpl(final TransactionService transactionService,
+    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
+
+    public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
             final PscFilingService pscFilingService,
-            final PscIndividualFilingService pscIndividualFilingService,
-            final PscMapper filingMapper, final Clock clock, final Logger logger) {
+            final PscWithIdentificationFilingService pscWithIdentificationFilingService,
+            final PscMapper filingMapper,
+            final Clock clock, final Logger logger) {
         super(transactionService, pscFilingService, filingMapper, clock, logger);
-        this.pscIndividualFilingService = pscIndividualFilingService;
+
+        this.pscWithIdentificationFilingService = pscWithIdentificationFilingService;
     }
 
     /**
@@ -62,10 +65,10 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
     @Override
     @Transactional
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<PscIndividualFiling> createFiling(@PathVariable("transactionId") final String transId,
+    public ResponseEntity<PscWithIdentificationFiling> createFiling(@PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute(required = false, name = "transaction") Transaction transaction,
-            @RequestBody @Valid @NotNull final PscIndividualDto dto,
+            @RequestBody @Valid @NotNull final PscWithIdentificationDto dto,
             final BindingResult bindingResult, final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
@@ -77,11 +80,10 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
         transaction = getTransaction(transId, transaction, logMap, getPassthroughHeader(request));
 
         final var entity = filingMapper.map(dto);
-        final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap);
+        final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap, pscType);
         updateTransactionResources(transaction, savedEntity.getLinks());
 
-        return ResponseEntity.created(savedEntity.getLinks().getSelf())
-                .body(savedEntity);
+        return ResponseEntity.created(savedEntity.getLinks().getSelf()).body(savedEntity);
     }
 
     /**
@@ -92,13 +94,13 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
      * @param filingResource the Filing resource ID (RFC 7396)
      * @param mergePatch     details of the merge-patch to apply
      * @param request        the servlet request
-     * @return OK response containing the populated Filing resource
+     * @return CREATED response containing the populated Filing resource
      */
     @Override
     @Transactional
     @PatchMapping(value = "/{filingResourceId}", produces = {"application/json"},
             consumes = "application/merge-patch+json")
-    public ResponseEntity<PscIndividualFiling> updateFiling(
+    public ResponseEntity<PscWithIdentificationFiling> updateFiling(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
@@ -106,14 +108,15 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
-        final var patchResult = pscIndividualFilingService.updateFiling(filingResource, mergePatch);
+        final var patchResult =
+                pscWithIdentificationFilingService.updateFiling(filingResource, mergePatch);
 
         if (patchResult.isSuccess()) {
             logMap.put("status", "patch successful");
             logger.debugRequest(request, "PATCH", logMap);
 
             return pscFilingService.get(filingResource)
-                    .map(PscIndividualFiling.class::cast)
+                    .map(PscWithIdentificationFiling.class::cast)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound()
                             .build());
@@ -133,28 +136,29 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
      */
     @Override
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
-    public ResponseEntity<PscIndividualDto> getFilingForReview(
+    public ResponseEntity<PscDtoCommunal> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
             final HttpServletRequest request) {
 
-        final var maybePSCFiling = pscIndividualFilingService.getFiling(filingResource);
-        final var maybeDto = maybePSCFiling.map(filingMapper::map);
+        final var maybePSCFiling = pscFilingService.get(filingResource, transId);
+
+        final var maybeDto = maybePSCFiling.filter(f -> pscFilingService.requestMatchesResource(request, f)).map(filingMapper::map);
 
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()
                         .build());
     }
 
-    private PscIndividualFiling saveFilingWithLinks(final PscIndividualFiling entity, final String transId,
-                                                    final HttpServletRequest request,
-                                                    final Map<String, Object> logMap) {
-
-        final var entityWithCreated = PscIndividualFiling.builder(entity).createdAt(clock.instant()).build();
+    private PscWithIdentificationFiling saveFilingWithLinks(final PscWithIdentificationFiling entity,
+                                                            final String transId, final HttpServletRequest request,
+                                                            final Map<String, Object> logMap,
+                                                            PscTypeConstants pscType) {
+        final var entityWithCreated = PscWithIdentificationFiling.builder(entity).createdAt(clock.instant()).build();
         final var saved = pscFilingService.save(entityWithCreated, transId);
-        final var links = buildLinks(request, saved);
-        final var updated = PscIndividualFiling.builder(saved).links(links)
+        final var links = buildLinks(request, saved.getId(), pscType);
+        final var updated = PscWithIdentificationFiling.builder(saved).links(links)
                 .build();
         final var resaved = pscFilingService.save(updated, transId);
 
@@ -164,19 +168,20 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
         return resaved;
     }
 
-    private Links buildLinks(final HttpServletRequest request, final PscIndividualFiling savedFiling) {
-        final var objectId = new ObjectId(Objects.requireNonNull(savedFiling.getId()));
-        final var selfUri = UriComponentsBuilder
-                .fromUriString(request.getRequestURI())
+    private Links buildLinks(final HttpServletRequest request, String savedFilingId,
+                             PscTypeConstants pscType) {
+        final var objectId = new ObjectId(Objects.requireNonNull(savedFilingId));
+        final var selfUri = UriComponentsBuilder.fromUriString(request.getRequestURI())
                 .pathSegment(objectId.toHexString())
-                .build().toUri();
+                .build()
+                .toUri();
 
-        final var validateUri = UriComponentsBuilder
-                .fromUriString(request.getRequestURI()
-                .replace(StringUtils.join("/", PscTypeConstants.INDIVIDUAL.getValue()), ""))
+        final var validateUri = UriComponentsBuilder.fromUriString(request.getRequestURI()
+                        .replace(StringUtils.join("/", pscType.getValue()), ""))
                 .pathSegment(objectId.toHexString())
                 .pathSegment(VALIDATION_STATUS)
-                .build().toUri();
+                .build()
+                .toUri();
 
         return new Links(selfUri, validateUri);
     }

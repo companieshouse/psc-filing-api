@@ -17,6 +17,7 @@ import uk.gov.companieshouse.pscfiling.api.error.RetrievalFailureReason;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
+import uk.gov.companieshouse.pscfiling.api.provider.impl.PscWithIdentificationFilingProviderImpl;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 
 @ExtendWith(MockitoExtension.class)
