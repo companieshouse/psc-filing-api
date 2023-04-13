@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.controller;
+package uk.gov.companieshouse.pscfiling.api.controller.impl;
 
 import java.time.Clock;
 import java.util.Map;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.controller.impl.BaseFilingControllerImpl;
+import uk.gov.companieshouse.pscfiling.api.controller.PscIndividualFilingController;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
@@ -37,7 +37,8 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 @RequestMapping(
         "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
                 + "(?:individual)}")
-public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl implements PscIndividualFilingController {
+public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl implements
+        PscIndividualFilingController {
     private final PscIndividualFilingService pscIndividualFilingService;
 
     public PscIndividualFilingControllerImpl(final TransactionService transactionService,

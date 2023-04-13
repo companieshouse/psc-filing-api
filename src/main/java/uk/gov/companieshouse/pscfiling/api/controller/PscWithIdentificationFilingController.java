@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.pscfiling.api.controller.impl;
+package uk.gov.companieshouse.pscfiling.api.controller;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
