@@ -423,13 +423,10 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
 
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
-        final var dto = PscIndividualDto.builder().referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .ceasedOn(CEASED_ON_DATE)
-                .registerEntryDate(CEASED_ON_DATE)
-                .build();
-        Links links = new Links(new URI("/transactions/" + TRANS_ID + "/persons-with-significant-control/individual/" + FILING_ID),
-                                new URI("validation_status"));
+        final Links links = new Links(new URI("/transactions/"
+                + TRANS_ID
+                + "/persons-with-significant-control/individual/"
+                + FILING_ID), new URI("validation_status"));
         final var filing = PscIndividualFiling.builder()
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)

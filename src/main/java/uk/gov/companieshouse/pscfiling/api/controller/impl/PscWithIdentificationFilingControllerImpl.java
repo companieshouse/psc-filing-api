@@ -39,7 +39,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 public class PscWithIdentificationFilingControllerImpl extends BaseFilingControllerImpl
         implements PscWithIdentificationFilingController {
 
-    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
+    private final PscWithIdentificationFilingService pscWithIdentificationFilingService;
 
     public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
             final PscFilingService pscFilingService,

@@ -19,16 +19,15 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.patch.model.EntityRetrievalResult;
 import uk.gov.companieshouse.patch.model.ValidationResult;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscWithIdentificationFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
-import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingMergeProcessor;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingPostMergeProcessor;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationPatchValidator;
-import uk.gov.companieshouse.pscfiling.api.service.impl.PscWithIdentificationFilingServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class PscWithIdentificationFilingServiceImplTest {

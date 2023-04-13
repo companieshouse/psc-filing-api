@@ -38,7 +38,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
         "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
                 + "(?:individual)}")
 public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl implements PscIndividualFilingController {
-    private PscIndividualFilingService pscIndividualFilingService;
+    private final PscIndividualFilingService pscIndividualFilingService;
 
     public PscIndividualFilingControllerImpl(final TransactionService transactionService,
             final PscFilingService pscFilingService,

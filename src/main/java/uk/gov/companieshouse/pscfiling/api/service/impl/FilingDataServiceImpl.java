@@ -47,9 +47,13 @@ public class FilingDataServiceImpl implements FilingDataService {
     public FilingApi generatePscFiling(final String filingId, final PscTypeConstants pscType,
             final Transaction transaction, final String passthroughHeader) {
         final var filing = new FilingApi();
+
         filing.setKind(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), pscType.getValue())); // TODO: handling other kinds to come later
-        populateFilingData(filing, filingId, pscType, transaction, passthroughHeader);
-        setFilingDescription(filing, pscType);
+
+        final var populatedFiling = populateFilingData(filing, filingId, pscType, transaction, passthroughHeader);
+
+        setFilingDescription(populatedFiling, pscType);
+
         return filing;
     }
 

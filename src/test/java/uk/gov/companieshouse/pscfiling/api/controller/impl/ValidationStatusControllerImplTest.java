@@ -23,7 +23,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.api.model.validationstatus.ValidationStatusError;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.controller.impl.ValidationStatusControllerImpl;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.mapper.ErrorMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
@@ -50,8 +49,6 @@ class ValidationStatusControllerImplTest {
     private PscFilingService pscFilingService;
     @Mock
     private FilingValidationService filingValidationService;
-    @Mock
-    private TransactionService transactionService;
     @Mock
     private HttpServletRequest request;
     @Mock

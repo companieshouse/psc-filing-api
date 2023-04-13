@@ -20,10 +20,10 @@ import uk.gov.companieshouse.pscfiling.api.service.PscIndividualPatchValidator;
 public class PscIndividualFilingServiceImpl implements PscIndividualFilingService {
     private final PscIndividualFilingRepository filingRepository;
     private final PatchServiceProperties patchServiceProperties;
-    private PscIndividualFilingProvider pscIndividualFilingProvider;
-    private PscIndividualFilingMergeProcessor mergeProcessor;
-    private PscIndividualFilingPostMergeProcessor postMergeProcessor;
-    private PscIndividualPatchValidator pscIndividualPatchValidator;
+    private final PscIndividualFilingProvider pscIndividualFilingProvider;
+    private final PscIndividualFilingMergeProcessor mergeProcessor;
+    private final PscIndividualFilingPostMergeProcessor postMergeProcessor;
+    private final PscIndividualPatchValidator pscIndividualPatchValidator;
 
     @Autowired
     public PscIndividualFilingServiceImpl(final PscIndividualFilingRepository filingRepository,

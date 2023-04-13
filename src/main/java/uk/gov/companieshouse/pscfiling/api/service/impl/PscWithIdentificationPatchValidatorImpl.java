@@ -13,7 +13,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationPatchVal
 @Component
 public class PscWithIdentificationPatchValidatorImpl implements
         PscWithIdentificationPatchValidator {
-    private Clock clock;
+    private final Clock clock;
 
     @Autowired
     public PscWithIdentificationPatchValidatorImpl(final Clock clock) {

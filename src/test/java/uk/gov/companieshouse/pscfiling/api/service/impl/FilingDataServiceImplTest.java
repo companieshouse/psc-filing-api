@@ -104,14 +104,13 @@ class FilingDataServiceImplTest extends TestBaseService {
         final var nameElements =
                 NameElements.builder().title(TITLE).forename(FIRSTNAME).surname(LASTNAME)
                         .build();
-        final PscCommunal pscFiling = PscIndividualFiling.builder()
+        final var pscFiling = PscIndividualFiling.builder()
                 .referencePscId(REF_PSC_ID)
                 .referenceEtag(REF_ETAG)
                 .ceasedOn(CEASED_ON)
                 .build();
-        final PscCommunal enhancedPscFiling =
-                PscIndividualFiling.builder((PscIndividualFiling) pscFiling)
-                        .nameElements(nameElements)
+        final var enhancedPscFiling =
+                PscIndividualFiling.builder(pscFiling).nameElements(nameElements)
                         .build();
 
         when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
@@ -174,14 +173,14 @@ class FilingDataServiceImplTest extends TestBaseService {
                 .registrationNumber(REGISTRATION_NUMBER)
                 .build();
 
-        final PscCommunal pscFiling = PscWithIdentificationFiling.builder()
+        final var pscFiling = PscWithIdentificationFiling.builder()
                 .referencePscId(REF_PSC_ID)
                 .referenceEtag(REF_ETAG)
                 .ceasedOn(CEASED_ON)
                 .build();
 
-        final PscCommunal enhancedPscFiling =
-                PscWithIdentificationFiling.builder((PscWithIdentificationFiling) pscFiling)
+        final var enhancedPscFiling =
+                PscWithIdentificationFiling.builder(pscFiling)
                         .name("psc_name")
                         .identification(identification)
                         .build();
@@ -237,14 +236,14 @@ class FilingDataServiceImplTest extends TestBaseService {
                 .registrationNumber(REGISTRATION_NUMBER)
                 .build();
 
-        final PscCommunal pscFiling = PscWithIdentificationFiling.builder()
+        final var pscFiling = PscWithIdentificationFiling.builder()
                 .referencePscId(REF_PSC_ID)
                 .referenceEtag(REF_ETAG)
                 .ceasedOn(CEASED_ON)
                 .build();
 
-        final PscCommunal enhancedPscFiling =
-                PscWithIdentificationFiling.builder((PscWithIdentificationFiling) pscFiling)
+        final var enhancedPscFiling =
+                PscWithIdentificationFiling.builder(pscFiling)
                         .name("psc_name")
                         .identification(identification)
                         .build();

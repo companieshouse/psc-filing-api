@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualPatchValidator;
-import uk.gov.companieshouse.pscfiling.api.service.impl.PscIndividualPatchValidatorImpl;
 
 @ExtendWith(MockitoExtension.class)
 class PscIndividualPatchValidatorImplTest {

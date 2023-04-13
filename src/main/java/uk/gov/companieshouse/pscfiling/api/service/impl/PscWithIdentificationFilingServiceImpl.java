@@ -20,10 +20,10 @@ import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationPatchVal
 public class PscWithIdentificationFilingServiceImpl implements PscWithIdentificationFilingService {
     private final PscWithIdentificationFilingRepository filingRepository;
     private final PatchServiceProperties patchServiceProperties;
-    private PscWithIdentificationFilingProvider pscWithIdentificationFilingProvider;
-    private PscWithIdentificationFilingMergeProcessor mergeProcessor;
-    private PscWithIdentificationFilingPostMergeProcessor postMergeProcessor;
-    private PscWithIdentificationPatchValidator pscWithIdentificationPatchValidator;
+    private final PscWithIdentificationFilingProvider pscWithIdentificationFilingProvider;
+    private final PscWithIdentificationFilingMergeProcessor mergeProcessor;
+    private final PscWithIdentificationFilingPostMergeProcessor postMergeProcessor;
+    private final PscWithIdentificationPatchValidator pscWithIdentificationPatchValidator;
 
     @Autowired
     public PscWithIdentificationFilingServiceImpl(final PscWithIdentificationFilingRepository filingRepository,

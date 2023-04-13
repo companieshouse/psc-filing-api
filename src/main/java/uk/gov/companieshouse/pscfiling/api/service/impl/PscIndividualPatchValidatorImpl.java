@@ -12,7 +12,7 @@ import uk.gov.companieshouse.pscfiling.api.service.PscIndividualPatchValidator;
 
 @Component
 public class PscIndividualPatchValidatorImpl implements PscIndividualPatchValidator {
-    private Clock clock;
+    private final Clock clock;
 
     @Autowired
     public PscIndividualPatchValidatorImpl(final Clock clock) {

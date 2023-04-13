@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationPatchValidator;
-import uk.gov.companieshouse.pscfiling.api.service.impl.PscWithIdentificationPatchValidatorImpl;
 
 @ExtendWith(MockitoExtension.class)
 class PscWithIdentificationPatchValidatorImplTest {
