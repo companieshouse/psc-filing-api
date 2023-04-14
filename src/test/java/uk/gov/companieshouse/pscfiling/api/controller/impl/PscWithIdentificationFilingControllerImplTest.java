@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.controller.impl;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
@@ -40,7 +41,10 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.patch.model.PatchResult;
 import uk.gov.companieshouse.pscfiling.api.controller.PscWithIdentificationFilingController;
+import uk.gov.companieshouse.pscfiling.api.error.RetrievalFailureReason;
+import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.InvalidPatchException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
@@ -62,6 +66,7 @@ class PscWithIdentificationFilingControllerImplTest {
     private static final URI REQUEST_URI =
             URI.create("/transactions/" + TRANS_ID + "/persons-with-significant-control/");
     private static final Instant FIRST_INSTANT = Instant.parse("2022-10-15T09:44:08.108Z");
+    private static final LocalDate TEST_DATE = LocalDate.of(2022, 9, 13);
 
     private PscWithIdentificationFilingController testController;
     @Mock
@@ -126,8 +131,8 @@ class PscWithIdentificationFilingControllerImplTest {
                 .build();
         final var withLinks = PscWithIdentificationFiling.builder(withFilingId).links(links)
                 .build();
-        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(pscFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -153,8 +158,8 @@ class PscWithIdentificationFilingControllerImplTest {
             .build();
         final var withLinks = PscWithIdentificationFiling.builder(withFilingId).links(links)
             .build();
-        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(pscFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -198,8 +203,8 @@ class PscWithIdentificationFilingControllerImplTest {
 
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(true);
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request,filing)).thenReturn(true);
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -209,9 +214,9 @@ class PscWithIdentificationFilingControllerImplTest {
 
     @Test
     void getFilingForReviewWhenFoundButResourceNotMatched() {
-        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(false);
+        when(pscFilingService.requestMatchesResourceSelf(request,filing)).thenReturn(false);
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -221,7 +226,7 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void getFilingForReviewNotFound() {
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -240,6 +245,43 @@ class PscWithIdentificationFilingControllerImplTest {
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(filing));
 
+    }
+
+    @Test
+    void updateFilingWhenRetrievalFails() {
+        final var failure = new PatchResult(RetrievalFailureReason.FILING_NOT_FOUND);
+        final Map<String, Object> map = Collections.emptyMap();
+
+        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(
+                failure);
+
+        final var exception = assertThrows(FilingResourceNotFoundException.class,
+                () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
+
+        assertThat(exception.getMessage(), is("Failed to retrieve filing: " + FILING_ID));
+    }
+
+    @Test
+    void updateFilingWheValidationFails() {
+        final var error =
+                new FieldError("patched", "ceasedOn", TEST_DATE, false, new String[]{
+                        "future.date.patched.ceasedOn",
+                        "future.date.ceasedOn",
+                        "future.date.java.time.LocalDate",
+                        "future.date"
+                }, new Object[]{TEST_DATE}, "bad date");
+        final var failure = new PatchResult(List.of(error));
+        final Map<String, Object> map = Collections.emptyMap();
+
+        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(
+                failure);
+
+        final var exception = assertThrows(InvalidPatchException.class,
+                () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
+
+        assertThat(exception.getFieldErrors(), hasSize(1));
+        assertThat(exception.getFieldErrors()
+                .get(0), is(error));
     }
 
 }

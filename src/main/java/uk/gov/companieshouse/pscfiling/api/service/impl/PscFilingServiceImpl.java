@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
@@ -13,7 +12,6 @@ import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
-import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 /**
  * Store/retrieve a PSC Filing entities using the persistence layer.
@@ -23,32 +21,20 @@ public class PscFilingServiceImpl implements PscFilingService {
     private final PscFilingRepository filingRepository;
     private final PscIndividualFilingRepository individualFilingRepository;
     private final PscWithIdentificationFilingRepository withIdentificationFilingRepository;
-    private final Logger logger;
 
     public PscFilingServiceImpl(final PscFilingRepository filingRepository, final PscIndividualFilingRepository individualFilingRepository,
-            final PscWithIdentificationFilingRepository withIdentificationFilingRepository, final Logger logger) {
+            final PscWithIdentificationFilingRepository withIdentificationFilingRepository) {
         this.filingRepository = filingRepository;
         this.individualFilingRepository = individualFilingRepository;
         this.withIdentificationFilingRepository = withIdentificationFilingRepository;
-        this.logger = logger;
     }
 
     /**
      * Retrieve a stored PSCFiling entity by Filing ID.
      *
      * @param pscFilingId   the Filing ID
-     * @param transactionId the associated Transaction ID
      * @return the stored entity if found
      */
-    @Override
-    public Optional<PscCommunal> get(final String pscFilingId, final String transactionId) {
-        final var logMap = LogHelper.createLogMap(transactionId, pscFilingId);
-
-        logger.debugContext(transactionId, "getting PSC filing", logMap);
-
-        return filingRepository.findById(pscFilingId);
-    }
-
     @Override
     public Optional<PscCommunal> get(final String pscFilingId) {
         return filingRepository.findById(pscFilingId);
@@ -58,18 +44,8 @@ public class PscFilingServiceImpl implements PscFilingService {
      * Store a PSCIndividualFiling entity in persistence layer.
      *
      * @param filing        the PSCIndividualFiling entity to store
-     * @param transactionId the associated Transaction ID
      * @return the stored entity
      */
-    @Override
-    public PscIndividualFiling save(final PscIndividualFiling filing, final String transactionId) {
-        final var logMap = LogHelper.createLogMap(transactionId, filing.getId());
-
-        logger.debugContext(transactionId, "saving PSC filing", logMap);
-
-        return individualFilingRepository.save(filing);
-    }
-
     @Override
     public PscIndividualFiling save(final PscIndividualFiling filing) {
         return individualFilingRepository.save(filing);
@@ -79,26 +55,20 @@ public class PscFilingServiceImpl implements PscFilingService {
      * Store a PSCWithIdentificationFiling entity in persistence layer.
      *
      * @param filing        the PSCWithIdentificationFiling entity to store
-     * @param transactionId the associated Transaction ID
      * @return the stored entity
      */
     @Override
-    public PscWithIdentificationFiling save(final PscWithIdentificationFiling filing,
-                                            final String transactionId) {
-        final var logMap = LogHelper.createLogMap(transactionId, filing.getId());
-
-        logger.debugContext(transactionId, "saving PSC filing", logMap);
-
+    public PscWithIdentificationFiling save(final PscWithIdentificationFiling filing) {
         return withIdentificationFilingRepository.save(filing);
     }
 
     @Override
-    public boolean requestMatchesResource(HttpServletRequest request, PscCommunal pscFiling) {
-        var selfLinkUri = pscFiling.getLinks().getSelf();
-        URI requestUri = null;
+    public boolean requestMatchesResourceSelf(final HttpServletRequest request, final PscCommunal pscFiling) {
+        final var selfLinkUri = pscFiling.getLinks().getSelf();
+        final URI requestUri;
         try {
             requestUri = new URI(request.getRequestURI());
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             return false;
         }
         return selfLinkUri.equals(requestUri.normalize());

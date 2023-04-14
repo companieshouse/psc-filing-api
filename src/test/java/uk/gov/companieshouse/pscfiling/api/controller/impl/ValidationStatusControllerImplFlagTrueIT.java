@@ -17,10 +17,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.IntegrationTestConfig;
-import uk.gov.companieshouse.pscfiling.api.service.impl.FilingValidationServiceImpl;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
+import uk.gov.companieshouse.pscfiling.api.service.impl.FilingValidationServiceImpl;
 
 @Tag("app")
 @WebMvcTest(controllers = ValidationStatusControllerImpl.class,
@@ -40,12 +40,12 @@ class ValidationStatusControllerImplFlagTrueIT extends BaseControllerIT {
 
     @BeforeEach
     void setUp() throws Exception {
-        super.setUp();
+        baseSetUp();
     }
 
     @Test
     void validateWhenFilingNotFound() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
                 .requestAttr("transaction", transaction)

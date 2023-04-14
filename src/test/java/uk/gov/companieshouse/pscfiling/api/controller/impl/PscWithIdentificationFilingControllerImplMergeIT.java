@@ -3,8 +3,8 @@ package uk.gov.companieshouse.pscfiling.api.controller.impl;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +30,7 @@ import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Identification;
@@ -40,7 +42,6 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 
 @Tag("app")
 @SpringBootTest
@@ -78,8 +79,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setup() throws Exception {
-        super.setUp();
+    void setUp() throws Exception {
+        baseSetUp();
         identification = Identification.builder()
                 .countryRegistered("country")
                 .placeRegistered("place")
@@ -143,9 +144,9 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class),
-                eq(TRANS_ID))).thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
-                .build()); // copy of first argument
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
+                i -> PscWithIdentificationFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
@@ -191,9 +192,9 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class),
-                eq(TRANS_ID))).thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
-                .build()); // copy of first argument
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
+                i -> PscWithIdentificationFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
@@ -245,9 +246,9 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class),
-                eq(TRANS_ID))).thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
-                .build()); // copy of first argument
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
+                i -> PscWithIdentificationFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
@@ -286,9 +287,9 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class),
-                eq(TRANS_ID))).thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
-                .build()); // copy of first argument
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
+                i -> PscWithIdentificationFiling.builder(i.getArgument(0))
+                        .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
@@ -312,8 +313,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
     }
 
     @Test
-    @DisplayName("Expect PATCH validation to return an error when validation fails")
-    void updateFilingWhenDateInFuture() throws Exception {
+    @DisplayName("Expect PATCH validation to returns all errors when validation fails")
+    void updateFilingWhenDatesInFuture() throws Exception {
         final var body = "{\n"
                 + " \"ceased_on\": \"2023-11-05\", \n"
                 + " \"register_entry_date\": \"2023-11-05\" \n"
@@ -329,11 +330,26 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
+        final var expectedError = "must be a date in the past or in the present";
+        final Map<String, String> expectedValues = Map.of("rejected", "2023-11-05");
+
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
-                .contentType(APPLICATION_JSON_MERGE_PATCH)
-                .requestAttr("transaction", transaction)
-                .headers(httpHeaders)).andDo(print()).andExpect(status().isBadRequest());
-        //TODO - add expectation for JSON body wrt ceased_on, register_entry_date and updated_at
+                        .contentType(APPLICATION_JSON_MERGE_PATCH)
+                        .requestAttr("transaction", transaction)
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(2)))
+                .andExpect(jsonPath("$.errors[*].error",
+                        containsInAnyOrder(expectedError, expectedError)))
+                .andExpect(jsonPath("$.errors[*].error_values",
+                        containsInAnyOrder(expectedValues, expectedValues)))
+                .andExpect(jsonPath("$.errors[*].location_type",
+                        containsInAnyOrder("json-path", "json-path")))
+                .andExpect(jsonPath("$.errors[*].type",
+                        containsInAnyOrder("ch:validation", "ch:validation")))
+                .andExpect(jsonPath("$.errors[*].location",
+                        containsInAnyOrder("$.ceased_on", "$.register_entry_date")));
     }
 
     @Test

@@ -39,7 +39,6 @@ import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceExcept
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.exception.PscFilingServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -67,7 +66,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected Map<String, String> validation;
     private final Logger chLogger;
 
-    public RestExceptionHandler(Map<String, String> validation, final Logger logger) {
+    public RestExceptionHandler(final Map<String, String> validation, final Logger logger) {
         this.validation = validation;
         this.chLogger = logger;
     }
@@ -129,7 +128,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public ApiErrors handleInvalidFilingException(final InvalidFilingException ex,
-            WebRequest request) {
+            final WebRequest request) {
         final var fieldErrors = ex.getFieldErrors();
 
         final var errorList = fieldErrors.stream()
@@ -145,7 +144,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
     public ApiErrors handleConflictingFilingException(final ConflictingFilingException ex,
-                                                  WebRequest request) {
+                                                  final WebRequest request) {
         final var fieldErrors = ex.getFieldErrors();
 
         final var errorList = fieldErrors.stream()
@@ -175,8 +174,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({
             PscServiceException.class,
             TransactionServiceException.class,
-            CompanyProfileServiceException.class,
-            PscFilingServiceException.class
+            CompanyProfileServiceException.class
     })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
@@ -265,12 +263,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return error;
     }
 
-    private void logError(WebRequest request, String msg, Exception ex) {
+    private void logError(final WebRequest request, final String msg, final Exception ex) {
         logError(request, msg, ex, null);
     }
 
-    private void logError(WebRequest request, String msg, Exception ex,
-            @Nullable List<ApiError> apiErrorList) {
+    private void logError(final WebRequest request, final String msg, final Exception ex,
+            @Nullable final List<ApiError> apiErrorList) {
         final Map<String, Object> logMap = new HashMap<>();
         final var servletRequest = ((ServletWebRequest) request).getRequest();
         logMap.put("path", servletRequest.getRequestURI());

@@ -89,8 +89,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     private MockMvc mockMvc;
 
     @BeforeEach
-    void setup() throws Exception {
-        super.setUp();
+    void setUp() throws Exception {
+        baseSetUp();
     }
 
     @Test
@@ -127,8 +127,9 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.CORPORATE_ENTITY,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class), eq(TRANS_ID))).thenReturn(
-                        PscWithIdentificationFiling.builder(filing).id(FILING_ID)
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenReturn(
+                        PscWithIdentificationFiling.builder(filing)
+                                .id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
                 .thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
@@ -389,8 +390,9 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class), eq(TRANS_ID))).thenReturn(
-                        PscWithIdentificationFiling.builder(filing).id(FILING_ID)
+        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenReturn(
+                        PscWithIdentificationFiling.builder(filing)
+                                .id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
                 .thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
@@ -429,8 +431,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .links(links)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.requestMatchesResource(any(HttpServletRequest.class),
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(any(HttpServletRequest.class),
                 eq(filing))).thenReturn(true);
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
@@ -445,7 +447,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
                         get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))

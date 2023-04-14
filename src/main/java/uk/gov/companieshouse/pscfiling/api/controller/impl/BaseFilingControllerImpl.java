@@ -4,22 +4,15 @@ import java.time.Clock;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.transaction.Resource;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.patch.model.PatchResult;
-import uk.gov.companieshouse.pscfiling.api.error.RetrievalFailureReason;
-import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.exception.InvalidPatchException;
-import uk.gov.companieshouse.pscfiling.api.exception.PscFilingServiceException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
@@ -44,7 +37,7 @@ public class BaseFilingControllerImpl {
         this.logger = logger;
     }
 
-    protected static void checkBindingErrors(BindingResult bindingResult) {
+    protected static void checkBindingErrors(final BindingResult bindingResult) {
         final var validationErrors = Optional.ofNullable(bindingResult).map(Errors::getFieldErrors).map(ArrayList::new)
                 .orElseGet(ArrayList::new);
 
@@ -53,12 +46,12 @@ public class BaseFilingControllerImpl {
         }
     }
 
-    protected String getPassthroughHeader(HttpServletRequest request) {
+    protected String getPassthroughHeader(final HttpServletRequest request) {
         return request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
     }
 
-    protected Transaction getTransaction(String transId, Transaction transaction, Map<String, Object> logMap,
-                                         String passthroughHeader) {
+    protected Transaction getTransaction(final String transId, Transaction transaction, final Map<String, Object> logMap,
+                                         final String passthroughHeader) {
         if (transaction == null) {
             transaction = transactionService.getTransaction(transId, passthroughHeader);
         }
@@ -67,7 +60,7 @@ public class BaseFilingControllerImpl {
         return transaction;
     }
 
-    protected void updateTransactionResources(Transaction transaction, Links links) {
+    protected void updateTransactionResources(final Transaction transaction, final Links links) {
         final var resourceMap = buildResourceMap(links);
         transaction.setResources(resourceMap);
         transactionService.updateTransaction(transaction);
@@ -87,30 +80,4 @@ public class BaseFilingControllerImpl {
         return resourceMap;
     }
 
-    protected RuntimeException handlePatchFailed(final String transId, final String filingResource,
-            final HttpServletRequest request, final Map<String, Object> logMap,
-            final PatchResult patchResult) {
-        final RuntimeException exception;
-
-        if (patchResult.failedValidation()) {
-            exception = new InvalidPatchException(
-                    List.of((FieldError) patchResult.getValidationErrors()));
-
-        }
-        else if (patchResult.failedRetrieval()) {
-            final var reason = (RetrievalFailureReason) patchResult.getRetrievalFailureReason();
-
-            logMap.put("error", "retrieval failure: " + reason);
-            logger.debugRequest(request, "PATCH", logMap);
-
-            exception = new FilingResourceNotFoundException("Failed to retrieve filing: " + filingResource);
-        }
-        else {
-            logMap.put("status", "patch invalid");
-            logger.errorContext(transId, "patch failed", null, logMap);
-            exception = new PscFilingServiceException("Failed to retrieve filing: " + filingResource, null);
-        }
-
-        return exception;
-    }
 }

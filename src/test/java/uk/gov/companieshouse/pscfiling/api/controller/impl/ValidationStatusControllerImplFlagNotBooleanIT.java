@@ -49,7 +49,7 @@ class ValidationStatusControllerImplFlagNotBooleanIT extends BaseControllerIT {
 
     @BeforeEach
     void setUp() throws Exception {
-        super.setUp();
+        baseSetUp();
     }
 
     @Test
@@ -60,7 +60,7 @@ class ValidationStatusControllerImplFlagNotBooleanIT extends BaseControllerIT {
                 .ceasedOn(CEASED_ON_DATE)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
                 .requestAttr("transaction", transaction)

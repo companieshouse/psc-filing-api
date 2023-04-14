@@ -10,7 +10,6 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,8 +68,6 @@ class FilingDataServiceImplTest extends TestBaseService {
     @Mock
     private PscDetailsService pscDetailsService;
     @Mock
-    private HttpServletRequest request;
-    @Mock
     private PscApi pscApi;
     @Mock
     private FilingDataConfig filingDataConfig;
@@ -91,7 +88,7 @@ class FilingDataServiceImplTest extends TestBaseService {
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {OTHER_FORENAMES})
-    void generatePscIndividualFilingWhenFound(String otherForenames) {
+    void generatePscIndividualFilingWhenFound(final String otherForenames) {
         final var filingData = IndividualFilingDataDto.builder()
                 .title(TITLE)
                 .firstName(FIRSTNAME)
@@ -113,7 +110,7 @@ class FilingDataServiceImplTest extends TestBaseService {
                 PscIndividualFiling.builder(pscFiling).nameElements(nameElements)
                         .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(pscFiling));
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
         final var nameElementsApi = new NameElementsApi();
@@ -130,8 +127,8 @@ class FilingDataServiceImplTest extends TestBaseService {
                 testService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL, transaction,
                         PASSTHROUGH_HEADER);
 
-        Map<String, Object> expectedMap;
-        String expectedDescription;
+        final Map<String, Object> expectedMap;
+        final String expectedDescription;
         if (otherForenames == null) {
             expectedMap = Map.of("title", TITLE, "first_name", FIRSTNAME, "last_name",
                             LASTNAME, "ceased_on", CEASED_ON_STR, "register_entry_date", REGISTER_ENTRY_DATE);
@@ -185,7 +182,7 @@ class FilingDataServiceImplTest extends TestBaseService {
                         .identification(identification)
                         .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(pscFiling));
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID,
                 PscTypeConstants.CORPORATE_ENTITY, PASSTHROUGH_HEADER)).thenReturn(pscApi);
 
@@ -248,7 +245,7 @@ class FilingDataServiceImplTest extends TestBaseService {
                         .identification(identification)
                         .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(pscFiling));
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.LEGAL_PERSON,
                 PASSTHROUGH_HEADER)).thenReturn(pscApi);
 
@@ -322,7 +319,7 @@ class FilingDataServiceImplTest extends TestBaseService {
                 .identification(identification)
                 .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(pscFiling));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(pscFiling));
         when(dataMapper.enhance(pscFiling, PscTypeConstants.LEGAL_PERSON, pscDetails)).thenReturn(
                 enhancedPscFiling);
         when(pscDetailsService.getPscDetails(transaction, REF_PSC_ID, PscTypeConstants.LEGAL_PERSON,
@@ -348,7 +345,7 @@ class FilingDataServiceImplTest extends TestBaseService {
 
     @Test
     void generatePscIndividualFilingWhenNotFound() {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testService.generatePscFiling(FILING_ID, PscTypeConstants.INDIVIDUAL,

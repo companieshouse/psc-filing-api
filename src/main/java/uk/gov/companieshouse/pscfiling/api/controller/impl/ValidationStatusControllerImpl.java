@@ -49,7 +49,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     public ValidationStatusControllerImpl(final PscFilingService pscFilingService,
                                           final FilingValidationService filingValidationService,
                                           final PscMapper filingMapper, final ErrorMapper errorMapper, @Value("#{new Boolean('${feature.flag.transactions.closable}')}") final boolean isTransactionsClosableEnabled,
-                                          Logger logger) {
+                                          final Logger logger) {
         this.pscFilingService = pscFilingService;
         this.filingValidationService = filingValidationService;
         this.filingMapper = filingMapper;
@@ -67,7 +67,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     public ValidationStatusResponse validate(
             @PathVariable("transactionId") final String transId,
             @PathVariable("filingResourceId") final String filingResource,
-            @RequestAttribute(required = false, name = "transaction") Transaction transaction,
+            @RequestAttribute(required = false, name = "transaction") final Transaction transaction,
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId, filingResource);
@@ -77,11 +77,9 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
 
         final var passthroughHeader =
                 request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
+        final var maybePscIndividualFiling = pscFilingService.get(filingResource);
 
-        final var maybePscIndividualFiling = pscFilingService.get(filingResource, transId);
-
-        var finalTransaction = transaction;
-        return maybePscIndividualFiling.map(f -> isValid(f, passthroughHeader, finalTransaction))
+        return maybePscIndividualFiling.map(f -> isValid(f, passthroughHeader, transaction))
                 .orElseThrow(() -> new FilingResourceNotFoundException(filingResource));
     }
 

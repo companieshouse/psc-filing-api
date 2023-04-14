@@ -85,7 +85,7 @@ class FilingDataControllerImplIT extends BaseControllerIT {
 
     @BeforeEach
     void setUp() throws Exception {
-        super.setUp();
+        baseSetUp();
     }
 
     @ParameterizedTest

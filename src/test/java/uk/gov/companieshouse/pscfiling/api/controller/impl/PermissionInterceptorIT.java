@@ -53,10 +53,9 @@ class PermissionInterceptorIT extends BaseControllerIT {
     private Logger logger;
 
 
-    @Override
     @BeforeEach
     void setUp() throws Exception {
-        super.setUp();
+        baseSetUp();
     }
 
     @Override

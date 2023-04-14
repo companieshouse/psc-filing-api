@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -29,6 +28,7 @@ import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
 import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
@@ -40,7 +40,6 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
-import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 
 @Tag("app")
 @SpringBootTest
@@ -78,8 +77,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
 
 
     @BeforeEach
-    void setup() throws Exception {
-        super.setUp();
+    void setUp() throws Exception {
+        baseSetUp();
         nameElements = NameElements.builder()
                 .forename("Forename")
                 .otherForenames("Other Forenames")
@@ -141,7 +140,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
                 i -> PscIndividualFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
@@ -187,7 +186,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
                 i -> PscIndividualFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
@@ -235,7 +234,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
                 i -> PscIndividualFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
@@ -272,7 +271,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenAnswer(
+        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
                 i -> PscIndividualFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);

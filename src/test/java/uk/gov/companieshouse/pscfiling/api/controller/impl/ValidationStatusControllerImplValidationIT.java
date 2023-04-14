@@ -26,17 +26,17 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.config.ValidatorConfig;
+import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
 import uk.gov.companieshouse.pscfiling.api.error.RestExceptionHandler;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
-import uk.gov.companieshouse.pscfiling.api.service.impl.FilingValidationServiceImpl;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
+import uk.gov.companieshouse.pscfiling.api.service.impl.FilingValidationServiceImpl;
 
 @Tag("app")
 @SpringBootTest(classes = {
@@ -72,7 +72,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @BeforeEach
     void setUp() throws Exception {
-        super.setUp();
+        baseSetUp();
         final var self = UriComponentsBuilder.fromUriString(SELF_FRAGMENT)
                 .pathSegment(PscTypeConstants.INDIVIDUAL.getValue())
                 .pathSegment(FILING_ID)
@@ -90,7 +90,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenDataValid() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -109,7 +109,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenPscDetailsNotFound() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -131,7 +131,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenPscEtagNotMatched() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -153,7 +153,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenCeasedOnBeforePscNotifiedOn() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
@@ -187,7 +187,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
                 PscIndividualFiling.builder(filing).registerEntryDate(CEASED_ON_DATE.minusDays(1))
                         .build();
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(invalid));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(invalid));
 
         mockMvc.perform(get(URL_VALIDATION_STATUS, TRANS_ID, FILING_ID)
                 .requestAttr("transaction", transaction)
@@ -204,7 +204,7 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
 
     @Test
     void validateWhenPscNotActive() throws Exception {
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,

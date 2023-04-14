@@ -18,8 +18,9 @@ public class TestBaseService {
     static MockedStatic<PscTypeConstants> myMockedEnum;
 
     //Use to mock out the PscTypeConstants enum class
+    @SuppressWarnings("unchecked")
     static <PscTypeConstants extends Enum<PscTypeConstants>> PscTypeConstants[] addNewEnumValue(
-            Class<PscTypeConstants> enumPscTypeConstants) {
+            final Class<PscTypeConstants> enumPscTypeConstants) {
         final EnumSet<PscTypeConstants> enumSet = EnumSet.allOf(enumPscTypeConstants);
         final PscTypeConstants[] newValues =
                 (PscTypeConstants[]) Array.newInstance(enumPscTypeConstants, enumSet.size() + 1);

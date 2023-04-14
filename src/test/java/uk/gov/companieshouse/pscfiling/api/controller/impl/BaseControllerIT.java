@@ -62,7 +62,7 @@ public class BaseControllerIT {
     @MockBean
     protected InternalUserInterceptor internalUserInterceptor;
 
-    void setUp() throws Exception {
+    void baseSetUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.add("ERIC-Access-Token", PASSTHROUGH_HEADER);
         setupEricTokenPermissions();

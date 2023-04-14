@@ -62,7 +62,11 @@ public class FilingDataServiceImpl implements FilingDataService {
             final String passthroughHeader) {
 
         final var transactionId = transaction.getId();
-        final var pscFilingOpt = pscFilingService.get(filingId, transactionId);
+        final var logMap = LogHelper.createLogMap(transactionId, filingId);
+
+        logger.debugContext(transactionId, "Fetching PSC filing", logMap);
+
+        final var pscFilingOpt = pscFilingService.get(filingId);
         final var pscFiling = pscFilingOpt.orElseThrow(() -> new FilingResourceNotFoundException(
                 String.format("PSC filing not found when generating filing for %s", filingId)));
         final PscApi pscDetails =
@@ -72,7 +76,6 @@ public class FilingDataServiceImpl implements FilingDataService {
         final var filingData = dataMapper.map(enhancedPscFiling, pscType);
         final var dataMap =
                 MapHelper.convertObject(filingData, PropertyNamingStrategies.SNAKE_CASE);
-        final var logMap = LogHelper.createLogMap(transactionId, filingId);
 
         logMap.put("Data to submit", dataMap);
         logger.debugContext(transactionId, filingId, logMap);
@@ -82,20 +85,20 @@ public class FilingDataServiceImpl implements FilingDataService {
         return filing;
     }
 
-    private void setFilingDescription(FilingApi filing, final PscTypeConstants pscType) {
+    private void setFilingDescription(final FilingApi filing, final PscTypeConstants pscType) {
         var name = "";
         switch (pscType) {
             case INDIVIDUAL:
-                var names = new String[]{(String) filing.getData().get("title"),
-                        (String) filing.getData().get("first_name"),
-                        (String) filing.getData().get("other_forenames"),
-                        (String) filing.getData().get("last_name")};
-                var sb = new StringBuilder();
-                for (String str : names)
+                final var names = new String[]{(String) filing.getData().get("title"),
+                                               (String) filing.getData().get("first_name"),
+                                               (String) filing.getData().get("other_forenames"),
+                                               (String) filing.getData().get("last_name")};
+                final var sb = new StringBuilder();
+                for (final String str : names)
                     if (str != null) {
                         sb.append(str).append(" ");
                     }
-                var result = sb.toString();
+                final var result = sb.toString();
                 name = result.trim();
                 break;
             case CORPORATE_ENTITY:
@@ -106,9 +109,9 @@ public class FilingDataServiceImpl implements FilingDataService {
 
         }
 
-        var date = LocalDate.parse(filing.getData().get("ceased_on").toString());
-        var fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String strDate = date.format(fmt);
+        final var date = LocalDate.parse(filing.getData().get("ceased_on").toString());
+        final var fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        final String strDate = date.format(fmt);
         filing.setDescription(MessageFormat.format(filingDataConfig.getPsc07Description(), name, strDate));
     }
 }
