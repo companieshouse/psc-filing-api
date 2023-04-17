@@ -49,6 +49,50 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
 
     private final PscIndividualFilingService pscIndividualFilingService;
 
+    public PscIndividualFilingControllerImpl(final TransactionService transactionService,
+            final PscFilingService pscFilingService,
+            final PscIndividualFilingService pscIndividualFilingService,
+            final PscMapper filingMapper, final Clock clock, final Logger logger) {
+        super(transactionService, pscFilingService, filingMapper, clock, logger);
+        this.pscIndividualFilingService = pscIndividualFilingService;
+    }
+
+    /**
+     * Create an PSC Filing.
+     *
+     * @param transId       the transaction ID
+     * @param pscType       the PSC type
+     * @param transaction   the Transaction
+     * @param dto           the request body payload DTO
+     * @param bindingResult the MVC binding result (with any validation errors)
+     * @param request       the servlet request
+     * @return CREATED response containing the populated Filing resource
+     */
+    @Override
+    @Transactional
+    @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
+    public ResponseEntity<PscIndividualFiling> createFiling(@PathVariable("transactionId") final String transId,
+            @PathVariable("pscType") final PscTypeConstants pscType,
+            @RequestAttribute(required = false, name = "transaction") Transaction transaction,
+            @RequestBody @Valid @NotNull final PscIndividualDto dto,
+            final BindingResult bindingResult, final HttpServletRequest request) {
+
+        final var logMap = LogHelper.createLogMap(transId);
+
+        logger.debugRequest(request, "POST", logMap);
+
+        checkBindingErrors(bindingResult);
+
+        transaction = getTransaction(transId, transaction, logMap, getPassthroughHeader(request));
+
+        final var entity = filingMapper.map(dto);
+        final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap);
+        updateTransactionResources(transaction, savedEntity.getLinks());
+
+        return ResponseEntity.created(savedEntity.getLinks().getSelf())
+                .body(savedEntity);
+    }
+
     /**
      * Update a PSC Individual Filing resource by applying a JSON merge-patch.
      *
@@ -106,50 +150,6 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
                             .build());
         }
 
-    }
-
-    public PscIndividualFilingControllerImpl(final TransactionService transactionService,
-            final PscFilingService pscFilingService,
-            final PscIndividualFilingService pscIndividualFilingService,
-            final PscMapper filingMapper, final Clock clock, final Logger logger) {
-        super(transactionService, pscFilingService, filingMapper, clock, logger);
-        this.pscIndividualFilingService = pscIndividualFilingService;
-    }
-
-    /**
-     * Create an PSC Filing.
-     *
-     * @param transId       the transaction ID
-     * @param pscType       the PSC type
-     * @param transaction   the Transaction
-     * @param dto           the request body payload DTO
-     * @param bindingResult the MVC binding result (with any validation errors)
-     * @param request       the servlet request
-     * @return CREATED response containing the populated Filing resource
-     */
-    @Override
-    @Transactional
-    @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<PscIndividualFiling> createFiling(@PathVariable("transactionId") final String transId,
-            @PathVariable("pscType") final PscTypeConstants pscType,
-            @RequestAttribute(required = false, name = "transaction") Transaction transaction,
-            @RequestBody @Valid @NotNull final PscIndividualDto dto,
-            final BindingResult bindingResult, final HttpServletRequest request) {
-
-        final var logMap = LogHelper.createLogMap(transId);
-
-        logger.debugRequest(request, "POST", logMap);
-
-        checkBindingErrors(bindingResult);
-
-        transaction = getTransaction(transId, transaction, logMap, getPassthroughHeader(request));
-
-        final var entity = filingMapper.map(dto);
-        final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap);
-        updateTransactionResources(transaction, savedEntity.getLinks());
-
-        return ResponseEntity.created(savedEntity.getLinks().getSelf())
-                .body(savedEntity);
     }
 
     /**

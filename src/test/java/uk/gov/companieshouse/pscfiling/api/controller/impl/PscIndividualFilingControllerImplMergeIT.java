@@ -1,8 +1,13 @@
 package uk.gov.companieshouse.pscfiling.api.controller.impl;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -312,13 +318,64 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
+        final var expectedError = "must be a date in the past or in the present";
+        final Map<String, String> expectedValues = Map.of("rejected", "2023-11-05");
+
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
                         .requestAttr("transaction", transaction)
                         .headers(httpHeaders))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
-        //TODO - add expectation for JSON body wrt ceased_on, register_entry_date and updated_at
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(2)))
+                .andExpect(jsonPath("$.errors[*].error",
+                        containsInAnyOrder(expectedError, expectedError)))
+                .andExpect(jsonPath("$.errors[*].error_values",
+                        containsInAnyOrder(expectedValues, expectedValues)))
+                .andExpect(jsonPath("$.errors[*].location_type",
+                        containsInAnyOrder("json-path", "json-path")))
+                .andExpect(jsonPath("$.errors[*].type",
+                        containsInAnyOrder("ch:validation", "ch:validation")))
+                .andExpect(jsonPath("$.errors[*].location",
+                        containsInAnyOrder("$.ceased_on", "$.register_entry_date")));
+    }
+
+    @Test
+    @DisplayName("Expect PATCH validation error to omit class names")
+    void updateFilingWhenDateInvalid() throws Exception {
+        final var body = "{\n"
+                + " \"ceased_on\": \"2023-11-5\" \n"
+                + "}";
+        final var filing = PscIndividualFiling.builder()
+                .id(FILING_ID)
+                .referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
+                .registerEntryDate(REGISTER_ENTRY_DATE)
+                .links(links)
+                .build();
+        final var expectedError = createExpectedValidationError(
+                "JSON parse error: Text '2023-11-5' could not be parsed at index 8", "$.ceased_on",
+                1, 14);
+
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(clock.instant()).thenReturn(FIRST_INSTANT);
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
+                        .contentType(APPLICATION_JSON_MERGE_PATCH)
+                        .requestAttr("transaction", transaction)
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].error", not(containsString("java"))))
+                .andExpect(jsonPath("$.errors[0]",
+                allOf(hasEntry("location", expectedError.getLocation()),
+                        hasEntry("location_type", expectedError.getLocationType()),
+                        hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error", is("JSON parse error: Text '2023-11-5' could not be parsed at index 8")))
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        allOf(hasEntry("offset", "line: 1, column: 14"), hasEntry("line", "1"),
+                                hasEntry("column", "14"), hasEntry("rejected", "2023-11-5"))));
     }
 
     @Test
