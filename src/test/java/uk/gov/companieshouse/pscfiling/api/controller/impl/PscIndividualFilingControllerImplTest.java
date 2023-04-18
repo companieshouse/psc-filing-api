@@ -136,8 +136,8 @@ class PscIndividualFilingControllerImplTest {
         final var withLinks = PscIndividualFiling.builder(withFilingId)
                 .links(links)
                 .build();
-        when(pscFilingService.save(filing)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
+        when(pscIndividualFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscIndividualFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -170,8 +170,8 @@ class PscIndividualFilingControllerImplTest {
         final var withLinks = PscIndividualFiling.builder(withFilingId)
                 .links(links)
                 .build();
-        when(pscFilingService.save(filing)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
+        when(pscIndividualFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscIndividualFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
@@ -218,10 +218,9 @@ class PscIndividualFilingControllerImplTest {
 
     @Test
     void getFilingForReviewWhenFound() {
-
+        when(pscIndividualFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
         when(filingMapper.map(filing)).thenReturn(dto);
-
-        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.of(filing));
 
         final var response =
                 testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
@@ -231,8 +230,9 @@ class PscIndividualFilingControllerImplTest {
     }
 
     @Test
-    void getFilingForReviewWhenFoundButResourceNotMatched() {
-        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.of(filing));
+    void getFilingForReviewWhenFoundAndIsOtherPscType() {
+        when(pscIndividualFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(false);
 
         final var response =
                 testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
@@ -241,9 +241,8 @@ class PscIndividualFilingControllerImplTest {
     }
 
     @Test
-    void getFilingForReviewNotFound() {
-
-        when(pscIndividualFilingService.getFiling(FILING_ID)).thenReturn(Optional.empty());
+    void getFilingForReviewWhenNotFound() {
+        when(pscIndividualFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         final var response =
                 testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
@@ -255,7 +254,7 @@ class PscIndividualFilingControllerImplTest {
     void updateFiling() {
         final var success = new PatchResult();
 
-        when(pscIndividualFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(success);
+        when(pscIndividualFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(success);
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
         final var response =
@@ -272,7 +271,7 @@ class PscIndividualFilingControllerImplTest {
         final var failure = new PatchResult(RetrievalFailureReason.FILING_NOT_FOUND);
         final Map<String, Object> map = Collections.emptyMap();
 
-        when(pscIndividualFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(failure);
+        when(pscIndividualFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(failure);
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
@@ -291,7 +290,7 @@ class PscIndividualFilingControllerImplTest {
         final var failure = new PatchResult(List.of(error));
         final Map<String, Object> map = Collections.emptyMap();
 
-        when(pscIndividualFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(failure);
+        when(pscIndividualFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(failure);
 
         final var exception = assertThrows(InvalidPatchException.class,
                 () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));

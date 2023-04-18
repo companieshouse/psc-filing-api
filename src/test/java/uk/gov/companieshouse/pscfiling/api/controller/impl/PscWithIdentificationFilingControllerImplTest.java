@@ -49,7 +49,6 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
-import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
@@ -131,12 +130,13 @@ class PscWithIdentificationFilingControllerImplTest {
                 .build();
         final var withLinks = PscWithIdentificationFiling.builder(withFilingId).links(links)
                 .build();
-        when(pscFilingService.save(filing)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
+        when(pscWithIdentificationFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscWithIdentificationFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, transaction,
+        final var response = testController.createFiling(TRANS_ID,
+                PscTypeConstants.CORPORATE_ENTITY, transaction,
                 dto, nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
@@ -148,23 +148,24 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void createFilingWhenTransactionNull() {
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-            PASSTHROUGH_HEADER);
+                PASSTHROUGH_HEADER);
         when(filingMapper.map(dto)).thenReturn(filing);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-            transaction);
+                transaction);
 
         final var withFilingId = PscWithIdentificationFiling.builder(filing).id(FILING_ID)
-            .build();
+                .build();
         final var withLinks = PscWithIdentificationFiling.builder(withFilingId).links(links)
-            .build();
-        when(pscFilingService.save(filing)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
+                .build();
+        when(pscWithIdentificationFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscWithIdentificationFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, null,
-            dto, result, request);
+        final var response = testController.createFiling(TRANS_ID,
+                PscTypeConstants.CORPORATE_ENTITY, null,
+                dto, result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
@@ -201,32 +202,32 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void getFilingForReviewWhenFound() {
 
-        when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
+        when(filingMapper.map(filing)).thenReturn(dto);
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.requestMatchesResourceSelf(request,filing)).thenReturn(true);
+        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
 
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID,
+                request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(dto));
     }
 
     @Test
-    void getFilingForReviewWhenFoundButResourceNotMatched() {
-        when(pscFilingService.requestMatchesResourceSelf(request,filing)).thenReturn(false);
+    void getFilingForReviewWhenFoundAndIsOtherPscType() {
+        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(false);
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
+        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID,
+                request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
 
     @Test
     void getFilingForReviewNotFound() {
-
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
+        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -237,10 +238,11 @@ class PscWithIdentificationFilingControllerImplTest {
     void updateFiling() {
         final var success = new PatchResult();
 
-        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(success);
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscWithIdentificationFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(success);
+        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
-        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(), request);
+        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID,
+                Collections.emptyMap(), request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(filing));
@@ -252,8 +254,7 @@ class PscWithIdentificationFilingControllerImplTest {
         final var failure = new PatchResult(RetrievalFailureReason.FILING_NOT_FOUND);
         final Map<String, Object> map = Collections.emptyMap();
 
-        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(
-                failure);
+        when(pscWithIdentificationFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(failure);
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
                 () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
@@ -273,8 +274,7 @@ class PscWithIdentificationFilingControllerImplTest {
         final var failure = new PatchResult(List.of(error));
         final Map<String, Object> map = Collections.emptyMap();
 
-        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(
-                failure);
+        when(pscWithIdentificationFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(failure);
 
         final var exception = assertThrows(InvalidPatchException.class,
                 () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));

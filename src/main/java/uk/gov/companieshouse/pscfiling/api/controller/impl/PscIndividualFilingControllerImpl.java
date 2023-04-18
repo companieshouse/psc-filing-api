@@ -117,7 +117,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
-        final var patchResult = pscIndividualFilingService.updateFiling(filingResource, mergePatch);
+        final var patchResult = pscIndividualFilingService.patch(filingResource, mergePatch);
 
         if (patchResult.failedRetrieval()) {
             final var reason = (RetrievalFailureReason) patchResult.getRetrievalFailureReason();
@@ -167,8 +167,10 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
             @PathVariable("filingResourceId") final String filingResource,
             final HttpServletRequest request) {
 
-        final var maybePSCFiling = pscIndividualFilingService.getFiling(filingResource);
-        final var maybeDto = maybePSCFiling.map(filingMapper::map);
+        final var maybePSCFiling = pscIndividualFilingService.get(filingResource);
+        final var maybeDto =
+                maybePSCFiling.filter(f -> pscFilingService.requestMatchesResourceSelf(request,
+                        f)).map(filingMapper::map);
 
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()
@@ -181,12 +183,13 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
 
         logger.debugContext(transId, "saving PSC filing", logMap);
 
-        final var entityWithCreated = PscIndividualFiling.builder(entity).createdAt(clock.instant()).build();
-        final var saved = pscFilingService.save(entityWithCreated);
+        final var entityWithCreated = PscIndividualFiling.builder(entity).createdAt(
+                clock.instant()).build();
+        final var saved = pscIndividualFilingService.save(entityWithCreated);
         final var links = buildLinks(request, saved);
         final var updated = PscIndividualFiling.builder(saved).links(links)
                 .build();
-        final var resaved = pscFilingService.save(updated);
+        final var resaved = pscIndividualFilingService.save(updated);
 
         logMap.put("filing_id", resaved.getId());
         logger.infoContext(transId, "iling saved", logMap);

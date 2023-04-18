@@ -30,7 +30,6 @@ import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundExcep
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidPatchException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
-import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
@@ -73,7 +72,8 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
     @Override
     @Transactional
     @PostMapping(produces = {"application/json"}, consumes = {"application/json"})
-    public ResponseEntity<PscWithIdentificationFiling> createFiling(@PathVariable("transactionId") final String transId,
+    public ResponseEntity<PscWithIdentificationFiling> createFiling(
+            @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @RequestAttribute(required = false, name = "transaction") Transaction transaction,
             @RequestBody @Valid @NotNull final PscWithIdentificationDto dto,
@@ -118,8 +118,8 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
-        final var patchResult =
-                pscWithIdentificationFilingService.updateFiling(filingResource, mergePatch);
+        final var patchResult = pscWithIdentificationFilingService.patch(filingResource,
+                mergePatch);
 
         if (patchResult.failedRetrieval()) {
             final var reason = (RetrievalFailureReason) patchResult.getRetrievalFailureReason();
@@ -144,7 +144,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             logMap.put(STATUS_MSG, "patch successful");
             logger.infoContext(transId, PATCH_RESULT_MSG, logMap);
 
-            return pscFilingService.get(filingResource)
+            return pscWithIdentificationFilingService.get(filingResource)
                     .map(PscWithIdentificationFiling.class::cast)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound()
@@ -162,7 +162,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
      */
     @Override
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
-    public ResponseEntity<PscDtoCommunal> getFilingForReview(
+    public ResponseEntity<PscWithIdentificationDto> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
@@ -173,10 +173,10 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
         logMap.put("method", request.getMethod());
         logger.debugRequest(request, "GET filing resource", logMap);
 
-        final var maybePSCFiling = pscFilingService.get(filingResource);
+        final var maybePSCFiling = pscWithIdentificationFilingService.get(filingResource);
         final var maybeDto =
-                maybePSCFiling.filter(f -> pscFilingService.requestMatchesResourceSelf(request, f))
-                        .map(filingMapper::map);
+                maybePSCFiling.filter(f -> pscFilingService.requestMatchesResourceSelf(request,
+                        f)).map(filingMapper::map);
 
         return maybeDto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()
@@ -192,12 +192,12 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
         final var entityWithCreated = PscWithIdentificationFiling.builder(entity)
                 .createdAt(clock.instant())
                 .build();
-        final var saved = pscFilingService.save(entityWithCreated);
+        final var saved = pscWithIdentificationFilingService.save(entityWithCreated);
         final var links = buildLinks(request, saved.getId(), pscType);
         final var updated = PscWithIdentificationFiling.builder(saved)
                 .links(links)
                 .build();
-        final var resaved = pscFilingService.save(updated);
+        final var resaved = pscWithIdentificationFilingService.save(updated);
 
         logMap.put("filing_id", resaved.getId());
         logger.infoContext(transId, "Filing saved", logMap);

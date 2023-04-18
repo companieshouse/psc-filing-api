@@ -6,11 +6,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.patch.model.PatchResult;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscWithIdentificationFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.repository.PscWithIdentificationFilingRepository;
-import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingMergeProcessor;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingPostMergeProcessor;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
@@ -41,17 +41,17 @@ public class PscWithIdentificationFilingServiceImpl implements PscWithIdentifica
     }
 
     @Override
-    public PscWithIdentificationFiling createFiling(final PscWithIdentificationFiling filing) {
+    public PscWithIdentificationFiling save(final PscWithIdentificationFiling filing) {
         return filingRepository.save(filing);
     }
 
     @Override
-    public Optional<PscWithIdentificationFiling> getFiling(final String filingId) {
+    public Optional<PscWithIdentificationFiling> get(final String filingId) {
         return filingRepository.findById(filingId);
     }
 
     @Override
-    public PatchResult updateFiling(final String filingId, final Map<String, Object> patchMap) {
+    public PatchResult patch(final String filingId, final Map<String, Object> patchMap) {
         final PatchResult patchResult;
 
         try {

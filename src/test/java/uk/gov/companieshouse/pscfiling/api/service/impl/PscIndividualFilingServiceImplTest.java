@@ -59,13 +59,13 @@ class PscIndividualFilingServiceImplTest {
 
     @Test
     void createFiling() {
-        testService.createFiling(filing);
+        testService.save(filing);
         verify(filingRepository).save(filing);
     }
 
     @Test
     void getFiling() {
-        testService.getFiling(FILING_ID);
+        testService.get(FILING_ID);
         verify(filingRepository).findById(FILING_ID);
     }
 
@@ -79,7 +79,7 @@ class PscIndividualFilingServiceImplTest {
         when(mergeProcessor.mergeEntity(filing, Collections.emptyMap())).thenReturn(filing);
         when(patchValidator.validate(filing)).thenReturn(new ValidationResult());
 
-        var result = testService.updateFiling(FILING_ID, Collections.emptyMap());
+        var result = testService.patch(FILING_ID, Collections.emptyMap());
 
         verify(postMergeProcessor).onMerge(filing);
         verify(filingRepository).save(filing);
@@ -99,7 +99,7 @@ class PscIndividualFilingServiceImplTest {
                 new IOException("ioe"));
 
         final var exception = assertThrows(MergePatchException.class,
-                () -> testService.updateFiling(FILING_ID, map));
+                () -> testService.patch(FILING_ID, map));
         verifyNoInteractions(postMergeProcessor, filingRepository);
         assertThat(exception.getMessage(), is("Failed to merge patch request"));
         assertThat(exception.getCause().getMessage(), is("ioe"));

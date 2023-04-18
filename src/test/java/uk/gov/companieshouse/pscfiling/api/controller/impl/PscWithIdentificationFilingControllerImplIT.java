@@ -127,7 +127,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.CORPORATE_ENTITY,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenReturn(
+        when(pscWithIdentificationFilingService.save(
+                any(PscWithIdentificationFiling.class))).thenReturn(
                         PscWithIdentificationFiling.builder(filing)
                                 .id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
@@ -153,7 +154,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         final var expectedError = createExpectedValidationError(
                 "Required request body is missing: public org.springframework.http"
                         + ".ResponseEntity<java.lang.Object> uk.gov.companieshouse.pscfiling.api"
-                        + ".controller.PscWithIdentificationFilingControllerImpl.createFiling(java.lang.String,uk"
+                        + ".controller.PscWithIdentificationFilingControllerImpl.save(java.lang"
+                        + ".String,uk"
                         + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
                         + ".companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto,org"
                         + ".springframework.validation.BindingResult,javax.servlet.http"
@@ -390,7 +392,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenReturn(
+        when(pscWithIdentificationFilingService.save(
+                any(PscWithIdentificationFiling.class))).thenReturn(
                         PscWithIdentificationFiling.builder(filing)
                                 .id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
@@ -431,7 +434,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .links(links)
                 .build();
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.requestMatchesResourceSelf(any(HttpServletRequest.class),
                 eq(filing))).thenReturn(true);
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
@@ -447,7 +450,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @Test
     void getFilingForReviewNotFoundThenResponse404() throws Exception {
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
+        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(
                         get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))

@@ -17,6 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.net.URI;
 import java.time.Clock;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -145,13 +147,21 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .links(links)
                 .identification(identification)
                 .build();
+        final var expectedIdentification =
+                Identification.builder(identification).countryRegistered("Replaced").build();
+        final var expectedFiling =
+                PscWithIdentificationFiling.builder(filing).updatedAt(SECOND_INSTANT).ceasedOn(
+                        LocalDate.of(2022, 3, 3)).identification(
+                        expectedIdentification).naturesOfControl(List.of("type4")).build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-
-        when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
+        when(pscFilingService.save(
+                any(PscWithIdentificationFiling.class))).thenAnswer(
                 i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(
+                Optional.ofNullable(expectedFiling));
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -194,12 +204,20 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .links(links)
                 .build();
+        final var expectedIdentification =
+                Identification.builder().countryRegistered("Added").build();
+        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
+                SECOND_INSTANT).name(CORPORATE_NAME).ceasedOn(
+                LocalDate.of(2022, 10, 5)).identification(expectedIdentification).naturesOfControl(
+                List.of("type1", "type2", "type3", "type4")).build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
                 i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
-        when(clock.instant()).thenReturn(FIRST_INSTANT);
+        when(clock.instant()).thenReturn(SECOND_INSTANT);
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(
+                Optional.ofNullable(expectedFiling));
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -217,7 +235,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.identification.country_registered", is("Added")))
                 .andExpect(jsonPath("$.natures_of_control",
                         containsInAnyOrder("type1", "type2", "type3", "type4")))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())));
     }
 
     @Test
@@ -248,12 +266,19 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .links(links)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .build();
+        final var expectedIdentification =
+                Identification.builder(identification).countryRegistered(null).build();
+        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
+                SECOND_INSTANT).name(null).ceasedOn(null).identification(
+                expectedIdentification).naturesOfControl(Collections.emptyList()).build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
                 i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
-        when(clock.instant()).thenReturn(FIRST_INSTANT);
+        when(clock.instant()).thenReturn(SECOND_INSTANT);
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(
+                Optional.ofNullable(expectedFiling));
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -271,7 +296,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.identification.country_registered").doesNotExist())
                 .andExpect(jsonPath("$.natures_of_control", is(empty())))
                 .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())));
     }
 
     @Test
@@ -289,12 +314,16 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .updatedAt(FIRST_INSTANT)
                 .build();
+        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
+                SECOND_INSTANT).build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.save(any(PscWithIdentificationFiling.class))).thenAnswer(
                 i -> PscWithIdentificationFiling.builder(i.getArgument(0))
                         .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(
+                Optional.ofNullable(expectedFiling));
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -332,7 +361,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(clock.instant()).thenReturn(FIRST_INSTANT);
+        when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         final var expectedError = "must be a date in the past or in the present";
         final Map<String, String> expectedValues = Map.of("rejected", "2023-11-05");
@@ -374,7 +403,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 1, 14);
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(clock.instant()).thenReturn(FIRST_INSTANT);
+        when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)

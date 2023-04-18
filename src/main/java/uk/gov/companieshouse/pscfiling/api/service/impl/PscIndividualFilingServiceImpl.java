@@ -6,11 +6,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.patch.model.PatchResult;
+import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
-import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingMergeProcessor;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingPostMergeProcessor;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
@@ -41,25 +41,24 @@ public class PscIndividualFilingServiceImpl implements PscIndividualFilingServic
     }
 
     @Override
-    public PscIndividualFiling createFiling(final PscIndividualFiling filing) {
+    public PscIndividualFiling save(final PscIndividualFiling filing) {
         return filingRepository.save(filing);
     }
 
     @Override
-    public Optional<PscIndividualFiling> getFiling(final String filingId) {
+    public Optional<PscIndividualFiling> get(final String filingId) {
         return filingRepository.findById(filingId);
     }
 
     @Override
-    public PatchResult updateFiling(final String filingId, final Map<String, Object> patchMap) {
+    public PatchResult patch(final String filingId, final Map<String, Object> patchMap) {
         final PatchResult patchResult;
 
         try {
             patchResult =
                     patchEntity(filingId, pscIndividualFilingProvider, patchMap, mergeProcessor,
                             postMergeProcessor, pscIndividualPatchValidator);
-        }
-        catch (final IOException e) {
+        } catch (final IOException e) {
             throw new MergePatchException("Failed to merge patch request", e);
         }
 
