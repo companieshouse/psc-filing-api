@@ -3,6 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.controller;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.net.URI;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +48,7 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
+import uk.gov.companieshouse.pscfiling.api.model.entity.NaturesOfControlList;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.provider.PscIndividualFilingProvider;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
@@ -61,7 +64,19 @@ import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 @WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
 @Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class})
 class PscIndividualFilingControllerImplIT extends BaseControllerIT {
+
+    private static final URI SELF_URI = URI.create("/transactions/"
+            + TRANS_ID
+            + "/persons-with-significant-control/individual/"
+            + FILING_ID);
+    private static final URI VALIDATION_URI = URI.create("/transactions/"
+            + TRANS_ID
+            + "/persons-with-significant-control/"
+            + FILING_ID
+            + "/validation_status");
     private NameElements nameElements;
+    private Links links;
+    private NaturesOfControlList naturesOfControl;
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -102,6 +117,8 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .surname("Surname")
                 .title("Sir")
                 .build();
+        links = new Links(SELF_URI, VALIDATION_URI);
+        naturesOfControl = new NaturesOfControlList(List.of("type1", "type2", "type3"));
     }
 
     @Test
@@ -119,16 +136,24 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @Test
     void createFilingWhenPSC07PayloadOKThenResponse201() throws Exception {
         final var body = "{" + PSC07_FRAGMENT + "}";
-        final var dto = PscIndividualDto.builder().referenceEtag(ETAG)
+        final var dto = PscIndividualDto.builder()
+                .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .build();
-        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
+        final var filing = PscIndividualFiling.builder()
                 .ceasedOn(CEASED_ON_DATE)
+                .createdAt(FIRST_INSTANT)
+                .links(links)
+                .naturesOfControl(naturesOfControl)
+                .nameElements(nameElements)
+                .referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
+                .updatedAt(FIRST_INSTANT)
                 .build();
+
         final var locationUri = UriComponentsBuilder.fromPath("/")
                 .pathSegment("transactions", TRANS_ID,
                         "persons-with-significant-control/individual", FILING_ID)
@@ -139,7 +164,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
+        when(pscFilingService.save(any(PscIndividualFiling.class))).thenReturn(
                         PscIndividualFiling.builder(filing).id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
                 .thenAnswer(i -> PscIndividualFiling.builder(i.getArgument(0))
@@ -154,7 +179,21 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", locationUri.toUriString()))
                 .andExpect(jsonPath("$.id", is(FILING_ID)))
-                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())));
+                .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())))
+                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())))
+                .andExpect(jsonPath("$.name_elements.forename", is("Forename")))
+                .andExpect(jsonPath("$.name_elements.other_forenames", is("Other Forenames")))
+                .andExpect(jsonPath("$.name_elements.title", is("Sir")))
+                .andExpect(jsonPath("$.name_elements.surname", is("Surname")))
+                .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
+                .andExpect(jsonPath("$.links.validation_status", is(VALIDATION_URI.toString())))
+                .andExpect(jsonPath("$.natures_of_control",
+                        containsInAnyOrder("type1", "type2", "type3")))
+                .andExpect(jsonPath("$.reference_etag", is(ETAG)))
+                .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
+                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())))
+                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
+                .andExpect(jsonPath("$.country_of_residence").doesNotExist());
         verify(filingMapper).map(dto);
     }
 
@@ -380,15 +419,22 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @Test
     void createFilingWhenCeasedOnDateBlankThenResponse201() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "") + "}";
-        final var dto = PscIndividualDto.builder().referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
+        final var dto = PscIndividualDto.builder()
                 .ceasedOn(null)
+                .referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .build();
-        final var filing = PscIndividualFiling.builder().referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
+        final var filing = PscIndividualFiling.builder()
                 .ceasedOn(null)
+                .createdAt(FIRST_INSTANT)
+                .links(links)
+                .nameElements(nameElements)
+                .naturesOfControl(naturesOfControl)
+                .referenceEtag(ETAG)
+                .referencePscId(PSC_ID)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
+                .updatedAt(FIRST_INSTANT)
                 .build();
         final var locationUri = UriComponentsBuilder.fromPath("/")
                 .pathSegment("transactions", TRANS_ID,
@@ -400,7 +446,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.INDIVIDUAL,
                 PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Mr Joe Bloggs");
-        when(pscFilingService.save(any(PscIndividualFiling.class), eq(TRANS_ID))).thenReturn(
+        when(pscFilingService.save(any(PscIndividualFiling.class))).thenReturn(
                         PscIndividualFiling.builder(filing).id(FILING_ID)
                                 .build()) // copy of 'filing' with id=FILING_ID
                 .thenAnswer(i -> PscIndividualFiling.builder(i.getArgument(0))
@@ -415,7 +461,19 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(status().isCreated())
                 .andExpect(header().string("location", locationUri.toUriString()))
                 .andExpect(jsonPath("$.id", is(FILING_ID)))
+                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())))
+                .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
+                .andExpect(jsonPath("$.links.validation_status", is(VALIDATION_URI.toString())))
+                .andExpect(jsonPath("$.name_elements.forename", is("Forename")))
+                .andExpect(jsonPath("$.name_elements.other_forenames", is("Other Forenames")))
+                .andExpect(jsonPath("$.name_elements.title", is("Sir")))
+                .andExpect(jsonPath("$.name_elements.surname", is("Surname")))
+                .andExpect(jsonPath("$.natures_of_control",
+                        containsInAnyOrder("type1", "type2", "type3")))
+                .andExpect(jsonPath("$.reference_etag", is(ETAG)))
+                .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
                 .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())))
+                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
                 .andExpect(jsonPath("$.country_of_residence").doesNotExist());
         verify(filingMapper).map(dto);
     }

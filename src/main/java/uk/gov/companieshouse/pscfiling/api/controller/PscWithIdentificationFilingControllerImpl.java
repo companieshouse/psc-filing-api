@@ -39,7 +39,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 public class PscWithIdentificationFilingControllerImpl extends BaseFilingControllerImpl
         implements PscWithIdentificationFilingController {
 
-    private PscWithIdentificationFilingService pscWithIdentificationFilingService;
+    private final PscWithIdentificationFilingService pscWithIdentificationFilingService;
 
     public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
             final PscFilingService pscFilingService,
@@ -142,7 +142,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             @PathVariable("filingResourceId") final String filingResource,
             final HttpServletRequest request) {
 
-        final var maybePSCFiling = pscFilingService.get(filingResource, transId);
+        final var maybePSCFiling = pscFilingService.get(filingResource);
 
         final var maybeDto = maybePSCFiling.filter(f -> pscFilingService.requestMatchesResource(request, f)).map(filingMapper::map);
 
@@ -155,7 +155,11 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
                                                             final String transId, final HttpServletRequest request,
                                                             final Map<String, Object> logMap,
                                                             PscTypeConstants pscType) {
-        final var entityWithCreated = PscWithIdentificationFiling.builder(entity).createdAt(clock.instant()).build();
+
+        final var now = clock.instant();
+        final var entityWithCreated =
+                PscWithIdentificationFiling.builder(entity).createdAt(now).updatedAt(now)
+                        .build();
         final var saved = pscFilingService.save(entityWithCreated, transId);
         final var links = buildLinks(request, saved.getId(), pscType);
         final var updated = PscWithIdentificationFiling.builder(saved).links(links)
