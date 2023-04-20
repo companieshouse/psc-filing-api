@@ -13,6 +13,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +44,8 @@ import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceExcept
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
+import uk.gov.companieshouse.pscfiling.api.exception.InvalidPatchException;
+import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -65,6 +69,8 @@ class RestExceptionHandlerTest {
     @Mock
     private InvalidFormatException invalidFormatException;
     @Mock
+    private UnrecognizedPropertyException unrecognizedPropertyException;
+    @Mock
     private JsonParseException jsonParseException;
     @Mock
     private Logger logger;
@@ -82,11 +88,12 @@ class RestExceptionHandlerTest {
         testExceptionHandler = new RestExceptionHandler(validation, logger);
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURI("/path/to/resource");
-        when(request.getRequest()).thenReturn(servletRequest);
     }
 
     @Test
     void handleHttpMessageNotReadableWhenJsonBlank() {
+        when(request.getRequest()).thenReturn(servletRequest);
+
         final var message = new MockHttpInputMessage(BLANK_JSON_QUOTED.getBytes());
         final var exceptionMessage = new HttpMessageNotReadableException("Unexpected end-of-input: "
                 + "expected close marker for Object (start marker at [Source: (org"
@@ -110,6 +117,8 @@ class RestExceptionHandlerTest {
 
     @Test
     void handleHttpMessageNotReadableWhenJsonMalformed() {
+        when(request.getRequest()).thenReturn(servletRequest);
+
         final var message = new MockHttpInputMessage(MALFORMED_JSON_QUOTED.getBytes());
         final var exceptionMessage = new HttpMessageNotReadableException("Unexpected end-of-input: "
                 + "expected close marker for Object (start marker at [Source: (org"
@@ -124,6 +133,7 @@ class RestExceptionHandlerTest {
         final var expectedError = new ApiError(
                 "JSON parse error: Unexpected end-of-input", "$",
                 "json-path", "ch:validation");
+
         final var actualError = Objects.requireNonNull(apiErrors).getErrors().iterator().next();
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -139,6 +149,7 @@ class RestExceptionHandlerTest {
                         + ".DateTimeParseException) Text 'ABC' could not be parsed at index 0";
         final var message = new MockHttpInputMessage("{]".getBytes());
 
+        when(request.getRequest()).thenReturn(servletRequest);
         when(mismatchedInputException.getMessage()).thenReturn(msg);
         when(mismatchedInputException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
         when(mismatchedInputException.getPath()).thenReturn(List.of(mappingReference));
@@ -163,6 +174,39 @@ class RestExceptionHandlerTest {
     }
 
     @Test
+    void handleHttpMessageNotReadableWhenMismatchedInputExceptionMessageNotMatchingParsePattern() {
+        final var msg =
+                "Cannot deserialize value of type `java.time.LocalDate` from String \"ABC\": "
+                        + "Failed to deserialize java.time.LocalDate: (java.time.format"
+                        + ".DateTimeParseException)"; // Does not contain 'Text'
+        final var message = new MockHttpInputMessage("{]".getBytes());
+
+        when(request.getRequest()).thenReturn(servletRequest);
+        when(mismatchedInputException.getMessage()).thenReturn(msg);
+        when(mismatchedInputException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
+        when(mismatchedInputException.getPath()).thenReturn(List.of(mappingReference));
+        when(mappingReference.getFieldName()).thenReturn("ceased_on");
+
+        final var exceptionMessage =
+                new HttpMessageNotReadableException(msg, mismatchedInputException, message);
+        final var response =
+                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                        HttpStatus.BAD_REQUEST, request);
+        final var apiErrors = (ApiErrors) response.getBody();
+        final var expectedError =
+                new ApiError("JSON parse error: ",
+                        // missing 'Text' clause not copied from exception message
+                        "$.ceased_on", "json-path", "ch:validation");
+        expectedError.addErrorValue("offset", "line: 3, column: 7");
+        expectedError.addErrorValue("line", "3");
+        expectedError.addErrorValue("column", "7");
+        final var actualError = Objects.requireNonNull(apiErrors).getErrors().iterator().next();
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(actualError, is(samePropertyValuesAs(expectedError)));
+    }
+
+    @Test
     void handleHttpMessageNotReadableWhenInvalidFormatException() {
         final var msg = "Cannot deserialize value of type `java.time.LocalDate` from String "
                 + "\"2022-09-99\": Failed to deserialize java.time.LocalDate: (java.time"
@@ -174,6 +218,7 @@ class RestExceptionHandlerTest {
         final var message = new MockHttpInputMessage(
                 PSC07_FRAGMENT.replaceAll("2022-09-13", "2022-09-99").getBytes());
 
+        when(request.getRequest()).thenReturn(servletRequest);
         when(invalidFormatException.getMessage()).thenReturn(msg);
         when(invalidFormatException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
         when(invalidFormatException.getPath()).thenReturn(List.of(mappingReference));
@@ -200,11 +245,59 @@ class RestExceptionHandlerTest {
     }
 
     @Test
+    void handleHttpMessageNotReadableWhenUnrecognizedPropertyException() {
+        final var msg = "Unrecognized field \"ceased_onX\" (class uk.gov.companieshouse.pscfiling" +
+                ".api.model.entity.PscIndividualFiling), not marked as ignorable (18 known " +
+                "properties: \"notified_on\", \"country_of_residence\", \"natures_of_control\", " +
+                "\"reference_etag\", \"statement_type\", \"ceased_on\", \"reference_psc_id\", " +
+                "\"address_same_as_registered_office_address\", \"address\", \"etag\", " +
+                "\"register_entry_date\", \"residential_address\", \"nationality\", " +
+                "\"statement_action_date\", \"date_of_birth\", \"name_elements\", \"kind\", " +
+                "\"residential_address_same_as_correspondence_address\"])\n" +
+                " at [Source: (String)\"{\"ceased_onX\":\"2022-09-13\"}\"; line: 3, " +
+                "column: 7] (through reference chain: uk.gov.companieshouse.pscfiling.api.model" +
+                ".entity.PscIndividualFiling[\"ceased_onX\"])";
+        final var message = new MockHttpInputMessage(
+                PSC07_FRAGMENT.replaceAll("ceased_on", "ceased_onX").getBytes());
+
+        when(request.getRequest()).thenReturn(servletRequest);
+        when(unrecognizedPropertyException.getLocation()).thenReturn(
+                new JsonLocation(null, 100, 3, 7));
+        when(unrecognizedPropertyException.getPath()).thenReturn(List.of(mappingReference));
+        when(unrecognizedPropertyException.getPropertyName()).thenReturn("ceased_onX");
+        when(mappingReference.getFieldName()).thenReturn("ceased_onX");
+
+        final var unrecognizedMsg = "JSON parse error: Unknown property \"ceased_onX\"";
+        final var exceptionMessage =
+                new HttpMessageNotReadableException(unrecognizedMsg, unrecognizedPropertyException,
+                        message);
+        final var response =
+                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                        HttpStatus.BAD_REQUEST, request);
+        final var apiErrors = (ApiErrors) response.getBody();
+        final var expectedError =
+                new ApiError(unrecognizedMsg, "$.ceased_onX", "json-path", "ch:validation");
+        expectedError.addErrorValue("offset", "line: 3, column: 7");
+        expectedError.addErrorValue("line", "3");
+        expectedError.addErrorValue("column", "7");
+        final var actualError = Objects.requireNonNull(apiErrors).getErrors().iterator().next();
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        assertThat(actualError.getError(), is(expectedError.getError()));
+        assertThat(actualError.getLocation(), is(expectedError.getLocation()));
+        assertThat(actualError.getType(), is(expectedError.getType()));
+        assertThat(actualError.getLocationType(), is(expectedError.getLocationType()));
+        assertThat(actualError.getErrorValues(), is(expectedError.getErrorValues()));
+        assertThat(actualError, is(samePropertyValuesAs(expectedError)));
+    }
+
+    @Test
     void handleHttpMessageNotReadableWhenJsonParseException() {
         final var msg = "JsonParseException";
         final var message =
                 new MockHttpInputMessage(PSC07_FRAGMENT.replaceAll("2022", "ABC").getBytes());
 
+        when(request.getRequest()).thenReturn(servletRequest);
         when(jsonParseException.getMessage()).thenReturn(msg);
         when(jsonParseException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
 
@@ -233,29 +326,40 @@ class RestExceptionHandlerTest {
         final var exception = new HttpMediaTypeNotSupportedException(MediaType.APPLICATION_PDF,
                 List.of(MediaType.APPLICATION_JSON, mediaMergePatch));
 
+        when(request.getRequest()).thenReturn(servletRequest);
+
         final var response =
                 testExceptionHandler.handleHttpMediaTypeNotSupported(exception, headers,
                         HttpStatus.UNSUPPORTED_MEDIA_TYPE, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.UNSUPPORTED_MEDIA_TYPE));
         assertThat(response.getHeaders().getAcceptPatch(), contains(mediaMergePatch));
-        assertThat(response.getHeaders().get("Accept-Post"), contains(MediaType.APPLICATION_JSON.toString()));
+        assertThat(response.getHeaders().get("Accept-Post"),
+                contains(MediaType.APPLICATION_JSON.toString()));
     }
 
     @Test
     void handleResourceNotFoundException() {
-        final var exception = new FilingResourceNotFoundException("Filing resource {filing-resource-id} not found");
+        final var exception = new FilingResourceNotFoundException(
+                "Filing resource {filing-resource-id} not found");
 
-        final var apiErrors = testExceptionHandler.handleResourceNotFoundException(exception, request);
-        final var expectedError = new ApiError("Filing resource {filing-resource-id} not found", null, "resource", "ch:validation");
+        when(request.getRequest()).thenReturn(servletRequest);
 
-        expectedError.addErrorValue("{filing-resource-id}", "Filing resource {filing-resource-id} not found");
+        final var apiErrors = testExceptionHandler.handleResourceNotFoundException(exception,
+                request);
+        final var expectedError = new ApiError("Filing resource {filing-resource-id} not found",
+                null, "resource", "ch:validation");
+
+        expectedError.addErrorValue("{filing-resource-id}",
+                "Filing resource {filing-resource-id} not found");
 
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
 
     @Test
     void handleInvalidFilingException() {
+        when(request.getRequest()).thenReturn(servletRequest);
+
         final var fieldError = new FieldError("object", "field", "error");
         final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
         final var fieldErrorWithRejectedValue =
@@ -278,6 +382,8 @@ class RestExceptionHandlerTest {
 
     @Test
     void handleConflictingFilingException() {
+        when(request.getRequest()).thenReturn(servletRequest);
+
         final var fieldError = new FieldError("object", "field", "error");
         final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
         final var fieldErrorWithRejectedValue =
@@ -286,7 +392,8 @@ class RestExceptionHandlerTest {
         final var exception =
                 new ConflictingFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
 
-        final var apiErrors = testExceptionHandler.handleConflictingFilingException(exception, request);
+        final var apiErrors = testExceptionHandler.handleConflictingFilingException(exception,
+                request);
 
         final var expectedError = new ApiError("error", null, "json-path", "ch:validation");
         final var expectedErrorWithRejectedValue =
@@ -301,6 +408,7 @@ class RestExceptionHandlerTest {
     @ParameterizedTest(name = "[{index}]: cause={0}")
     @MethodSource("causeProvider")
     void handleServiceException(final Exception exception) {
+        when(request.getRequest()).thenReturn(servletRequest);
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
         final var apiErrors = testExceptionHandler.handleServiceException(exception, request);
@@ -318,6 +426,7 @@ class RestExceptionHandlerTest {
         final var exception = new NullPointerException("test");
         final Object body = 0;
 
+        when(request.getRequest()).thenReturn(servletRequest);
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
         final var response =
@@ -338,6 +447,7 @@ class RestExceptionHandlerTest {
     void handleAllUncaughtException(final Exception cause) {
         final var exception = new RuntimeException("test", cause);
 
+        when(request.getRequest()).thenReturn(servletRequest);
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
         final var apiErrors = testExceptionHandler.handleAllUncaughtException(exception, request);
@@ -356,6 +466,55 @@ class RestExceptionHandlerTest {
 
         return Stream.of(Arguments.of(new PscServiceException("PSCServiceException", cause)),
                 Arguments.of(new TransactionServiceException("TransactionServiceException", cause)),
-                Arguments.of(new CompanyProfileServiceException("CompanyProfileServiceException", cause)));
+                Arguments.of(new CompanyProfileServiceException("CompanyProfileServiceException",
+                        cause)));
+    }
+
+    @Test
+    void handleMergePatchException() {
+        when(request.getRequest()).thenReturn(servletRequest);
+
+        final var fieldError = new FieldError("object", "field", "error");
+        final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
+        final var fieldErrorWithRejectedValue =
+                new FieldError("object", "field", "rejectedValue", false, codes, null,
+                        "errorWithRejectedValue");
+        final var exception =
+                new MergePatchException("Failed to merge patch request",
+                        unrecognizedPropertyException);
+
+        when(unrecognizedPropertyException.getPropertyName()).thenReturn("field");
+        when(unrecognizedPropertyException.getLocation()).thenReturn(
+                new JsonLocation(null, 100, 3, 7));
+        when(unrecognizedPropertyException.getPath()).thenReturn(List.of(mappingReference));
+        when(mappingReference.getFieldName()).thenReturn("field");
+
+        final var apiErrors = testExceptionHandler.handleMergePatchException(exception, request);
+
+        final var expectedError = new ApiError(
+                "Failed to merge patch request: Unknown property \"field\"", "$.field",
+                "json-path",
+                "ch:validation");
+        expectedError.addErrorValue("offset", "line: 3, column: 7");
+        expectedError.addErrorValue("line", "3");
+        expectedError.addErrorValue("column", "7");
+
+        assertThat(((ApiErrors) Objects.requireNonNull(apiErrors.getBody())).getErrors(),
+                contains(expectedError));
+    }
+
+    @Test
+    void getMostSpecificCauseWhenPresent() {
+        final var cause = new InvalidPatchException(Collections.emptyList());
+        final var exception = new MergePatchException("test", cause);
+
+        assertThat(RestExceptionHandler.getMostSpecificCause(exception), is(cause));
+    }
+
+    @Test
+    void getMostSpecificCauseWhenNotPresent() {
+        final Throwable exception = null;
+
+        assertThat(RestExceptionHandler.getMostSpecificCause(exception), is(exception));
     }
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +64,8 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String CAUSE = "cause";
-    private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$", Pattern.MULTILINE);
+    private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$",
+            Pattern.MULTILINE);
 
     @Autowired
     @Qualifier(value = "validation")
@@ -114,8 +117,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ResponseEntity<Object> handleMergePatchException(final MergePatchException ex,
             final WebRequest request) {
-
-        return createRedactedErrorResponseEntity(ex, request, ex.getCause(), "JSON parse error: ");
+        return createRedactedErrorResponseEntity(ex, request, ex.getCause(),
+                "Failed to merge patch request: ");
     }
 
     @ExceptionHandler(ConflictingFilingException.class)
@@ -210,10 +213,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .orElse(null);
     }
 
-    private static String getParseErrorMessage(final String s) {
-        final var matcher = PARSE_MESSAGE_PATTERN.matcher(s);
+    private static String getMismatchErrorMessage(
+            final MismatchedInputException mismatchedInputException) {
+        if (mismatchedInputException instanceof UnrecognizedPropertyException) {
+            final var unrecognized = (UnrecognizedPropertyException) mismatchedInputException;
 
-        return matcher.find() ? matcher.group(1) : "";
+            return MessageFormat.format("Unknown property \"{0}\"", unrecognized.getPropertyName());
+        }
+        else {
+            final var message = mismatchedInputException.getMessage();
+            final var parseMatcher = PARSE_MESSAGE_PATTERN.matcher(message);
+
+            return parseMatcher.find() ? parseMatcher.group(1) : "";
+        }
+
     }
 
     private String redactErrorMessage(final String s) {
@@ -232,6 +245,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             Object rejectedValue = null;
 
             if (cause instanceof MismatchedInputException) {
+                message = getMismatchErrorMessage((MismatchedInputException) cause);
+
                 final var fieldNameOpt = ((MismatchedInputException) cause).getPath()
                         .stream()
                         .findFirst()
@@ -239,7 +254,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 jsonPath += fieldNameOpt.map(f -> "." + f)
                         .orElse("");
 
-                message = getParseErrorMessage(cause.getMessage());
                 if (jpe instanceof InvalidFormatException) {
                     rejectedValue = ((InvalidFormatException) cause).getValue();
                 }
