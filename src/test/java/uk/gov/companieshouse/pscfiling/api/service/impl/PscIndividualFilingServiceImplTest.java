@@ -58,13 +58,7 @@ class PscIndividualFilingServiceImplTest {
     }
 
     @Test
-    void createFiling() {
-        testService.save(filing);
-        verify(filingRepository).save(filing);
-    }
-
-    @Test
-    void getFiling() {
+    void get() {
         testService.get(FILING_ID);
         verify(filingRepository).findById(FILING_ID);
     }
