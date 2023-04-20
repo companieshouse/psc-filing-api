@@ -1,6 +1,9 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -98,10 +101,11 @@ class PscIndividualFilingControllerImplTest {
                 pscIndividualFilingService, filingMapper, clock, logger) {
         };
         filing = PscIndividualFiling.builder()
-                .referencePscId(PSC_ID)
-                .referenceEtag("etag")
                 .ceasedOn(LocalDate.parse("2022-09-13"))
                 .createdAt(FIRST_INSTANT)
+                .referencePscId(PSC_ID)
+                .referenceEtag("etag")
+                .updatedAt(FIRST_INSTANT)
                 .build();
         final var builder = UriComponentsBuilder.fromUri(REQUEST_URI);
         links = new Links(builder.pathSegment(FILING_ID)
@@ -126,13 +130,14 @@ class PscIndividualFilingControllerImplTest {
                 .build();
         final var withLinks = PscIndividualFiling.builder(withFilingId).links(links)
                 .build();
-        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+        when(pscFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, transaction,
-            dto, nullBindingResult ? null : result, request);
+        final var response =
+                testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, transaction, dto,
+                        nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
@@ -147,30 +152,31 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void createFilingWhenTransactionNull() {
         when(request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader())).thenReturn(
-            PASSTHROUGH_HEADER);
+                PASSTHROUGH_HEADER);
         when(filingMapper.map(dto)).thenReturn(filing);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
-            transaction);
+                transaction);
 
         final var withFilingId = PscIndividualFiling.builder(filing).id(FILING_ID)
-            .build();
+                .build();
         final var withLinks = PscIndividualFiling.builder(withFilingId).links(links)
-            .build();
-        when(pscFilingService.save(filing, TRANS_ID)).thenReturn(withFilingId);
-        when(pscFilingService.save(withLinks, TRANS_ID)).thenReturn(withLinks);
+                .build();
+        when(pscFilingService.save(filing)).thenReturn(withFilingId);
+        when(pscFilingService.save(withLinks)).thenReturn(withLinks);
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL,
-            null, dto, result, request);
+        final var response =
+                testController.createFiling(TRANS_ID, PscTypeConstants.INDIVIDUAL, null, dto,
+                        result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction);
         final var context =
-            new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
-                PASSTHROUGH_HEADER);
+                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
+                        PASSTHROUGH_HEADER);
         assertThat(validationErrors, is(empty()));
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
@@ -236,14 +242,22 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void updateFiling() {
         final var success = new PatchResult();
+        final Instant updatedInstant = Instant.parse("2022-11-15T09:44:08.108Z");
+        final var updatedFiling = PscIndividualFiling.builder(filing).updatedAt(updatedInstant)
+                .build();
 
         when(pscIndividualFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(success);
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(updatedFiling));
 
-        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(), request);
+        final var response =
+                testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(),
+                        request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(filing));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody(), is(updatedFiling));
+        assertThat(response.getBody().getUpdatedAt(),
+                is(not(equalTo(response.getBody().getCreatedAt()))));
 
     }
 

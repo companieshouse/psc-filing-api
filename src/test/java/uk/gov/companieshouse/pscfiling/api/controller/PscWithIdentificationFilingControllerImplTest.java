@@ -1,6 +1,9 @@
 package uk.gov.companieshouse.pscfiling.api.controller;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -101,6 +104,7 @@ class PscWithIdentificationFilingControllerImplTest {
                 .referenceEtag("etag")
                 .ceasedOn(LocalDate.parse("2022-09-13"))
                 .createdAt(FIRST_INSTANT)
+                .updatedAt(FIRST_INSTANT)
                 .build();
         final var builder = UriComponentsBuilder.fromUri(REQUEST_URI);
         links = new Links(builder.pathSegment(FILING_ID)
@@ -130,8 +134,9 @@ class PscWithIdentificationFilingControllerImplTest {
         when(request.getRequestURI()).thenReturn(REQUEST_URI.toString());
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var response = testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY, transaction,
-                dto, nullBindingResult ? null : result, request);
+        final var response =
+                testController.createFiling(TRANS_ID, PscTypeConstants.CORPORATE_ENTITY,
+                        transaction, dto, nullBindingResult ? null : result, request);
 
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
@@ -197,10 +202,11 @@ class PscWithIdentificationFilingControllerImplTest {
 
         when(filingMapper.map((PscCommunal) filing)).thenReturn(dto);
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(true);
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResource(request, filing)).thenReturn(true);
 
-        final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
+        final var response =
+                testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
         assertThat(response.getBody(), is(dto));
@@ -210,7 +216,7 @@ class PscWithIdentificationFilingControllerImplTest {
     void getFilingForReviewWhenFoundButResourceNotMatched() {
         when(pscFilingService.requestMatchesResource(request,filing)).thenReturn(false);
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -220,7 +226,7 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void getFilingForReviewNotFound() {
 
-        when(pscFilingService.get(FILING_ID, TRANS_ID)).thenReturn(Optional.empty());
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
         final var response = testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
@@ -230,16 +236,24 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void updateFiling() {
         final var success = new PatchResult();
+        final Instant updatedInstant = Instant.parse("2022-11-15T09:44:08.108Z");
+        final var updatedFiling =
+                PscWithIdentificationFiling.builder(filing).updatedAt(updatedInstant)
+                        .build();
+        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(
+                success);
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(updatedFiling));
 
-        when(pscWithIdentificationFilingService.updateFiling(eq(FILING_ID), anyMap())).thenReturn(success);
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-
-        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(), request);
+        final var response =
+                testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(),
+                        request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(filing));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody(), is(updatedFiling));
+        assertThat(response.getBody().getUpdatedAt(),
+                is(not(equalTo(response.getBody().getCreatedAt()))));
 
     }
 
 }
-

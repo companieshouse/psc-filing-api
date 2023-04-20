@@ -37,7 +37,7 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
         "/transactions/{transactionId}/persons-with-significant-control/{pscType:"
                 + "(?:individual)}")
 public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl implements PscIndividualFilingController {
-    private PscIndividualFilingService pscIndividualFilingService;
+    private final PscIndividualFilingService pscIndividualFilingService;
 
     public PscIndividualFilingControllerImpl(final TransactionService transactionService,
             final PscFilingService pscFilingService,
@@ -150,12 +150,15 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
                                                     final HttpServletRequest request,
                                                     final Map<String, Object> logMap) {
 
-        final var entityWithCreated = PscIndividualFiling.builder(entity).createdAt(clock.instant()).build();
-        final var saved = pscFilingService.save(entityWithCreated, transId);
+        final var now = clock.instant();
+        final var entityWithCreated =
+                PscIndividualFiling.builder(entity).createdAt(now).updatedAt(now)
+                        .build();
+        final var saved = pscFilingService.save(entityWithCreated);
         final var links = buildLinks(request, saved);
         final var updated = PscIndividualFiling.builder(saved).links(links)
                 .build();
-        final var resaved = pscFilingService.save(updated, transId);
+        final var resaved = pscFilingService.save(updated);
 
         logMap.put("filing_id", resaved.getId());
         logger.infoContext(transId, "Filing saved", logMap);
