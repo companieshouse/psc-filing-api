@@ -183,16 +183,18 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
 
         logger.debugContext(transId, "saving PSC filing", logMap);
 
-        final var entityWithCreated = PscIndividualFiling.builder(entity).createdAt(
-                clock.instant()).build();
-        final var saved = pscIndividualFilingService.save(entityWithCreated);
+        final var now = clock.instant();
+        final var entityWithCreatedUpdated =
+                PscIndividualFiling.builder(entity).createdAt(now).updatedAt(now)
+                        .build();
+        final var saved = pscIndividualFilingService.save(entityWithCreatedUpdated);
         final var links = buildLinks(request, saved);
-        final var updated = PscIndividualFiling.builder(saved).links(links)
+        final var updatedWithLinks = PscIndividualFiling.builder(saved).links(links)
                 .build();
-        final var resaved = pscIndividualFilingService.save(updated);
+        final var resaved = pscIndividualFilingService.save(updatedWithLinks);
 
         logMap.put("filing_id", resaved.getId());
-        logger.infoContext(transId, "iling saved", logMap);
+        logger.infoContext(transId, "Filing saved", logMap);
 
         return resaved;
     }

@@ -46,6 +46,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
 
     private static final String PATCH_RESULT_MSG = "PATCH result";
     private static final String STATUS_MSG = "status";
+
     private final PscWithIdentificationFilingService pscWithIdentificationFilingService;
 
     public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
@@ -189,15 +190,16 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
                                                             final PscTypeConstants pscType) {
         logger.debugContext(transId, "saving PSC filing", logMap);
 
-        final var entityWithCreated = PscWithIdentificationFiling.builder(entity)
-                .createdAt(clock.instant())
+        final var now = clock.instant();
+        final var entityWithCreatedUpdated = PscWithIdentificationFiling.builder(entity)
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
-        final var saved = pscWithIdentificationFilingService.save(entityWithCreated);
+        final var saved = pscWithIdentificationFilingService.save(entityWithCreatedUpdated);
         final var links = buildLinks(request, saved.getId(), pscType);
-        final var updated = PscWithIdentificationFiling.builder(saved)
-                .links(links)
+        final var updatedWithLinks = PscWithIdentificationFiling.builder(saved).links(links)
                 .build();
-        final var resaved = pscWithIdentificationFilingService.save(updated);
+        final var resaved = pscWithIdentificationFilingService.save(updatedWithLinks);
 
         logMap.put("filing_id", resaved.getId());
         logger.infoContext(transId, "Filing saved", logMap);
