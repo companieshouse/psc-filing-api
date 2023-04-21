@@ -7,10 +7,10 @@ import uk.gov.companieshouse.patch.service.PatchService;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
 public interface PscWithIdentificationFilingService extends PatchService<PscWithIdentificationFiling> {
-    PscWithIdentificationFiling createFiling(final PscWithIdentificationFiling filing);
+    PscWithIdentificationFiling save(final PscWithIdentificationFiling filing);
 
-    Optional<PscWithIdentificationFiling> getFiling(final String filingId);
+    Optional<PscWithIdentificationFiling> get(final String filingId);
 
-    PatchResult updateFiling(final String filingId, final Map<String, Object> patchMap);
+    PatchResult patch(final String filingId, final Map<String, Object> patchMap);
 
 }

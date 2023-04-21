@@ -10,17 +10,11 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFil
  * Store/retrieve PSC Filing entities using the persistence layer.
  */
 public interface PscFilingService {
-    @Deprecated
-    PscIndividualFiling save(PscIndividualFiling filing, String transactionId);
-
     PscIndividualFiling save(PscIndividualFiling filing);
 
-    PscWithIdentificationFiling save(PscWithIdentificationFiling filing, String transactionId);
+    PscWithIdentificationFiling save(PscWithIdentificationFiling filing);
 
-    @Deprecated
-    Optional<PscCommunal> get(String pscFilingId, String transactionId);
     Optional<PscCommunal> get(String pscFilingId);
 
-    //TODO - review if this method is needed now we have provider classes - for PATCH
-    boolean requestMatchesResource(HttpServletRequest request, PscCommunal pscFiling);
+    boolean requestMatchesResourceSelf(HttpServletRequest request, PscCommunal pscFiling);
 }
