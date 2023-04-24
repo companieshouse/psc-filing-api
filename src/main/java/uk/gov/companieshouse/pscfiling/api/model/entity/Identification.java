@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +8,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The identification entity model
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Identification {
     private String countryRegistered;
@@ -33,22 +35,37 @@ public class Identification {
         this.registrationNumber = registrationNumber;
     }
 
+    /**
+     * @return the country of registration
+     */
     public String getCountryRegistered() {
         return countryRegistered;
     }
 
+    /**
+     * @return the legal authority
+     */
     public String getLegalAuthority() {
         return legalAuthority;
     }
 
+    /**
+     * @return the legal form
+     */
     public String getLegalForm() {
         return legalForm;
     }
 
+    /**
+     * @return the place of registration
+     */
     public String getPlaceRegistered() {
         return placeRegistered;
     }
 
+    /**
+     * @return the registration number
+     */
     public String getRegistrationNumber() {
         return registrationNumber;
     }

@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * A dto to store common fields among PSC types.
+ */
 public class PscCommonDto implements PscDtoCommunal {
     private AddressDto address;
     private Boolean addressSameAsRegisteredOfficeAddress;
@@ -23,42 +26,67 @@ public class PscCommonDto implements PscDtoCommunal {
         // prevent direct instantiation
     }
 
+    /**
+     * @return The psc address dto
+     */
     @Override
     public AddressDto getAddress() {
         return address;
     }
 
+    /**
+     * @return True or false depending on if the address matches the
+     * registered office address.
+     */
     @Override
     public Boolean getAddressSameAsRegisteredOfficeAddress() {
         return addressSameAsRegisteredOfficeAddress;
     }
 
+    /**
+     * @return The ceased on date
+     */
     @Override
     public LocalDate getCeasedOn() {
         return ceasedOn;
     }
 
+    /**
+     * @return A list of natures of control.
+     */
     @Override
     public List<String> getNaturesOfControl() {
         return Optional.ofNullable(naturesOfControl).map(NaturesOfControlListDto::getList)
                 .orElse(null);
     }
 
+    /**
+     * @return The notification date.
+     */
     @Override
     public LocalDate getNotifiedOn() {
         return notifiedOn;
     }
 
+    /**
+     * @return The reference eTag.
+     */
     @Override
     public String getReferenceEtag() {
         return referenceEtag;
     }
 
+    /**
+     * @return The reference psc ID.
+     */
     @Override
     public String getReferencePscId() {
         return referencePscId;
     }
 
+    /**
+     * @return The psc register entry date.
+     */
     @Override
     public LocalDate getRegisterEntryDate() {
         return registerEntryDate;

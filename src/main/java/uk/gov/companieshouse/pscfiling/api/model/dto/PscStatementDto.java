@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The Psc statement dto.
+ */
 @JsonDeserialize(builder = PscStatementDto.Builder.class)
 public class PscStatementDto {
 
@@ -20,23 +23,37 @@ public class PscStatementDto {
     private PscStatementDto() {
         // prevent direct instantiation
     }
-
+    /**
+     * @return The reference eTag.
+     */
     public String getReferenceEtag() {
         return referenceEtag;
     }
 
+    /**
+     * @return The reference statement Id.
+     */
     public String getReferenceStatementId() {
         return referenceStatementId;
     }
 
+    /**
+     * @return The restrictions notice withdrawal reason.
+     */
     public String getRestrictionsNoticeWithdrawalReason() {
         return restrictionsNoticeWithdrawalReason;
     }
 
+    /**
+     * @return The statement action date.
+     */
     public LocalDate getStatementActionDate() {
         return statementActionDate;
     }
 
+    /**
+     * @return The statement type.
+     */
     public String getStatementType() {
         return statementType;
     }

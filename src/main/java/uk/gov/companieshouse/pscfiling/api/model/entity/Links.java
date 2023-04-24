@@ -4,6 +4,9 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+/**
+ * The Links object.
+ */
 public class Links {
     public static final String PREFIX_PRIVATE = "/private";
     private final URI self;
@@ -14,10 +17,16 @@ public class Links {
         this.validationStatus = validationStatus;
     }
 
+    /**
+     * @return The psc self uri link
+     */
     public URI getSelf() {
         return self;
     }
 
+    /**
+     * @return The psc validation status uri link.
+     */
     public URI getValidationStatus() {
         return validationStatus;
     }

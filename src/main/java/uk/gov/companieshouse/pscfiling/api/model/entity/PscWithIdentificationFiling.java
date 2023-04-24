@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * The psc with identification filing entity model.
+ */
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscWithIdentificationFiling extends PscCommon implements PscCommunal, Touchable {
@@ -31,22 +34,37 @@ public class PscWithIdentificationFiling extends PscCommon implements PscCommuna
         // required by Spring JPA
     }
 
+    /**
+     * @return The entity Id.
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * @return The psc name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return The psc identification object.
+     */
     public Identification getIdentification() {
         return identification;
     }
 
+    /**
+     * @return The statement action date.
+     */
     public LocalDate getStatementActionDate() {
         return statementActionDate;
     }
 
+    /**
+     * @return The statement type.
+     */
     public String getStatementType() {
         return statementType;
     }

@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The Address Dto model.
+ */
 @JsonDeserialize(builder = AddressDto.Builder.class)
 public class AddressDto {
 
@@ -28,38 +31,65 @@ public class AddressDto {
         // prevent direct instantiation
     }
 
+    /**
+     * @return First line of the address.
+     */
     public String getAddressLine1() {
         return addressLine1;
     }
 
+    /**
+     * @return Second line of the address.
+     */
     public String getAddressLine2() {
         return addressLine2;
     }
 
+    /**
+     * @return The care of.
+     */
     public String getCareOf() {
         return careOf;
     }
 
+    /**
+     * @return The address county.
+     */
     public String getCountry() {
         return country;
     }
 
+    /**
+     * @return The address locality.
+     */
     public String getLocality() {
         return locality;
     }
 
+    /**
+     * @return The address po box.
+     */
     public String getPoBox() {
         return poBox;
     }
 
+    /**
+     * @return The address postal code.
+     */
     public String getPostalCode() {
         return postalCode;
     }
 
+    /**
+     * @return The address premises.
+     */
     public String getPremises() {
         return premises;
     }
 
+    /**
+     * @return The address region.
+     */
     public String getRegion() {
         return region;
     }

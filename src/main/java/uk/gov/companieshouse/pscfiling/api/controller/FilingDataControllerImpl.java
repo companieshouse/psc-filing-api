@@ -15,6 +15,9 @@ import uk.gov.companieshouse.pscfiling.api.service.FilingDataService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
+/**
+ * Filing data controller that handles filing data.
+ */
 @RestController
 @RequestMapping(
         "/private/transactions/{transactionId}/persons-with-significant-control/{pscType:"

@@ -10,6 +10,9 @@ import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.exception.NotImplementedException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
+/**
+ * Filing data controller that handles filing data.
+ */
 public interface FilingDataController {
 
     /**

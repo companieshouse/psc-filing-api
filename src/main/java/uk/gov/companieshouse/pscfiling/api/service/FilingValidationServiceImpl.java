@@ -13,6 +13,9 @@ import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingForPscTypeValid;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 
+/**
+ * The filing validation service layer.
+ */
 @Service
 public class FilingValidationServiceImpl implements FilingValidationService {
     private final Map<PscTypeConstants, ? extends FilingForPscTypeValid> filingValidByPscType;

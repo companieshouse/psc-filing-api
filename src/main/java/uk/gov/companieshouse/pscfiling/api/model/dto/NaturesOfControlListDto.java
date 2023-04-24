@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * A dto to store a list of natures of control.
+ */
 public class NaturesOfControlListDto extends ArrayList<String> {
     public NaturesOfControlListDto() {
     }
@@ -12,6 +15,9 @@ public class NaturesOfControlListDto extends ArrayList<String> {
         super(c);
     }
 
+    /**
+     * @return a list of natures of control.
+     */
     public List<String> getList() {
         return this;
     }

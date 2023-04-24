@@ -12,6 +12,9 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * An entity model to store common fields among PSC types.
+ */
 public class PscCommon implements PscCommunal, Touchable {
     @JsonMerge
     private Address address;
@@ -41,56 +44,89 @@ public class PscCommon implements PscCommunal, Touchable {
         return addressSameAsRegisteredOfficeAddress;
     }
 
+    /**
+     * @return The ceased on date
+     */
     @Override
     public LocalDate getCeasedOn() {
         return ceasedOn;
     }
 
+    /**
+     * @return The entity creation timestamp.
+     */
     @Override
     public Instant getCreatedAt() {
         return createdAt;
     }
 
+    /**
+     * @return The entity reference eTag.
+     */
     @Override
     public String getEtag() {
         return etag;
     }
 
+    /**
+     * @return The psc entity kind
+     */
     @Override
     public String getKind() {
         return kind;
     }
 
+    /**
+     * @return The entity links object
+     */
     @Override
     public Links getLinks() {
         return links;
     }
 
+    /**
+     * @return A list of natures of control
+     */
     @Override
     public List<String> getNaturesOfControl() {
         return naturesOfControl;
     }
 
+    /**
+     * @return The psc notification date.
+     */
     @Override
     public LocalDate getNotifiedOn() {
         return notifiedOn;
     }
 
+    /**
+     * @return The psc reference eTag.
+     */
     @Override
     public String getReferenceEtag() {
         return referenceEtag;
     }
 
+    /**
+     * @return The reference psc ID.
+     */
     @Override
     public String getReferencePscId() {
         return referencePscId;
     }
 
+    /**
+     * @return The psc register entry date.
+     */
     @Override
     public LocalDate getRegisterEntryDate() {
         return registerEntryDate;
     }
 
+    /**
+     * @return A timestamp for the latest entity update.
+     */
     @Override
     public Instant getUpdatedAt() {
         return updatedAt;

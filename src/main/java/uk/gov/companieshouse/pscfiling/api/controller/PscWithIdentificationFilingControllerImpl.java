@@ -33,6 +33,9 @@ import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingSe
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
+/**
+ * PSC with identification filing controller that handles legal person and corporate entity data.
+ */
 @RestController
 @RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType:"
         + "(?:legal-person|corporate-entity)}")
@@ -151,6 +154,16 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
                         .build());
     }
 
+    /**
+     * Stores a filing in the database then updates with Links object.
+     *
+     * @param entity            the PSC filing
+     * @param transId           the transaction ID
+     * @param request           the HttpServletRequest
+     * @param logMap            a list of parameters to include in a log message
+     * @param pscType           the PSC type
+     * @return PscWithIdentificationFiling
+     */
     private PscWithIdentificationFiling saveFilingWithLinks(final PscWithIdentificationFiling entity,
                                                             final String transId, final HttpServletRequest request,
                                                             final Map<String, Object> logMap,
@@ -168,6 +181,14 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
         return resaved;
     }
 
+    /**
+     * Builds a Links object containing a self uri link and a validation status link.
+     *
+     * @param request           the HttpServletRequest
+     * @param savedFilingId     the PSC Filing ID
+     * @param pscType           the PSC type
+     * @return Links object
+     */
     private Links buildLinks(final HttpServletRequest request, String savedFilingId,
                              PscTypeConstants pscType) {
         final var objectId = new ObjectId(Objects.requireNonNull(savedFilingId));

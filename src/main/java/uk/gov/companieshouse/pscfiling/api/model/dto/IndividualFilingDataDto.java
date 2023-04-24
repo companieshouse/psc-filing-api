@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+/**
+ * The Individual filing data dto
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IndividualFilingDataDto implements FilingDtoCommunal {
 
@@ -23,30 +26,51 @@ public class IndividualFilingDataDto implements FilingDtoCommunal {
         // prevent direct instantiation
     }
 
+    /**
+     * @return the individual's title
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * @return the individual's first name
+     */
     public String getFirstName() {
         return firstName;
     }
 
+    /**
+     * @return the individual's other forenames
+     */
     public String getOtherForenames() {
         return otherForenames;
     }
 
+    /**
+     * @return the individual's last name
+     */
     public String getLastName() {
         return lastName;
     }
 
+    /**
+     * @return the individual's date of birth
+     */
     public String getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /**
+     * @return the date the individual ceased on
+     */
     public String getCeasedOn() {
         return ceasedOn;
     }
 
+    /**
+     * @return the date the entry was registered on
+     */
     public String getRegisterEntryDate() {
         return registerEntryDate;
     }

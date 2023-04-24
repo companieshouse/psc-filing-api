@@ -13,6 +13,10 @@ public class PscRegisterEntryDateValidator extends BaseFilingValidator
         super(validation);
     }
 
+    /**
+     * Validates that the psc register entry date is after the ceased on date.
+     * @param validationContext     the validation context
+     */
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 

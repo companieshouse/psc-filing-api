@@ -3,6 +3,9 @@ package uk.gov.companieshouse.pscfiling.api.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class for filing data.
+ */
 @Configuration
 public class FilingDataConfig {
     @Value("${filing.data.description.psc07}")

@@ -15,6 +15,9 @@ import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
+/**
+ * Interacts with the external CHS PSC API service to retrieve PSCs.
+ */
 @Service
 public class PscDetailsServiceImpl implements PscDetailsService {
     private static final String UNEXPECTED_STATUS_CODE = "Unexpected Status Code received";

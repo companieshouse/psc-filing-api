@@ -18,6 +18,10 @@ public class PscIsActiveValidator extends BaseFilingValidator {
         this.pscDetailsService = pscDetailsService;
     }
 
+    /**
+     * Validates that the psc entity is in an active state.
+     * @param validationContext     the validation context
+     */
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
