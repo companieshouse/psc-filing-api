@@ -38,24 +38,25 @@ Configuration
 -------------
 System properties for psc-filing-api are defined in `application.properties`. These are normally configured per environment.
 
-Variable| Description                                                                                 | Example                                                                        |
---------------------|---------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
-MONGO_PSC_API_DB_NAME| The name of the collection responsible for storing PSC filings                              | transactions_pscs                                                              |
-MONGODB_URL| The URL of the MongoDB instance where documents and application data should be stored       | mongodb://mongohost:27017/transactions_pscs                                                     |
+Variable| Description                                                                                        | Example                                                                        |
+--------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+MONGO_PSC_API_DB_NAME| The name of the collection responsible for storing PSC filings                                     | transactions_pscs                                                              |
+MONGODB_URL| The URL of the MongoDB instance where documents and application data should be stored              | mongodb://mongohost:27017/transactions_pscs                                    |
 FEATURE_FLAG_TRANSACTIONS_CLOSABLE| Flag used to stop transactions being closed and sent to CHIPS, by causing validatio to always fail | true                                                                           |
-PSC07_DESCRIPTION| Used in Confirmation, Acceptance and Rejection emails to describe filing        | (PSC07) Notice of ceasing to be a Person of Significant Control for {0} on {1} |
-PATCH_MAX_RETRIES| required by api-helper-java library                                           | 3                                                                              |
-REF_PATTERN| The pattern that randomly generated submission numbers will follow                  | ############                                                                   |
-REF_SYMBOL_SET| Set of characters permitted in randomly generated submission numbers          | abc123                                                                         |
-MANAGEMENT_ENDPOINTS_ENABLED_BY_DEFAULT|                             | false                                                                          |
-MANAGEMENT_ENDPOINT_HEALTH_ENABLED|                             | true                                                                           |
-MANAGEMENT_ENDPOINTS_WEB_PATH_MAPPING_HEALTH|                 | healthcheck                                                                    |
-MANAGEMENT_ENDPOINTS_WEB_BASE_PATH|                              | /persons-with-significant-control                                              |
-LOGGING_LEVEL| Log message granularity                         | INFO                                                                           |
-REQUEST_LOGGING_LEVEL| Request log message granularity                       | WARN                                                                           |
-AWS_REGION| The AWS region that psc-filing-api will use when connecting to AWS services                 | aws-region                                                                     |
-AWS_ACCESS_KEY_ID| The access key ID of the AWS account that psc-filing-api will use when connecting to AWS    | MYAWSACCESSKEYID                                                               |
-AWS_SECRET_ACCESS_KEY| The secret access key of the AWS account that psc-filing-api will use when connecting to AWS | MYAWSSECRETACCESSKEY                                                           |
+PSC07_DESCRIPTION| Used in Confirmation, Acceptance and Rejection emails to describe filing                           | (PSC07) Notice of ceasing to be a Person of Significant Control for {0} on {1} |
+PATCH_MAX_RETRIES| required by api-helper-java library                                                                | 3                                                                              |
+REF_PATTERN| The pattern that randomly generated submission numbers will follow                                 | ############                                                                   |
+REF_SYMBOL_SET| Set of characters permitted in randomly generated submission numbers                               | abc123                                                                         |
+MANAGEMENT_ENDPOINTS_ENABLED_BY_DEFAULT|                                                                                                    | false                                                                          |
+MANAGEMENT_ENDPOINT_HEALTH_ENABLED|                                                                                                    | true                                                                           |
+MANAGEMENT_ENDPOINTS_WEB_PATH_MAPPING_HEALTH|                                                                                                    | healthcheck                                                                    |
+MANAGEMENT_ENDPOINTS_WEB_BASE_PATH|                                                                                                    | /persons-with-significant-control                                              |
+LOGGING_LEVEL| Log message granularity                                                                            | INFO                                                                           |
+WEB_LOGGING_LEVEL| Lists endpoints on Application start up if set to TRACE                                            | TRACE                                                                          |
+REQUEST_LOGGING_LEVEL| Request log message granularity                                                                    | WARN                                                                           |
+AWS_REGION| The AWS region that psc-filing-api will use when connecting to AWS services                        | aws-region                                                                     |
+AWS_ACCESS_KEY_ID| The access key ID of the AWS account that psc-filing-api will use when connecting to AWS           | MYAWSACCESSKEYID                                                               |
+AWS_SECRET_ACCESS_KEY| The secret access key of the AWS account that psc-filing-api will use when connecting to AWS       | MYAWSSECRETACCESSKEY                                                           |
 
 ## Building the docker image 
 
