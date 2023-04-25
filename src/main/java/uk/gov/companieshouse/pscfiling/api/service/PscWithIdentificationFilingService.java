@@ -17,7 +17,7 @@ public interface PscWithIdentificationFilingService extends PatchService<PscWith
      * @param filing the PSCWithIdentificationFiling entity to store
      * @return the stored entity
      */
-    PscWithIdentificationFiling createFiling(final PscWithIdentificationFiling filing);
+    PscWithIdentificationFiling save(final PscWithIdentificationFiling filing);
 
     /**
      * Retrieve a stored PSCWithIdentificationFiling entity by Filing ID.
@@ -25,7 +25,7 @@ public interface PscWithIdentificationFilingService extends PatchService<PscWith
      * @param filingId   the Filing ID
      * @return the stored entity if found
      */
-    Optional<PscWithIdentificationFiling> getFiling(final String filingId);
+    Optional<PscWithIdentificationFiling> get(final String filingId);
 
     /**
      * Update a PSCFiling entity by Filing ID.
@@ -34,6 +34,6 @@ public interface PscWithIdentificationFilingService extends PatchService<PscWith
      * @param patchMap   a list of parameters to include in the patch
      * @return the patch result
      */
-    PatchResult updateFiling(final String filingId, final Map<String, Object> patchMap);
+    PatchResult patch(final String filingId, final Map<String, Object> patchMap);
 
 }

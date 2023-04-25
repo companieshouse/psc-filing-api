@@ -15,7 +15,7 @@ class FilingDataConfigTest {
     private FilingDataConfig filingDataConfig;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         filingDataConfig = new FilingDataConfig();
     }
 

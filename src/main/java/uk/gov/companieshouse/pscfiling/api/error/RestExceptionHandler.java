@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.Ordered;
@@ -39,7 +42,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceExcept
 import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
 import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
-import uk.gov.companieshouse.pscfiling.api.exception.PscFilingServiceException;
+import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
@@ -50,6 +53,7 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
  *     <li>JSON payload not readable/malformed</li>
  *     <li>{@link InvalidFilingException}</li>
  *     <li>{@link FilingResourceNotFoundException}</li>
+ *     <li>{@link MergePatchException}</li>
  *     <li>{@link TransactionServiceException}</li>
  *     <li>{@link PscServiceException}</li>
  *     <li>other {@link RuntimeException}</li>
@@ -60,14 +64,15 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static final String CAUSE = "cause";
-    private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$", Pattern.MULTILINE);
+    private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$",
+            Pattern.MULTILINE);
 
     @Autowired
     @Qualifier(value = "validation")
     protected Map<String, String> validation;
     private final Logger chLogger;
 
-    public RestExceptionHandler(Map<String, String> validation, final Logger logger) {
+    public RestExceptionHandler(final Map<String, String> validation, final Logger logger) {
         this.validation = validation;
         this.chLogger = logger;
     }
@@ -76,42 +81,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             final HttpMessageNotReadableException ex, final HttpHeaders headers,
             final HttpStatus status, final WebRequest request) {
-        final var cause = ex.getCause();
-        final var baseMessage = "JSON parse error: ";
-        final ApiError error;
-        var message = "";
 
-        if (cause instanceof JsonProcessingException) {
-            final var jpe = (JsonProcessingException) cause;
-            final var location = jpe.getLocation();
-            var jsonPath = "$";
-            Object rejectedValue = null;
-
-            if (cause instanceof MismatchedInputException) {
-                final var fieldNameOpt = ((MismatchedInputException) cause).getPath()
-                        .stream()
-                        .findFirst()
-                        .map(JsonMappingException.Reference::getFieldName);
-                jsonPath += fieldNameOpt.map(f -> "." + f).orElse("");
-
-                message = getParseErrorMessage(cause.getMessage());
-                if (jpe instanceof InvalidFormatException) {
-                    rejectedValue = ((InvalidFormatException) cause).getValue();
-                }
-            }
-            else {
-                message = redactErrorMessage(cause.getMessage());
-            }
-            error = buildRequestBodyError(baseMessage + message, jsonPath, rejectedValue);
-            addLocationInfo(error, location);
-        }
-        else {
-            message = redactErrorMessage(ex.getMostSpecificCause().getMessage());
-            error = buildRequestBodyError(baseMessage + message, "$", null);
-
-        }
-        logError(request, String.format("Message not readable: %s", message), ex);
-        return ResponseEntity.badRequest().body(new ApiErrors(List.of(error)));
+        return createRedactedErrorResponseEntity(ex, request, ex.getCause(), "JSON parse error: ");
     }
 
     @Override
@@ -129,7 +100,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
     public ApiErrors handleInvalidFilingException(final InvalidFilingException ex,
-            WebRequest request) {
+            final WebRequest request) {
         final var fieldErrors = ex.getFieldErrors();
 
         final var errorList = fieldErrors.stream()
@@ -141,11 +112,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
+    @ExceptionHandler(MergePatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ResponseEntity<Object> handleMergePatchException(final MergePatchException ex,
+            final WebRequest request) {
+        return createRedactedErrorResponseEntity(ex, request, ex.getCause(),
+                "Failed to merge patch request: ");
+    }
+
     @ExceptionHandler(ConflictingFilingException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
     public ApiErrors handleConflictingFilingException(final ConflictingFilingException ex,
-                                                  WebRequest request) {
+                                                  final WebRequest request) {
         final var fieldErrors = ex.getFieldErrors();
 
         final var errorList = fieldErrors.stream()
@@ -175,8 +155,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({
             PscServiceException.class,
             TransactionServiceException.class,
-            CompanyProfileServiceException.class,
-            PscFilingServiceException.class
+            CompanyProfileServiceException.class
     })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
@@ -234,14 +213,65 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .orElse(null);
     }
 
-    private static String getParseErrorMessage(final String s) {
-        final var matcher = PARSE_MESSAGE_PATTERN.matcher(s);
+    private static String getMismatchErrorMessage(
+            final MismatchedInputException mismatchedInputException) {
+        if (mismatchedInputException instanceof UnrecognizedPropertyException) {
+            final var unrecognized = (UnrecognizedPropertyException) mismatchedInputException;
 
-        return matcher.find() ? matcher.group(1) : "";
+            return MessageFormat.format("Unknown property \"{0}\"", unrecognized.getPropertyName());
+        }
+        else {
+            final var message = mismatchedInputException.getMessage();
+            final var parseMatcher = PARSE_MESSAGE_PATTERN.matcher(message);
+
+            return parseMatcher.find() ? parseMatcher.group(1) : "";
+        }
+
     }
 
     private String redactErrorMessage(final String s) {
         return StringUtils.substringBefore(s, ":");
+    }
+
+    private ResponseEntity<Object> createRedactedErrorResponseEntity(final RuntimeException ex,
+            final WebRequest request, final Throwable cause, final String baseMessage) {
+        final ApiError error;
+        String message;
+
+        if (cause instanceof JsonProcessingException) {
+            final var jpe = (JsonProcessingException) cause;
+            final var location = jpe.getLocation();
+            var jsonPath = "$";
+            Object rejectedValue = null;
+
+            if (cause instanceof MismatchedInputException) {
+                message = getMismatchErrorMessage((MismatchedInputException) cause);
+
+                final var fieldNameOpt = ((MismatchedInputException) cause).getPath()
+                        .stream()
+                        .findFirst()
+                        .map(JsonMappingException.Reference::getFieldName);
+                jsonPath += fieldNameOpt.map(f -> "." + f)
+                        .orElse("");
+
+                if (jpe instanceof InvalidFormatException) {
+                    rejectedValue = ((InvalidFormatException) cause).getValue();
+                }
+            }
+            else {
+                message = redactErrorMessage(cause.getMessage());
+            }
+            error = buildRequestBodyError(baseMessage + message, jsonPath, rejectedValue);
+            addLocationInfo(error, location);
+        }
+        else {
+            message = redactErrorMessage(getMostSpecificCause(ex).getMessage());
+            error = buildRequestBodyError(baseMessage + message, "$", null);
+
+        }
+        logError(request, String.format("Message not readable: %s", message), ex);
+        return ResponseEntity.badRequest()
+                .body(new ApiErrors(List.of(error)));
     }
 
     private static String getRequestURI(final WebRequest request) {
@@ -265,12 +295,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return error;
     }
 
-    private void logError(WebRequest request, String msg, Exception ex) {
+    private void logError(final WebRequest request, final String msg, final Exception ex) {
         logError(request, msg, ex, null);
     }
 
-    private void logError(WebRequest request, String msg, Exception ex,
-            @Nullable List<ApiError> apiErrorList) {
+    private void logError(final WebRequest request, final String msg, final Exception ex,
+            @Nullable final List<ApiError> apiErrorList) {
         final Map<String, Object> logMap = new HashMap<>();
         final var servletRequest = ((ServletWebRequest) request).getRequest();
         logMap.put("path", servletRequest.getRequestURI());
@@ -279,4 +309,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         chLogger.error(msg, ex, logMap);
     }
 
+    public static Throwable getMostSpecificCause(final Throwable original) {
+        final Throwable rootCause = ExceptionUtils.getRootCause(original);
+
+        return rootCause != null ? rootCause : original;
+    }
 }

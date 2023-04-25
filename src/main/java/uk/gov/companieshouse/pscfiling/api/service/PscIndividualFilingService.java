@@ -17,7 +17,7 @@ public interface PscIndividualFilingService extends PatchService<PscIndividualFi
      * @param filing the PSCIndividualFiling entity to store
      * @return the stored entity
      */
-    PscIndividualFiling createFiling(final PscIndividualFiling filing);
+    PscIndividualFiling save(final PscIndividualFiling filing);
 
     /**
      * Retrieve a stored PSCIndividualFiling entity by Filing ID.
@@ -25,7 +25,7 @@ public interface PscIndividualFilingService extends PatchService<PscIndividualFi
      * @param filingId   the Filing ID
      * @return the stored entity if found
      */
-    Optional<PscIndividualFiling> getFiling(final String filingId);
+    Optional<PscIndividualFiling> get(final String filingId);
 
     /**
      * Update a PSCFiling entity by Filing ID.
@@ -34,6 +34,6 @@ public interface PscIndividualFilingService extends PatchService<PscIndividualFi
      * @param patchMap   a list of parameters to include in the patch
      * @return the patch result
      */
-    PatchResult updateFiling(final String filingId, final Map<String, Object> patchMap);
+    PatchResult patch(final String filingId, final Map<String, Object> patchMap);
 
 }
