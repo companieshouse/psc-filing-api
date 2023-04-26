@@ -27,9 +27,6 @@ public interface PscFilingService {
      */
     PscWithIdentificationFiling save(PscWithIdentificationFiling filing);
 
-    @Deprecated
-    Optional<PscCommunal> get(String pscFilingId, String transactionId);
-
     /**
      * Retrieve a stored PSCFiling entity by Filing ID.
      *

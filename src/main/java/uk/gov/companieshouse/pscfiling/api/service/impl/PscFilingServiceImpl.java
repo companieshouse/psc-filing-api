@@ -63,11 +63,6 @@ public class PscFilingServiceImpl implements PscFilingService {
     }
 
     @Override
-    public Optional<PscCommunal> get(String pscFilingId, String transactionId) {
-        return Optional.empty();
-    }
-
-    @Override
     public boolean requestMatchesResourceSelf(final HttpServletRequest request, final PscCommunal pscFiling) {
         final var selfLinkUri = pscFiling.getLinks().getSelf();
         final URI requestUri;
