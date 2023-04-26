@@ -20,7 +20,7 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 /**
- * Base class responsible for retrieving/updating transaction resources and handling patch failures
+ * Base class responsible for retrieving/updating transaction resources
  */
 public class BaseFilingControllerImpl {
     public static final String VALIDATION_STATUS = "validation_status";

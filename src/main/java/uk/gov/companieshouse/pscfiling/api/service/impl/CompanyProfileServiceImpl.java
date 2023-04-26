@@ -11,9 +11,6 @@ import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceExcept
 import uk.gov.companieshouse.pscfiling.api.service.CompanyProfileService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
-/**
- * The company profile service layer.
- */
 @Service
 public class CompanyProfileServiceImpl implements CompanyProfileService {
 
