@@ -38,9 +38,6 @@ import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
-/**
- * PSC individual filing controller that handles individuals data.
- */
 @RestController
 @RequestMapping(
         "/transactions/{transactionId}/persons-with-significant-control/{pscType:"

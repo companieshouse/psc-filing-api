@@ -32,9 +32,6 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
-/**
- * Validation status controller that handles validation of the filing resource.
- */
 @RestController
 @RequestMapping("/transactions/{transactionId}/persons-with-significant-control/")
 public class ValidationStatusControllerImpl implements ValidationStatusController {
@@ -63,15 +60,6 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
         logger.info(String.format("Setting \"feature.flag.transactions.closable\" to: %s", isTransactionsClosableEnabled));
     }
 
-    /**
-     * Controller endpoint: Validate the filing resource and return the status.
-     *
-     * @param transId       the transaction ID
-     * @param filingResource the Filing Resource ID
-     * @param transaction    the Transaction
-     * @param request        the servlet request
-     * @return ValidationStatusResponse object
-     */
     @Override
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)

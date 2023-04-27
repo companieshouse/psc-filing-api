@@ -38,9 +38,6 @@ import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingSe
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
-/**
- * PSC with identification filing controller that handles legal person and corporate entity data.
- */
 @RestController
 @RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType:"
         + "(?:legal-person|corporate-entity)}")
