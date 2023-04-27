@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The Identification Dto
+ */
 @JsonDeserialize(builder = IdentificationDto.Builder.class)
 public class IdentificationDto {
 
@@ -21,22 +24,37 @@ public class IdentificationDto {
         // prevent direct instantiation
     }
 
+    /**
+     * @return the country of registration
+     */
     public String getCountryRegistered() {
         return countryRegistered;
     }
 
+    /**
+     * @return the place of registration
+     */
     public String getPlaceRegistered() {
         return placeRegistered;
     }
 
+    /**
+     * @return the registration number
+     */
     public String getRegistrationNumber() {
         return registrationNumber;
     }
 
+    /**
+     * @return the legal authority
+     */
     public String getLegalAuthority() {
         return legalAuthority;
     }
 
+    /**
+     * @return the legal form
+     */
     public String getLegalForm() {
         return legalForm;
     }

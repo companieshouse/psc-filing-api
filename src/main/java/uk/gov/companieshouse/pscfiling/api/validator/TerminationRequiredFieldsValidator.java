@@ -15,6 +15,10 @@ public class TerminationRequiredFieldsValidator extends BaseFilingValidator
         super(validation);
     }
 
+    /**
+     * Validates that all required fields are present before a termination can take place.
+     * @param validationContext     the validation context
+     */
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 

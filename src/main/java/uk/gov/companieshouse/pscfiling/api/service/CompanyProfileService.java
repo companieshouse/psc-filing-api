@@ -4,6 +4,10 @@ import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceException;
 
+/**
+ * The company profile service layer responsible for
+ * retrieving company profile data from Company Profile API.
+ */
 public interface CompanyProfileService {
 
     /**

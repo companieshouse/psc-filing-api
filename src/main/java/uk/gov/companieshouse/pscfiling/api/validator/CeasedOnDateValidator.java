@@ -18,6 +18,10 @@ public class CeasedOnDateValidator extends BaseFilingValidator
         this.pscDetailsService = pscDetailsService;
     }
 
+    /**
+     * Validates that the eased on date is after the notified on date.
+     * @param validationContext     the validation context
+     */
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 

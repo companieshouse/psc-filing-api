@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * A entity model to store an individual's name.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NameElements {
 
@@ -30,18 +33,30 @@ public class NameElements {
         this.title = title;
     }
 
+    /**
+     * @return the individual's forename
+     */
     public String getForename() {
         return forename;
     }
 
+    /**
+     * @return the individual's other forenames
+     */
     public String getOtherForenames() {
         return otherForenames;
     }
 
+    /**
+     * @return the individual's surname
+     */
     public String getSurname() {
         return surname;
     }
 
+    /**
+     * @return the individual's title
+     */
     public String getTitle() {
         return title;
     }

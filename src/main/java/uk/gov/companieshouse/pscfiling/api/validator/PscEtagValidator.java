@@ -22,6 +22,10 @@ public class PscEtagValidator extends BaseFilingValidator
         this.pscDetailsService = pscDetailsService;
     }
 
+    /**
+     * Validates that psc details eTag matches the dto eTag
+     * @param validationContext     the validation context
+     */
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 

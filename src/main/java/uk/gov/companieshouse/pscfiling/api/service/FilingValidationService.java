@@ -3,6 +3,10 @@ package uk.gov.companieshouse.pscfiling.api.service;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 
+/**
+ * The filing validation service layer that passes to the chain of validators
+ * as defined in ValidatorConfig.
+ */
 public interface FilingValidationService {
 
     /**

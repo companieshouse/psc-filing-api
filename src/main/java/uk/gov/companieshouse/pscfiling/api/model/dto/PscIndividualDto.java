@@ -10,6 +10,9 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The Psc Individual Dto.
+ */
 @JsonDeserialize(builder = PscIndividualDto.Builder.class)
 public class PscIndividualDto extends PscCommonDto implements PscDtoCommunal {
 
@@ -24,26 +27,44 @@ public class PscIndividualDto extends PscCommonDto implements PscDtoCommunal {
         // prevent instantiation
     }
 
+    /**
+     * @return The psc country of residence.
+     */
     public String getCountryOfResidence() {
         return countryOfResidence;
     }
 
+    /**
+     * @return The psc date of birth.
+     */
     public Date3TupleDto getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /**
+     * @return The name stored in a NameElementsDto object.
+     */
     public NameElementsDto getNameElements() {
         return nameElements;
     }
 
+    /**
+     * @return The psc nationality.
+     */
     public String getNationality() {
         return nationality;
     }
 
+    /**
+     * @return The psc residential address.
+     */
     public AddressDto getResidentialAddress() {
         return residentialAddress;
     }
 
+    /**
+     * @return True of False if the residential and correspondence address match.
+     */
     public Boolean getResidentialAddressSameAsCorrespondenceAddress() {
         return residentialAddressSameAsCorrespondenceAddress;
     }

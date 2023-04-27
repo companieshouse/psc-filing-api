@@ -18,6 +18,9 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
+/**
+ * PSC individual filing controller that handles individuals data.
+ */
 public interface PscIndividualFilingController {
     /**
      * Create an PSC Filing for an Individual.

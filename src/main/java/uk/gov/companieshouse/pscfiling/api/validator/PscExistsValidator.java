@@ -18,6 +18,10 @@ public class PscExistsValidator extends BaseFilingValidator
         this.pscDetailsService = pscDetailsService;
     }
 
+    /**
+     * Validates that the psc entity exists.
+     * @param validationContext     the validation context
+     */
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 

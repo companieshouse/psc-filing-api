@@ -10,6 +10,9 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The Psc with identification dto.
+ */
 @JsonDeserialize(builder = PscWithIdentificationDto.Builder.class)
 public class PscWithIdentificationDto extends PscCommonDto implements PscDtoCommunal {
     private IdentificationDto identification;
@@ -19,10 +22,16 @@ public class PscWithIdentificationDto extends PscCommonDto implements PscDtoComm
         // prevent instantiation
     }
 
+    /**
+     * @return The psc identificationDto object.
+     */
     public IdentificationDto getIdentification() {
         return identification;
     }
 
+    /**
+     * @return The psc name.
+     */
     public String getName() { return name;}
 
     @Override

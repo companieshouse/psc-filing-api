@@ -18,6 +18,9 @@ import uk.gov.companieshouse.api.util.security.Permission;
 import uk.gov.companieshouse.pscfiling.api.interceptor.CompanyInterceptor;
 import uk.gov.companieshouse.pscfiling.api.interceptor.RequestLoggingInterceptor;
 
+/**
+ * Configuration class for interceptor logging.
+ */
 @Configuration
 @ComponentScan("uk.gov.companieshouse.api")
 public class InterceptorConfig implements WebMvcConfigurer {

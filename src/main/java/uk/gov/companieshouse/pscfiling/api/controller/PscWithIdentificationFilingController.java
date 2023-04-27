@@ -18,6 +18,9 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 
+/**
+ * PSC with identification filing controller that handles legal person and corporate entity data.
+ */
 public interface PscWithIdentificationFilingController {
 
     /**

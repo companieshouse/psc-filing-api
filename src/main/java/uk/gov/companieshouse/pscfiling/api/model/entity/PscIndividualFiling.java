@@ -14,6 +14,9 @@ import java.util.function.Consumer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * The Psc Individual entity model.
+ */
 @Document(collection = "psc_submissions")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PscIndividualFiling extends PscCommon implements PscCommunal, Touchable {
@@ -36,38 +39,65 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
         // required by Spring JPA
     }
 
+    /**
+     * @return The entity id.
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * @return The psc country of residence.
+     */
     public String getCountryOfResidence() {
         return countryOfResidence;
     }
 
+    /**
+     * @return The psc date of birth.
+     */
     public Date3Tuple getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /**
+     * @return The name stored in a NameElementsDto object.
+     */
     public NameElements getNameElements() {
         return nameElements;
     }
 
+    /**
+     * @return The psc nationality.
+     */
     public String getNationality() {
         return nationality;
     }
 
+    /**
+     * @return The psc residential address.
+     */
     public Address getResidentialAddress() {
         return residentialAddress;
     }
 
+    /**
+     * @return True of False if the residential and correspondence address match.
+     */
     public Boolean getResidentialAddressSameAsCorrespondenceAddress() {
         return residentialAddressSameAsCorrespondenceAddress;
     }
 
+    /**
+     * @return The statement action date.
+     */
     public LocalDate getStatementActionDate() {
         return statementActionDate;
     }
 
+    /**
+     * @return The statement type.
+     */
     public String getStatementType() {
         return statementType;
     }

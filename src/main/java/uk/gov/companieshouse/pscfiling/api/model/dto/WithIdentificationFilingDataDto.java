@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
 
+/**
+ * The with identification filing data dto.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
 
@@ -24,31 +27,58 @@ public class WithIdentificationFilingDataDto implements FilingDtoCommunal {
         // prevent direct instantiation
     }
 
+    /**
+     * @return The ceased on date.
+     */
     public String getCeasedOn() {
         return ceasedOn;
     }
+
+    /**
+     * @return The psc name
+     */
     public String getName() {
         return name;
     }
+
+    /**
+     * @return The register entry date.
+     */
     public String getRegisterEntryDate() {
         return registerEntryDate;
     }
+
+    /**
+     * @return The country registered.
+     */
     public String getCountryRegistered() {
         return countryRegistered;
     }
 
+    /**
+     * @return The place registered.
+     */
     public String getPlaceRegistered() {
         return placeRegistered;
     }
 
+    /**
+     * @return The registration number.
+     */
     public String getRegistrationNumber() {
         return registrationNumber;
     }
 
+    /**
+     * @return The legal authority.
+     */
     public String getLegalAuthority() {
         return legalAuthority;
     }
 
+    /**
+     * @return The legal form.
+     */
     public String getLegalForm() {
         return legalForm;
     }

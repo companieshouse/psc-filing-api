@@ -19,6 +19,9 @@ import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
+/**
+ * Base class responsible for retrieving/updating transaction resources
+ */
 public class BaseFilingControllerImpl {
     public static final String VALIDATION_STATUS = "validation_status";
     protected final TransactionService transactionService;
@@ -27,6 +30,15 @@ public class BaseFilingControllerImpl {
     protected final Clock clock;
     protected final Logger logger;
 
+    /**
+     * Construct a BaseFilingControllerImpl
+     *
+     * @param transactionService    the {@link TransactionService} dependency
+     * @param pscFilingService      the {@link PscFilingService} dependency
+     * @param filingMapper          the {@link PscMapper} dependency
+     * @param clock                 the {@link Clock} dependency
+     * @param logger                the {@link Logger} dependency
+     */
     public BaseFilingControllerImpl(final TransactionService transactionService,
                                     final PscFilingService pscFilingService, final PscMapper filingMapper,
                                     final Clock clock, final Logger logger) {
@@ -50,6 +62,14 @@ public class BaseFilingControllerImpl {
         return request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
     }
 
+    /**
+     * Retrieves the transaction resource
+     *
+     * @param transId           the transaction ID.
+     * @param transaction       the transaction resource.
+     * @param logMap            a list of parameters to include in a log message
+     * @param passthroughHeader the passthroughHeader, includes authorisation for transaction fetch
+     */
     protected Transaction getTransaction(final String transId, Transaction transaction, final Map<String, Object> logMap,
                                          final String passthroughHeader) {
         if (transaction == null) {
@@ -60,7 +80,14 @@ public class BaseFilingControllerImpl {
         return transaction;
     }
 
-    protected void updateTransactionResources(final Transaction transaction, final Links links) {
+    /**
+     * Updates the transaction resource
+     *
+     * @param transaction       the transaction resource.
+     * @param links             the links, providing resource uri and validation status links
+     *
+     */
+    protected void updateTransactionResources(Transaction transaction, Links links) {
         final var resourceMap = buildResourceMap(links);
         transaction.setResources(resourceMap);
         transactionService.updateTransaction(transaction);

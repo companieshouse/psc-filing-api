@@ -9,6 +9,9 @@ import java.util.function.Consumer;
 import javax.validation.constraints.NotNull;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+/**
+ * The Address entity model.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Address {
 
@@ -28,38 +31,65 @@ public class Address {
     private Address() {
     }
 
+    /**
+     * @return First line of the address.
+     */
     public String getAddressLine1() {
         return addressLine1;
     }
 
+    /**
+     * @return Second line of the address.
+     */
     public String getAddressLine2() {
         return addressLine2;
     }
 
+    /**
+     * @return The care of.
+     */
     public String getCareOf() {
         return careOf;
     }
 
+    /**
+     * @return The address county.
+     */
     public String getCountry() {
         return country;
     }
 
+    /**
+     * @return The address locality.
+     */
     public String getLocality() {
         return locality;
     }
 
+    /**
+     * @return The address po box.
+     */
     public String getPoBox() {
         return poBox;
     }
 
+    /**
+     * @return The address postal code.
+     */
     public String getPostalCode() {
         return postalCode;
     }
 
+    /**
+     * @return The address premises.
+     */
     public String getPremises() {
         return premises;
     }
 
+    /**
+     * @return The address region.
+     */
     public String getRegion() {
         return region;
     }

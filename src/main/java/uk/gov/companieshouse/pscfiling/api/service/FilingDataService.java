@@ -9,7 +9,6 @@ import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
  */
 public interface FilingDataService {
 
-
     /**
      * @param filingId          the PSC Filing id
      * @param pscType           the PSC type
