@@ -55,40 +55,37 @@ package error {
         +getValue(): String
     }
 
-
-    class ApiErrors {
-    -errors: Set<ApiError>
-
-    +add(ApiError): boolean
-    +addAll(Collection<ApiError>): boolean
-    +hasErrors(): boolean
-    +contains(ApiError): boolean
-    +getErrors(): Set<ApiError> <<unmodifiable>>
-    +getErrorCount(): int
+    enum RetrievalFailureReason <<enumeration>> {
+        FILING_NOT_FOUND
     }
 
     class RestExceptionHandler {
-        {static}-CAUSE
-        {static}-PARSE_MESSAGE_PATTERN: Pattern
-        -validation: chLogger: Logger
-        #Map<String, String>
-        #handleHttpMessageNotReadable(HttpMessageNotReadableException, HttpHeaders, HttpStatus, WebRequest): ResponseEntity
-        #handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException, HttpHeaders, HttpStatus, WebRequest): ResponseEntity
-        #handleExceptionInternal(Exception, Object, HttpHeaders, HttpStatus, WebRequest): ResponseEntity
-        +handleInvalidFilingException(InvalidFilingException, WebRequest): ApiErrors
-        +handleMergePatchException(MergePatchException, WebRequest): ResponseEntity
-        +handleConflictingFilingException(ConflictingFilingException, WebRequest): ApiErrors
-        +handleResourceNotFoundException(FilingResourceNotFoundException, WebRequest): ApiErrors
-        +handleServiceException(Exception, WebRequest): ApiErrors
-        +handleAllUncaughtException(RuntimeException, WebRequest): ApiErrors
+        ---
+        #handleHttpMessageNotReadable: ResponseEntity
+        #handleHttpMediaTypeNotSupported: ResponseEntity
+        #handleExceptionInternal: ResponseEntity
+        +handleInvalidFilingException: ApiErrors
+        +handleMergePatchException: ResponseEntity
+        +handleConflictingFilingException: ApiErrors
+        +handleResourceNotFoundException: ApiErrors
+        +handleServiceException: ApiErrors
+        +handleAllUncaughtException: ApiErrors
     }
 
-        enum RetrievalFailureReason <<enumeration>> {
-                FILING_NOT_FOUND
-            }
+        class ApiErrors {
+        -errors: Set<ApiError>
+
+        +add(ApiError): boolean
+        +addAll(Collection<ApiError>): boolean
+        +hasErrors(): boolean
+        +contains(ApiError): boolean
+        +getErrors(): Set<ApiError> <<unmodifiable>>
+        +getErrorCount(): int
+        }
 
 }
 
- ApiErrors"1" o-- "0..*" ApiError :"contains   "
+ ApiErrors "1 " o--- "0..*   " ApiError :"contains   "
+ ApiErrors <-- RestExceptionHandler : "uses"
 
 @enduml
