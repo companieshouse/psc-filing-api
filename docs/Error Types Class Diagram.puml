@@ -1,7 +1,6 @@
 @startuml
-'https://plantuml.com/class-diagram
-'interface Collection<E>
-'interface Set<E>
+
+title PSC Filing API: Error Class Structure
 skinparam BackgroundColor GhostWhite
 skinparam ArrowPadding 2
 skinparam linetype ortho
@@ -11,11 +10,25 @@ skinparam packageStyle frame
 set separator none
 left to right direction
 
+legend right
+|=Revision |=Date |
+|    0.1    |     04/05/2023    |
+end legend
+
 skinparam class {
   BackgroundColor MintCream
 }
 skinparam class<<enumeration>> {
   BackgroundColor MistyRose
+}
+
+package org.springframework.web.servlet.mvc.method.annotation {
+  class ResponseEntityExceptionHandler {
+          +handleHttpMessageNotReadable: ResponseEntity
+          +handleHttpMediaTypeNotSupported: ResponseEntity
+          +handleExceptionInternal: ResponseEntity
+
+  }
 }
 
 package uk.gov.companieshouse.api.error {
@@ -59,7 +72,7 @@ package error {
         FILING_NOT_FOUND
     }
 
-    class RestExceptionHandler {
+    class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ---
         #handleHttpMessageNotReadable: ResponseEntity
         #handleHttpMediaTypeNotSupported: ResponseEntity
