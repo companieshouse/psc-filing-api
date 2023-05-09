@@ -1,11 +1,12 @@
 @startuml
 
 title PSC Filing API: Error Class Structure
-skinparam BackgroundColor GhostWhite
+skinparam BackgroundColor White
 skinparam ArrowPadding 2
 skinparam linetype ortho
-skinparam PackageBackgroundColor WhiteSmoke
+skinparam PackageBackgroundColor White
 skinparam packageStyle frame
+skinparam defaultFontColor black
 'for grouping package names
 set separator none
 left to right direction
