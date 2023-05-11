@@ -1,0 +1,67 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+set separator none
+'left to right direction
+title PSC Filing API: Patch Service Schematic
+skinparam BackgroundColor White
+skinparam PackageBackgroundColor White
+skinparam ArrowPadding 2
+skinparam linetype ortho
+skinparam packageStyle frame
+skinparam groupInheritance 2
+'skinparam style strictuml
+'for grouping package names
+hide empty members
+
+legend right
+|=Revision |=Date |
+|    0.1    |     11/05/2023    |
+end legend
+
+skinparam class {
+  BackgroundColor MintCream
+}
+
+interface PatchService<T> <<external>> #GhostWhite{
++patchEntity(id : String) : PatchResult
++save(T, String) : int
++getMaxRetries() : int
+
+}
+interface MergeProcessor<T> <<external>> #GhostWhite{
++mergeEntity(T, Map<String, String)) : T
+}
+interface PostMergeProcessor<T> <<external>> #GhostWhite{
++onMerge(T)
+}
+interface PatchValidator<T> <<external>> #GhostWhite{
++validate(T) : ValidationResult
+}
+interface EntityProvider<T> <<external>> #GhostWhite{
++provide(id : String) : EntityRetrievalResult<T>
+}
+class EntityRetrievalResult<T> <<external>>{
++getVersion() : String
++getEntity() : T
++getFailureReason() : Enum
++isSuccess() : boolean
+}
+class ValidationResult <<external>>{
++isSuccess() : boolean
++getErrors() : Object
+}
+class PatchResult <<external>>{
++isSuccess() : boolean
++getErrors() : Object
+}
+
+PatchService --> EntityProvider :"provided by"
+PatchService --> MergeProcessor : "merged by"
+PatchService --> PostMergeProcessor : "      completed by"
+PatchService -> PatchValidator : "validated by"
+PatchService -- PatchResult: "produces"
+EntityProvider -- EntityRetrievalResult: "produces"
+PatchValidator -- ValidationResult: "produces"
+
+@enduml

@@ -1,0 +1,85 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+set separator none
+'left to right direction
+title PSC Filing API: Patch Service Schematic Implementation for PscIndividualFiling
+skinparam BackgroundColor White
+skinparam PackageBackgroundColor White
+skinparam ArrowPadding 2
+skinparam linetype ortho
+skinparam packageStyle frame
+skinparam groupInheritance 2
+'skinparam style strictuml
+'for grouping package names
+hide empty members
+
+legend right
+|=Revision |=Date |
+|    0.1    |     11/05/2023    |
+end legend
+
+skinparam class {
+  BackgroundColor MintCream
+}
+
+interface PatchService<PscIndividualFiling> #GhostWhite{
++patchEntity(id : String) : PatchResult
++save(PscIndividualFiling, String) : int
++getMaxRetries() : int
+}
+
+interface PscIndividualFilingService #GhostWhite extends PatchService {
++get(id : String)
++patch(id : String, Map<String, String>)
++save(PscIndividualFiling)
+}
+
+interface PscIndividualFilingMergeProcessor #GhostWhite{
++mergeEntity(PscIndividualFiling, Map<String, String>) : PscIndividualFiling
+}
+interface PscIndividualFilingPostMergeProcessor #GhostWhite{
++onMerge(PscIndividualFiling)
+}
+interface PscIndividualPatchValidator #GhostWhite{
++validate(PscIndividualFiling) : ValidationResult
+}
+
+interface EntityProvider<PscIndividualFiling> <<external>> #GhostWhite
+interface MergeProcessor<PscIndividualFiling> <<external>> #GhostWhite
+interface PostMergeProcessor<PscIndividualFiling> <<external>> #GhostWhite
+interface PatchValidator<PscIndividualFiling> <<external>> #GhostWhite
+
+interface PscIndividualFilingProvider #GhostWhite{
++provide(id : String) : EntityRetrievalResult<PscIndividualFiling>
+}
+
+class EntityRetrievalResult<PscIndividualFiling> <<external>>{
++getVersion() : String
++getEntity() : PscIndividualFiling
++getFailureReason() : Enum
++isSuccess() : boolean
+}
+class ValidationResult <<external>>{
++isSuccess() : boolean
++getErrors() : Object
+}
+class PatchResult <<external>>{
++isSuccess() : boolean
++getErrors() : Object
+}
+
+PscIndividualFilingService --> EntityProvider :"provided by"
+PscIndividualFilingService --> MergeProcessor : "merged by "
+PscIndividualFilingService ---> PostMergeProcessor : "      completed by "
+PscIndividualFilingService ---> PatchValidator : "validated by"
+PscIndividualFilingService --> PatchResult: "produces "
+PscIndividualFilingProvider --> EntityRetrievalResult: "produces "
+PscIndividualPatchValidator --> ValidationResult: "produces "
+EntityProvider <|..PscIndividualFilingProvider
+MergeProcessor <|..PscIndividualFilingMergeProcessor
+PostMergeProcessor <|.. PscIndividualFilingPostMergeProcessor
+PatchValidator <|.. PscIndividualPatchValidator
+
+
+@enduml
