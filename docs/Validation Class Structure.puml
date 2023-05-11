@@ -6,7 +6,7 @@ skinparam PackageBackgroundColor White
 skinparam ArrowPadding 2
 skinparam linetype ortho
 skinparam packageStyle frame
-skinparam groupInheritance 3
+skinparam groupInheritance 2
 'skinparam style strictuml
 'for grouping package names
 hide empty members
@@ -14,24 +14,13 @@ set separator none
 
 legend right
 |=Revision |=Date |
-|    0.1    |     10/05/2023    |
+|    0.2    |     10/05/2023    |
 end legend
 
 skinparam class {
   BackgroundColor MintCream
 }
-skinparam class<<enumeration>> {
-  BackgroundColor MistyRose
-}
-
-
-
-package model.transaction {
-    class Transaction
-}
-
-package validator {
-
+    class Transaction <<external>>
     note as note1
      The validation attribute represents
      the error messages retrieved from the
@@ -69,47 +58,31 @@ package validator {
         +getPassthroughHeader(): String
     }
 
-'left to right direction
-'top to bottom direction
-        class TerminationRequiredFieldsValidator extends BaseFilingValidator
-        class CeasedOnDateValidator extends BaseFilingValidator
-        class PscEtagValidator extends BaseFilingValidator
-        class PscExistsValidator extends BaseFilingValidator
-        class PscIsActiveValidator extends BaseFilingValidator
-        class PscRegisterEntryDateValidator extends BaseFilingValidator
-}
+   class PscRegisterEntryDateValidator extends BaseFilingValidator
 
-package service {
+   note as note2
+         Other validator classes exist e.g.
+         *CeasedOnDateValidator
+         *PscEtagValidator
+         *PscExistsValidator
+         *PscIsActiveValidator
+         *TerminationRequiredFieldsValidator
+   end note
+   note2 - PscRegisterEntryDateValidator
 
-    interface PscDetailsService
+   interface PscDetailsService #GhostWhite
 
-    interface FilingValidationService
+   interface FilingValidationService #GhostWhite
 
-    class FilingValidationServiceImpl {
+    class FilingValidationServiceImpl implements FilingValidationService {
         filingValidByPscType: Map<PscTypeConstants, FilingForPscTypeValid>
     }
 
-   note as note2
-         PscDetailsService is used by:
-         CeasedOnDateValidator, PscEtagValidator,
-         PscExistsValidator and PscIsActiveValidator
-   end note
-
-   'note2 -up- PscDetailsService
-   note2 - PscDetailsService
-
-}
-
-package model {
-
-    enum PscTypeConstants <<enumeration>> {
+    enum PscTypeConstants #MistyRose {
         INDIVIDUAL("individual")
         CORPORATE_ENTITY("corporate-entity")
         LEGAL_PERSON("legal-person")
         }
-}
-
-package config {
 
     class ValidatorConfig {
         +filingForIndividualValid(filingValidators...): FilingForPscTypeValid
@@ -118,34 +91,12 @@ package config {
         {static}-createValidationChain()
     }
 
-}
-
-    FilingForPscTypeValid::getPscType <- PscTypeConstants: PSC Type
-    FilingValidationContext <--Transaction: transaction
-    FilingValid <- FilingValidationContext: "uses"
-    ValidatorConfig <--- FilingForPscTypeValid: "uses"
-    FilingForPscTypeValidChain::getFirst <-- FilingValid: "uses"
-
-    FilingValidationService <- FilingValidationServiceImpl
-    FilingValidationServiceImpl "1  " o--- "3" FilingForPscTypeValid
-    (FilingForPscTypeValid, FilingValidationServiceImpl)..PscTypeConstants
-    'PscDetailsService <. (CeasedOnDateValidator, PscEtagValidator): "uses"
-    'PscDetailsService <. (PscExistsValidator, PscIsActiveValidator): 'uses'
-    'PscDetailsService <- PscEtagValidator: "uses"
-    'PscDetailsService <- PscExistsValidator: "uses"
-    'PscDetailsService <- PscIsActiveValidator: "uses"
-    'PscDetailsService <- PscRegisterEntryDateValidator:"uses"
-
-
-    'BaseFilingValidator <||-d- CeasedOnDateValidator
-    'BaseFilingValidator <||- PscEtagValidator
-   ' BaseFilingValidator <||-d- PscExistsValidator
-    'BaseFilingValidator  <||-d- PscIsActiveValidator
-    'BaseFilingValidator  <||-d- PscRegisterEntryDateValidator
-    'BaseFilingValidator  <||- TerminationRequiredFieldsValidator
-
-    'CeasedOnDateValidator -[hidden]> PscEtagValidator
-    'PscExistsValidator -[hidden]> PscIsActiveValidator
-    'PscRegisterEntryDateValidator -[hidden]> TerminationRequiredFieldsValidator
+    FilingValidationContext o..>Transaction: belongs to
+    FilingValid <-- FilingValidationContext: "realises"
+    ValidatorConfig "1  " o-- "3 "FilingForPscTypeValid
+    FilingForPscTypeValidChain::getFirst "1 " o-- "1..* " FilingValid
+    (FilingForPscTypeValid, ValidatorConfig)..FilingValidationServiceImpl
+    FilingValidationServiceImpl .. PscTypeConstants
+    PscDetailsService <-- PscRegisterEntryDateValidator:"consults "
 
 @enduml
