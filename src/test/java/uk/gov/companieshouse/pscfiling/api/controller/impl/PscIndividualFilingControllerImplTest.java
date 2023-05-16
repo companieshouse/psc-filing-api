@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -258,8 +259,10 @@ class PscIndividualFilingControllerImplTest {
         final var updatedFiling = PscIndividualFiling.builder(filing).updatedAt(updatedInstant)
             .build();
 
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing)).thenReturn(
+            Optional.of(updatedFiling));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
         when(pscIndividualFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(success);
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(updatedFiling));
 
         final var response =
             testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, Collections.emptyMap(),
@@ -278,10 +281,12 @@ class PscIndividualFilingControllerImplTest {
         final var failure = new PatchResult(RetrievalFailureReason.FILING_NOT_FOUND);
         final Map<String, Object> map = Collections.emptyMap();
 
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
         when(pscIndividualFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(failure);
 
         final var exception = assertThrows(FilingResourceNotFoundException.class,
-                () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
+            () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
         assertThat(exception.getMessage(), is("Failed to retrieve filing: " + FILING_ID));
     }
@@ -289,22 +294,37 @@ class PscIndividualFilingControllerImplTest {
     @Test
     void updateFilingWheValidationFails() {
         final var error = new FieldError("patched", "ceasedOn", TEST_DATE, false, new String[]{
-                "future.date.patched.ceasedOn",
-                "future.date.ceasedOn",
-                "future.date.java.time.LocalDate",
-                "future.date"
+            "future.date.patched.ceasedOn",
+            "future.date.ceasedOn",
+            "future.date.java.time.LocalDate",
+            "future.date"
         }, new Object[]{TEST_DATE}, "bad date");
         final var failure = new PatchResult(List.of(error));
         final Map<String, Object> map = Collections.emptyMap();
 
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
         when(pscIndividualFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(failure);
 
         final var exception = assertThrows(InvalidPatchException.class,
-                () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
+            () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
         assertThat(exception.getFieldErrors(), hasSize(1));
         assertThat(exception.getFieldErrors()
-                .get(0), is(error));
+            .get(0), is(error));
+    }
+
+    @Test
+    void updateFilingWhenSelfLinkMatchFails() {
+        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(false);
+
+        final Map<String, Object> map = Collections.emptyMap();
+        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map,
+            request);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+        assertThat(response.getBody(), is(nullValue()));
     }
 
 }
