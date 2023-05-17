@@ -60,7 +60,7 @@ public class PscWithIdentificationFilingServiceImpl implements PscWithIdentifica
                             postMergeProcessor, pscWithIdentificationPatchValidator);
         }
         catch (final IOException e) {
-            throw new MergePatchException("Failed to merge patch request", e);
+            throw new MergePatchException(e);
         }
 
         return patchResult;
