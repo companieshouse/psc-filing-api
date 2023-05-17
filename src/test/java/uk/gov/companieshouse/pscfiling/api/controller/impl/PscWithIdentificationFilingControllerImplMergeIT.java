@@ -17,8 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.net.URI;
 import java.time.Clock;
-import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -151,15 +149,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
             .links(links)
             .identification(identification)
             .build();
-        final var expectedIdentification =
-            Identification.builder(identification).countryRegistered("Replaced").build();
-        final var expectedFiling =
-            PscWithIdentificationFiling.builder(filing).updatedAt(SECOND_INSTANT).ceasedOn(
-                LocalDate.of(2022, 3, 3)).identification(
-                expectedIdentification).naturesOfControl(List.of("type4")).build();
 
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing)).thenReturn(
-            Optional.of(expectedFiling));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(withIdentificationFilingRepository.findById(FILING_ID)).thenReturn(
             Optional.of(filing));
         when(withIdentificationFilingRepository.save(
@@ -209,15 +200,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
             .registerEntryDate(REGISTER_ENTRY_DATE)
             .links(links)
             .build();
-        final var expectedIdentification =
-            Identification.builder().countryRegistered("Added").build();
-        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
-            SECOND_INSTANT).name(CORPORATE_NAME).ceasedOn(
-            LocalDate.of(2022, 10, 5)).identification(expectedIdentification).naturesOfControl(
-            List.of("type1", "type2", "type3", "type4")).build();
 
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing)).thenReturn(
-            Optional.of(expectedFiling));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(withIdentificationFilingRepository.findById(FILING_ID)).thenReturn(
             Optional.of(filing));
         when(withIdentificationFilingRepository.save(
@@ -273,14 +257,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
             .links(links)
             .registerEntryDate(REGISTER_ENTRY_DATE)
             .build();
-        final var expectedIdentification =
-            Identification.builder(identification).countryRegistered(null).build();
-        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
-            SECOND_INSTANT).name(null).ceasedOn(null).identification(
-            expectedIdentification).naturesOfControl(Collections.emptyList()).build();
 
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing)).thenReturn(
-            Optional.of(expectedFiling));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(withIdentificationFilingRepository.findById(FILING_ID)).thenReturn(
             Optional.of(filing));
         when(withIdentificationFilingRepository.save(
@@ -324,11 +302,8 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
             .updatedAt(FIRST_INSTANT)
             .links(links)
             .build();
-        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
-            SECOND_INSTANT).build();
 
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing)).thenReturn(
-            Optional.of(expectedFiling));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(withIdentificationFilingRepository.findById(FILING_ID)).thenReturn(
             Optional.of(filing));
         when(withIdentificationFilingRepository.save(
