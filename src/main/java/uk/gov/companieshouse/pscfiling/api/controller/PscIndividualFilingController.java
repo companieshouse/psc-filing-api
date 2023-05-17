@@ -69,7 +69,7 @@ public interface PscIndividualFilingController {
      * @throws NotImplementedException implementing classes must perform work
      */
     @GetMapping
-    default ResponseEntity<PscIndividualDto> getFilingForReview(
+    default ResponseEntity<PscIndividualFiling> getFilingForReview(
             @PathVariable("transactionId") String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResource") String filingResource,
