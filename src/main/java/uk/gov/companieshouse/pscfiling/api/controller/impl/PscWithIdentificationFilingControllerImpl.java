@@ -4,11 +4,13 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -32,6 +34,7 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.PscWithIdentificationFilingService;
@@ -145,13 +148,23 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             logMap.put(STATUS_MSG, "patch successful");
             logger.infoContext(transId, PATCH_RESULT_MSG, logMap);
 
-            return pscWithIdentificationFilingService.get(filingResource)
+            Optional<PscCommunal> optionalFiling = pscFilingService.get(filingResource);
+
+            return optionalFiling
                     .map(PscWithIdentificationFiling.class::cast)
-                    .map(ResponseEntity::ok)
+                    .map(PscWithIdentificationFilingControllerImpl::createOKResponse)
                     .orElse(ResponseEntity.notFound()
                             .build());
         }
 
+    }
+
+    private static ResponseEntity<PscWithIdentificationFiling> createOKResponse(PscWithIdentificationFiling filing) {
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("Location", filing.getLinks().getSelf().toString());
+
+        return ResponseEntity.ok().headers(responseHeaders).body(filing);
     }
 
     /**

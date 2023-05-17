@@ -244,11 +244,11 @@ class PscWithIdentificationFilingControllerImplTest {
         final Instant updatedInstant = Instant.parse("2022-11-15T09:44:08.108Z");
         final var updatedFiling =
             PscWithIdentificationFiling.builder(filing).updatedAt(updatedInstant)
-                .build();
+                    .links(links).build();
 
         when(pscWithIdentificationFilingService.patch(eq(FILING_ID), anyMap())).thenReturn(
             success);
-        when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(
+        when(pscFilingService.get(FILING_ID)).thenReturn(
             Optional.of(updatedFiling));
 
         final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID,
@@ -259,6 +259,7 @@ class PscWithIdentificationFilingControllerImplTest {
         assertThat(response.getBody(), is(updatedFiling));
         assertThat(response.getBody().getUpdatedAt(),
             is(not(equalTo(response.getBody().getCreatedAt()))));
+        assertThat(response.getHeaders().getLocation(), is(links.getSelf()));
 
     }
 
