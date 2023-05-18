@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.Mockito.when;
@@ -387,15 +388,15 @@ class RestExceptionHandlerTest {
     @Test
     void handleConflictingFilingException() {
         when(request.getRequest()).thenReturn(servletRequest);
-        final var exception =
-                new ConflictingFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
+        final var conflictFieldError =
+                new FieldError("ignored", "ignored", "conflict error message");
+        final var exception = new ConflictingFilingException(List.of(conflictFieldError));
 
         final var apiErrors =
                 testExceptionHandler.handleConflictingFilingException(exception, request);
 
-        assertThat(apiErrors.getErrors(), hasSize(2));
         assertThat(apiErrors.getErrors(),
-                containsInAnyOrder(expectedError, expectedErrorWithRejectedValue));
+                contains(hasProperty("error", is("conflict error message"))));
     }
 
     @ParameterizedTest(name = "[{index}]: cause={0}")

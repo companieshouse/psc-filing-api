@@ -78,9 +78,7 @@ class CompanyInterceptorTest {
         expectHeaderWithCompanyProfile();
         companyProfileApi.setHasSuperSecurePscs(Boolean.TRUE);
         when(validation.get("super-secure-company")).thenReturn("Super secure default message");
-        final var error = new FieldError("object", "reference_psc_id",
-                null, false, new String[]{null, "reference_psc_id"},
-                null, "Super secure default message");
+        final var error = new FieldError("ignored", "ignored", "Super secure default message");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -95,9 +93,7 @@ class CompanyInterceptorTest {
         companyProfileApi.setType("not-proper");
         when(company.get("type-allowed")).thenReturn(List.of("ltd"));
         when(validation.get("company-type-not-allowed")).thenReturn("Invalid type default message");
-        final var error = new FieldError("object", "reference_psc_id",
-                null, false, new String[]{null, "reference_psc_id"},
-                null, "Invalid type default message");
+        final var error = new FieldError("ignored", "ignored", "Invalid type default message");
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
@@ -114,9 +110,9 @@ class CompanyInterceptorTest {
         when(company.get("status-not-allowed")).thenReturn(List.of("dissolved"));
         when(validation.get("company-status-not-allowed")).thenReturn(
                 "Invalid status default message");
-        final var error = new FieldError("object", "reference_psc_id",
-                null, false, new String[]{null, "reference_psc_id"},
-                null, "Invalid status default message" + companyStatus.get(companyProfileApi.getCompanyStatus()));
+        final var error = new FieldError("ignored", "ignored",
+                "Invalid status default message" + companyStatus.get(
+                        companyProfileApi.getCompanyStatus()));
         List<FieldError> errors = List.of(error);
 
         final var thrown = assertThrows(ConflictingFilingException.class,
