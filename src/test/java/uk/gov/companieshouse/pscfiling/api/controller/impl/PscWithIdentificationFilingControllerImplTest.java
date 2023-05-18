@@ -207,8 +207,6 @@ class PscWithIdentificationFilingControllerImplTest {
     @Test
     void getFilingForReviewWhenFound() {
 
-        when(filingMapper.map(filing)).thenReturn(dto);
-
         when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
 
@@ -216,7 +214,7 @@ class PscWithIdentificationFilingControllerImplTest {
                 request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(dto));
+        assertThat(response.getBody(), is(filing));
     }
 
     @Test
