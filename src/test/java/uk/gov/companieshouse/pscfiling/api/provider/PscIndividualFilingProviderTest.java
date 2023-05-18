@@ -41,17 +41,11 @@ class PscIndividualFilingProviderTest {
     }
 
     @Test
-    void setGetRequestId() {
-        testProvider.setRequestId("test_id");
-        assertThat(testProvider.getRequestId(), is("test_id"));
-    }
-
-    @Test
     void provide() {
-        var expected = new EntityRetrievalResult<>("etag", filing);
+        final var expected = new EntityRetrievalResult<>("etag", filing);
         when(filingService.get(FILING_ID)).thenReturn(Optional.of(filing));
 
-        var result = testProvider.provide(FILING_ID);
+        final var result = testProvider.provide(FILING_ID);
 
         assertThat(result.isSuccess(), is(true));
         assertThat(result, samePropertyValuesAs(expected));
@@ -61,7 +55,7 @@ class PscIndividualFilingProviderTest {
     void provideWhenNotIndividualType() {
         when(filingService.get(FILING_ID)).thenReturn(Optional.of(corporate));
 
-        var result = testProvider.provide(FILING_ID);
+        final var result = testProvider.provide(FILING_ID);
 
         assertThat(result.isSuccess(), is(false));
         assertThat(result.getFailureReason(), is(RetrievalFailureReason.FILING_NOT_FOUND));
@@ -72,7 +66,7 @@ class PscIndividualFilingProviderTest {
         final var individual = PscIndividualFiling.builder(filing).id(FILING_ID + "y").build();
         when(filingService.get(FILING_ID)).thenReturn(Optional.of(individual));
 
-        var result = testProvider.provide(FILING_ID);
+        final var result = testProvider.provide(FILING_ID);
 
         assertThat(result.isSuccess(), is(false));
         assertThat(result.getFailureReason(), is(RetrievalFailureReason.FILING_NOT_FOUND));

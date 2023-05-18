@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.pscfiling.api.enumerations;
 
+import java.util.Objects;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -10,11 +11,15 @@ public class YamlPropertySourceFactory implements PropertySourceFactory {
 
     @Override
     public PropertySource<?> createPropertySource(String name, EncodedResource encodedResource) {
-        var factory = new YamlPropertiesFactoryBean();
-        factory.setResources(encodedResource.getResource());
+        final var encoded = Objects.requireNonNull(encodedResource);
+        final var resource = Objects.requireNonNull(encoded.getResource());
+        final var factory = new YamlPropertiesFactoryBean();
 
-        var properties = factory.getObject();
+        factory.setResources(resource);
 
-        return new PropertiesPropertySource(encodedResource.getResource().getFilename(), properties);
+        final var properties = Objects.requireNonNull(factory.getObject());
+        final var filename = Objects.requireNonNull(resource.getFilename());
+
+        return new PropertiesPropertySource(filename, properties);
     }
 }

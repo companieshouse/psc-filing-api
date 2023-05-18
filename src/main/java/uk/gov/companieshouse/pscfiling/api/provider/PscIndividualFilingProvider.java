@@ -5,7 +5,7 @@ import uk.gov.companieshouse.patch.provider.EntityProvider;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 
 public interface PscIndividualFilingProvider
-        extends EntityProvider<PscIndividualFiling>, RequestIdentifiable {
+    extends EntityProvider<PscIndividualFiling> {
 
     @Override
     EntityRetrievalResult<PscIndividualFiling> provide(String filingId);
