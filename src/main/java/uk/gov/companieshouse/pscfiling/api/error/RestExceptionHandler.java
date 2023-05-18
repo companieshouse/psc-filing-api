@@ -105,8 +105,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final var fieldErrors = ex.getFieldErrors();
 
         final List<ApiError> errorList = fieldErrors.stream()
-                .map(e -> buildRequestBodyError(getApiEnumerationMessage(e), getJsonPath(e),
-                        e.getRejectedValue()))
+                .map(e -> buildRequestBodyError(getFieldErrorApiEnumerationMessage(e),
+                        getJsonPath(e), e.getRejectedValue()))
                 .collect(Collectors.toList());
 
         logError(request, "Invalid filing data", ex, errorList);
@@ -130,7 +130,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final var fieldErrors = ex.getFieldErrors();
 
         final var errorList = fieldErrors.stream()
-                .map(e -> buildRequestBodyError(getApiEnumerationMessage(e), getJsonPath(e),
+                .map(e -> buildRequestBodyError(e.getDefaultMessage(), getJsonPath(e),
                         e.getRejectedValue()))
                 .collect(Collectors.toList());
 
@@ -321,7 +321,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return rootCause != null ? rootCause : original;
     }
 
-    private String getApiEnumerationMessage(final FieldError e) {
+    private String getFieldErrorApiEnumerationMessage(final FieldError e) {
         final var codes = Objects.requireNonNull(e.getCodes());
         return validation.get(codes[codes.length - 1]);
     }
