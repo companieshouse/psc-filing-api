@@ -318,8 +318,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var expectedError = "must be a date in the past or in the present";
-        final Map<String, String> expectedValues = Map.of("rejected", "2023-11-05");
+        final var expectedError = "{rejected-value} must be a date in the past or in the present";
+        final Map<String, String> expectedValues = Map.of("rejected-value", "2023-11-05");
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -367,17 +367,18 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.errors", hasSize(1)))
-            .andExpect(jsonPath("$.errors[0].error", not(containsString("java"))))
-            .andExpect(jsonPath("$.errors[0]",
-                allOf(hasEntry("location", expectedError.getLocation()),
-                    hasEntry("location_type", expectedError.getLocationType()),
-                    hasEntry("type", expectedError.getType()))))
-            .andExpect(jsonPath("$.errors[0].error",
-                is("Failed to merge patch request: Text '2023-11-5' could not be parsed " +
-                    "at index 8")))
-            .andExpect(jsonPath("$.errors[0].error_values",
-                allOf(hasEntry("offset", "line: 1, column: 14"), hasEntry("line", "1"),
-                    hasEntry("column", "14"), hasEntry("rejected", "2023-11-5"))));
+                .andExpect(jsonPath("$.errors[0].error", not(containsString("java"))))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("Failed to merge patch request: Text '2023-11-5' could not be parsed "
+                                + "at index 8")))
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        allOf(hasEntry("offset", "line: 1, column: 14"), hasEntry("line", "1"),
+                                hasEntry("column", "14"),
+                                hasEntry("rejected-value", "2023-11-5"))));
     }
 
     @Test

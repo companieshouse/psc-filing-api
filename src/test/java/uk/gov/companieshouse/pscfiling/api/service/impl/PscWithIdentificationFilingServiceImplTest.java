@@ -95,7 +95,6 @@ class PscWithIdentificationFilingServiceImplTest {
         final var exception = assertThrows(MergePatchException.class,
                 () -> testService.patch(FILING_ID, map));
         verifyNoInteractions(postMergeProcessor, filingRepository);
-        assertThat(exception.getMessage(), is("Failed to merge patch request"));
         assertThat(exception.getCause().getMessage(), is("ioe"));
 
     }

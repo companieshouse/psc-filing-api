@@ -59,7 +59,7 @@ public class PscIndividualFilingServiceImpl implements PscIndividualFilingServic
                     patchEntity(filingId, pscIndividualFilingProvider, patchMap, mergeProcessor,
                             postMergeProcessor, pscIndividualPatchValidator);
         } catch (final IOException e) {
-            throw new MergePatchException("Failed to merge patch request", e);
+            throw new MergePatchException(e);
         }
 
         return patchResult;
