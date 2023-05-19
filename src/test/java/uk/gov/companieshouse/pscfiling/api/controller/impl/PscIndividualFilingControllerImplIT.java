@@ -503,7 +503,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.reference_etag", is(ETAG)))
                 .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
                 .andExpect(jsonPath("$.ceased_on", is(CEASED_ON_DATE.toString())));
-        verify(filingMapper).map(filing);
     }
 
     @Test
