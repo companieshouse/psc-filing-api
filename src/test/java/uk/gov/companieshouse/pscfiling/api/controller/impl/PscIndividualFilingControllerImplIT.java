@@ -493,7 +493,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                     hasEntry("location_type", expectedError.getLocationType()),
                     hasEntry("type", expectedError.getType()))))
             .andExpect(jsonPath("$.errors[0].error",
-                containsString("JSON parse error: Unknown property \"Ceased_on\"")));
+                containsString("JSON parse error: Property is not recognised: {property-name}")));
     }
 
     @Test
