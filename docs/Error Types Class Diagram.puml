@@ -1,0 +1,105 @@
+@startuml
+
+title PSC Filing API: Error Class Structure
+skinparam BackgroundColor White
+skinparam ArrowPadding 2
+skinparam linetype ortho
+skinparam PackageBackgroundColor White
+skinparam packageStyle frame
+skinparam defaultFontColor black
+'for grouping package names
+set separator none
+left to right direction
+
+legend right
+|=Revision |=Date |
+|    0.1    |     04/05/2023    |
+end legend
+
+skinparam class {
+  BackgroundColor MintCream
+}
+skinparam class<<enumeration>> {
+  BackgroundColor MistyRose
+}
+
+package org.springframework.web.servlet.mvc.method.annotation {
+  class ResponseEntityExceptionHandler {
+          +handleHttpMessageNotReadable: ResponseEntity
+          +handleHttpMediaTypeNotSupported: ResponseEntity
+          +handleExceptionInternal: ResponseEntity
+
+  }
+}
+
+package uk.gov.companieshouse.api.error {
+
+    class ApiError {
+        -error
+        -errorValues: Map<String, String>
+        -location
+        -locationType
+        -type
+
+        +getError(): String
+        +setError(String)
+        +getErrorValues(): Map<String, String>
+        +setErrorValues(Map<String, String>)
+        +addErrorValue(String, String)
+        +getLocation(): String
+        +setLocation()
+        +getLocationType(): String
+        +setLocationType(String)
+        +getType(): String
+        +setType(String)
+    }
+}
+
+package error {
+    enum ErrorType <<enumeration>> {
+        SERVICE("ch:service")
+        VALIDATION("ch:validation")
+        +getType(): String
+    }
+
+    enum LocationType <<enumeration>> {
+        RESOURCE("resource")
+        REQUEST_BODY("request-body")
+        JSON_PATH("json-path")
+        +getValue(): String
+    }
+
+    enum RetrievalFailureReason <<enumeration>> {
+        FILING_NOT_FOUND
+    }
+
+    class RestExceptionHandler extends ResponseEntityExceptionHandler {
+        ---
+        #handleHttpMessageNotReadable: ResponseEntity
+        #handleHttpMediaTypeNotSupported: ResponseEntity
+        #handleExceptionInternal: ResponseEntity
+        +handleInvalidFilingException: ApiErrors
+        +handleMergePatchException: ResponseEntity
+        +handleConflictingFilingException: ApiErrors
+        +handleResourceNotFoundException: ApiErrors
+        +handleServiceException: ApiErrors
+        +handleAllUncaughtException: ApiErrors
+    }
+
+        class ApiErrors {
+        -errors: Set<ApiError>
+
+        +add(ApiError): boolean
+        +addAll(Collection<ApiError>): boolean
+        +hasErrors(): boolean
+        +contains(ApiError): boolean
+        +getErrors(): Set<ApiError> <<unmodifiable>>
+        +getErrorCount(): int
+        }
+
+}
+
+ ApiErrors "1 " o--- "0..*   " ApiError :"contains   "
+ ApiErrors <-- RestExceptionHandler : "uses"
+
+@enduml
