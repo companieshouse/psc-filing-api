@@ -211,7 +211,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .findFirst()
                 .map(s -> s.replaceAll("^[^.]*", "\\$"))
                 .map(s -> s.replaceAll("([A-Z0-9]+)", "_$1").toLowerCase())
-                .orElse(null);
+                .orElse("$");
     }
 
     private String getMismatchErrorMessage(
