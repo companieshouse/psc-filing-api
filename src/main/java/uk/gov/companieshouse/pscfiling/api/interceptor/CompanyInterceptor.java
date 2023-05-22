@@ -77,9 +77,7 @@ public class CompanyInterceptor implements HandlerInterceptor {
     }
 
     private List<FieldError> createValidationError(String errorMessage) {
-        final var error = new FieldError("object", "reference_psc_id",
-                null, false, new String[]{null, "reference_psc_id"},
-                null, errorMessage);
+        final var error = new FieldError("ignored", "ignored", errorMessage);
         return List.of(error);
     }
 

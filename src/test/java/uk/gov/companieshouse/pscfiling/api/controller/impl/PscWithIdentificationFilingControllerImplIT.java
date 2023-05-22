@@ -389,8 +389,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                                 hasEntry("type", expectedError.getType()))))
                 .andExpect(jsonPath("$.errors[0].error",
                         containsString("must be a date in the past or in the present")))
-                .andExpect(
-                        jsonPath("$.errors[0].error_values", hasEntry("rejected", "3000-09-13")));
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        hasEntry("rejected-value", "3000-09-13")));
     }
 
     @Test

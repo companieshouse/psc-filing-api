@@ -5,8 +5,8 @@ package uk.gov.companieshouse.pscfiling.api.exception;
  */
 public class MergePatchException extends RuntimeException {
 
-    public MergePatchException(final String message, final Throwable cause) {
-        super(message, cause);
+    public MergePatchException(final Throwable cause) {
+        super(cause);
     }
 
 }
