@@ -161,8 +161,9 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
 
     private static ResponseEntity<PscWithIdentificationFiling> createOKResponse(PscWithIdentificationFiling filing) {
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Location", filing.getLinks().getSelf().toString());
+        final var responseHeaders = new HttpHeaders();
+
+        responseHeaders.setLocation(filing.getLinks().getSelf());
 
         return ResponseEntity.ok().headers(responseHeaders).body(filing);
     }

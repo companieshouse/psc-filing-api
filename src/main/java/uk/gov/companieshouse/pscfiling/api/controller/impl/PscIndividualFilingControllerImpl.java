@@ -159,8 +159,9 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
 
     private static ResponseEntity<PscIndividualFiling> createOKResponse(PscIndividualFiling filing) {
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("Location", filing.getLinks().getSelf().toString());
+        final var responseHeaders = new HttpHeaders();
+
+        responseHeaders.setLocation(filing.getLinks().getSelf());
 
         return ResponseEntity.ok().headers(responseHeaders).body(filing);
     }
