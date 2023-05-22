@@ -22,23 +22,25 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.AppConfig;
 import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
+import uk.gov.companieshouse.pscfiling.api.exception.ConflictingFilingException;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapperImpl;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -57,8 +59,8 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
-@Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class})
 @WebMvcTest(controllers = PscWithIdentificationFilingControllerImpl.class)
+@Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class, AppConfig.class})
 class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
 
     private static final URI SELF_URI = URI.create("/transactions/"
@@ -95,9 +97,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     private Clock clock;
     @MockBean
     private Logger logger;
-
-    @Mock
-    private ApiErrorResponseException errorResponseException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -393,8 +392,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                                 hasEntry("type", expectedError.getType()))))
                 .andExpect(jsonPath("$.errors[0].error",
                         containsString("must be a date in the past or in the present")))
-                .andExpect(
-                        jsonPath("$.errors[0].error_values", hasEntry("rejected", "3000-09-13")));
+                .andExpect(jsonPath("$.errors[0].error_values",
+                        hasEntry("rejected-value", "3000-09-13")));
     }
 
     @Test
@@ -423,46 +422,62 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
         when(pscDetailsService.getPscDetails(transaction, PSC_ID, PscTypeConstants.CORPORATE_ENTITY,
-                PASSTHROUGH_HEADER)).thenReturn(pscDetails);
+            PASSTHROUGH_HEADER)).thenReturn(pscDetails);
         when(pscDetails.getName()).thenReturn("Joe Bloggs Limited");
-        when(pscWithIdentificationFilingService.save(any(PscWithIdentificationFiling.class))).thenReturn(
-                        PscWithIdentificationFiling.builder(filing).id(FILING_ID)
-                                .build()) // copy of 'filing' with id=FILING_ID
-                .thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
-                        .build()); // copy of first argument
+        when(pscWithIdentificationFilingService.save(
+            any(PscWithIdentificationFiling.class))).thenReturn(
+                PscWithIdentificationFiling.builder(filing).id(FILING_ID)
+                    .build()) // copy of 'filing' with id=FILING_ID
+            .thenAnswer(i -> PscWithIdentificationFiling.builder(i.getArgument(0))
+                .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
-                        .requestAttr("transaction", transaction)
-                        .contentType(APPLICATION_JSON)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(header().string("location", locationUri.toUriString()))
-                .andExpect(jsonPath("$.id", is(FILING_ID)))
-                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())))
-                .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
-                .andExpect(jsonPath("$.links.validation_status", is(VALIDATION_URI.toString())))
-                .andExpect(jsonPath("$.reference_etag", is(ETAG)))
-                .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
-                .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
-                .andExpect(jsonPath("$.name_elements").doesNotExist());
+        mockMvc.perform(
+            post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body).requestAttr("transaction",
+                transaction).contentType(APPLICATION_JSON).headers(httpHeaders)).andDo(
+            print()).andExpect(status().isCreated()).andExpect(
+            header().string("location", locationUri.toUriString())).andExpect(
+            jsonPath("$.id", is(FILING_ID))).andExpect(
+            jsonPath("$.created_at", is(FIRST_INSTANT.toString()))).andExpect(
+            jsonPath("$.links.self", is(SELF_URI.toString()))).andExpect(
+            jsonPath("$.links.validation_status", is(VALIDATION_URI.toString()))).andExpect(
+            jsonPath("$.reference_etag", is(ETAG))).andExpect(
+            jsonPath("$.reference_psc_id", is(PSC_ID))).andExpect(
+            jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString()))).andExpect(
+            jsonPath("$.updated_at", is(FIRST_INSTANT.toString()))).andExpect(
+            jsonPath("$.name_elements").doesNotExist());
         verify(filingMapper).map(dto);
+    }
+
+    @Test
+    void createFilingWhenPropertyUnrecognisedThenResponse400() throws Exception {
+        final var body = "{" + PSC07_FRAGMENT.replace("ceased_on", "Ceased_on") + "}";
+        final var expectedError = createExpectedValidationError("ignored", "$.Ceased_on", 1, 75);
+
+        mockMvc.perform(
+            post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body).requestAttr("transaction",
+                transaction).contentType(APPLICATION_JSON).headers(httpHeaders)).andDo(
+            print()).andExpect(status().isBadRequest()).andExpect(
+            header().doesNotExist("location")).andExpect(
+            jsonPath("$.errors", hasSize(1))).andExpect(jsonPath("$.errors[0]",
+            allOf(hasEntry("location", expectedError.getLocation()),
+                hasEntry("location_type", expectedError.getLocationType()),
+                hasEntry("type", expectedError.getType())))).andExpect(jsonPath("$.errors[0].error",
+            containsString("JSON parse error: Property is not recognised: {property-name}")));
     }
 
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
 
         final var dto = PscWithIdentificationDto.builder().referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .ceasedOn(CEASED_ON_DATE)
-                .registerEntryDate(CEASED_ON_DATE)
-                .build();
+            .referencePscId(PSC_ID)
+            .ceasedOn(CEASED_ON_DATE)
+            .registerEntryDate(CEASED_ON_DATE)
+            .build();
 
-                final Links links = new Links(new URI("/transactions/" + TRANS_ID +
-                "/persons-with-significant-control/corporate-entity/" + FILING_ID),
-                                        new URI("validation_status"));
+        final Links links = new Links(new URI("/transactions/" + TRANS_ID +
+            "/persons-with-significant-control/corporate-entity/" + FILING_ID),
+            new URI("validation_status"));
 
         final var filing = PscWithIdentificationFiling.builder()
                 .referenceEtag(ETAG)
@@ -490,11 +505,37 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
 
         when(pscWithIdentificationFilingService.get(FILING_ID)).thenReturn(Optional.empty());
 
-        mockMvc.perform(
-                        get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get(URL_PSC_CORPORATE_ENTITY + "/{filingId}", TRANS_ID, FILING_ID).headers(
+                httpHeaders)).andDo(print()).andExpect(status().isNotFound());
         verifyNoInteractions(filingMapper);
+    }
+
+    @Test
+    @DisplayName("Bug fix PSC-260")
+    void createFilingWhenRequestBadCompanyTypeThenResponse409() throws Exception {
+        final var expectedError = createExpectedValidationError("Ignored", "$", 1, 1);
+        final var body = "{" + PSC07_FRAGMENT + "}";
+
+        when(companyInterceptor.preHandle(any(HttpServletRequest.class),
+                any(HttpServletResponse.class), any(Object.class))).thenThrow(
+                new ConflictingFilingException(List.of(new FieldError("ignored", "ignored",
+                        "You cannot submit a filing for a company that is dissolved"))));
+
+        mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
+                        .requestAttr("transaction", transaction)
+                        .contentType(APPLICATION_JSON)
+                        .headers(httpHeaders))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(header().doesNotExist("location"))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0]",
+                        allOf(hasEntry("location", expectedError.getLocation()),
+                                hasEntry("location_type", expectedError.getLocationType()),
+                                hasEntry("type", expectedError.getType()))))
+                .andExpect(jsonPath("$.errors[0].error",
+                        is("You cannot submit a filing for a company that is dissolved")))
+                .andExpect(jsonPath("$.errors[0].error_values").doesNotExist());
     }
 
     private ApiError createExpectedValidationError(final String msg, final String location,

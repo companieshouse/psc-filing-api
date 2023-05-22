@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -324,8 +325,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
-        final var expectedError = "must be a date in the past or in the present";
-        final Map<String, String> expectedValues = Map.of("rejected", "2023-11-05");
+        final var expectedError = "{rejected-value} must be a date in the past or in the present";
+        final Map<String, String> expectedValues = Map.of("rejected-value", "2023-11-05");
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -384,8 +385,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                     "at index 8")))
             .andExpect(jsonPath("$.errors[0].error_values",
                 allOf(hasEntry("offset", "line: 1, column: 14"), hasEntry("line", "1"),
-                    hasEntry("column", "14"), hasEntry("rejected", "2023-11-5"))))
-                .andExpect(header().doesNotExist("Location"));
+                    hasEntry("column", "14"), hasEntry("rejected-value", "2023-11-5"))))
+            .andExpect(header().doesNotExist("Location"));
     }
 
     @Test

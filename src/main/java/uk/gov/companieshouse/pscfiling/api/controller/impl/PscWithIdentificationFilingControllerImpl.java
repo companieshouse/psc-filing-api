@@ -173,11 +173,11 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
      *
      * @param transId        the Transaction ID
      * @param filingResource the PSC Filing ID
-     * @return OK response containing Filing DTO resource
+     * @return OK response containing Filing resource
      */
     @Override
     @GetMapping(value = "/{filingResourceId}", produces = {"application/json"})
-    public ResponseEntity<PscWithIdentificationDto> getFilingForReview(
+    public ResponseEntity<PscWithIdentificationFiling> getFilingForReview(
             @PathVariable("transactionId") final String transId,
             @PathVariable("pscType") final PscTypeConstants pscType,
             @PathVariable("filingResourceId") final String filingResource,
@@ -188,12 +188,11 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
         logMap.put("method", request.getMethod());
         logger.debugRequest(request, "GET filing resource", logMap);
 
-        final var maybePSCFiling = pscWithIdentificationFilingService.get(filingResource);
-        final var maybeDto =
-                maybePSCFiling.filter(f -> pscFilingService.requestMatchesResourceSelf(request,
-                        f)).map(filingMapper::map);
+        final var maybePSCFiling = pscWithIdentificationFilingService.get(filingResource)
+                .filter(f -> pscFilingService.requestMatchesResourceSelf(request,
+                        f));
 
-        return maybeDto.map(ResponseEntity::ok)
+        return maybePSCFiling.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound()
                         .build());
     }

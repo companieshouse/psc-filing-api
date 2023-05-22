@@ -221,13 +221,12 @@ class PscIndividualFilingControllerImplTest {
     void getFilingForReviewWhenFound() {
         when(pscIndividualFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(true);
-        when(filingMapper.map(filing)).thenReturn(dto);
 
         final var response =
                 testController.getFilingForReview(TRANS_ID, PSC_TYPE, FILING_ID, request);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
-        assertThat(response.getBody(), is(dto));
+        assertThat(response.getBody(), is(filing));
     }
 
     @Test
