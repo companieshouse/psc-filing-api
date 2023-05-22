@@ -476,9 +476,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     @Test
     void createFilingWhenPropertyUnrecognisedThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("ceased_on", "Ceased_on") + "}";
-        final var expectedError =
-            createExpectedValidationError("JSON parse error: Unknown property \"Ceased_on\"",
-                "$.Ceased_on", 1, 75);
+        final var expectedError = createExpectedValidationError("ignored", "$.Ceased_on", 1, 75);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
                 .requestAttr("transaction", transaction)
