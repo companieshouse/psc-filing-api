@@ -12,6 +12,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -165,7 +167,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.name_elements.surname", is("Replaced")))
                 .andExpect(jsonPath("$.natures_of_control", containsInAnyOrder("type4")))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
-                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())))
+                .andExpect(header().stringValues("Location", links.getSelf().toString()));
     }
 
     @Test
@@ -211,7 +214,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.name_elements.surname", is("Added")))
                 .andExpect(jsonPath("$.natures_of_control",
                         containsInAnyOrder("type1", "type2", "type3", "type4")))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
+                .andExpect(header().stringValues("Location", links.getSelf().toString()));
     }
 
     @Test
@@ -259,7 +263,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.name_elements.surname").doesNotExist())
                 .andExpect(jsonPath("$.natures_of_control", is(empty())))
                 .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
-                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
+                .andExpect(header().stringValues("Location", links.getSelf().toString()));
     }
 
     @Test
@@ -272,6 +277,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .referencePscId(PSC_ID)
                 .ceasedOn(CEASED_ON_DATE)
                 .nameElements(nameElements)
+                .links(links)
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .updatedAt(FIRST_INSTANT)
                 .build();
@@ -297,7 +303,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.name_elements.title", is("Sir")))
                 .andExpect(jsonPath("$.name_elements.surname", is("Surname")))
                 .andExpect(jsonPath("$.register_entry_date", is("2022-09-14")))
-                .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())));
+                .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
+                .andExpect(header().stringValues("Location", links.getSelf().toString()));
     }
 
     @Test
@@ -337,7 +344,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.errors[*].type",
                         containsInAnyOrder("ch:validation", "ch:validation")))
                 .andExpect(jsonPath("$.errors[*].location",
-                        containsInAnyOrder("$.ceased_on", "$.register_entry_date")));
+                        containsInAnyOrder("$.ceased_on", "$.register_entry_date")))
+                .andExpect(header().doesNotExist("Location"));
     }
 
     @Test
@@ -367,18 +375,18 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", not(containsString("java"))))
-                .andExpect(jsonPath("$.errors[0]",
-                        allOf(hasEntry("location", expectedError.getLocation()),
-                                hasEntry("location_type", expectedError.getLocationType()),
-                                hasEntry("type", expectedError.getType()))))
-                .andExpect(jsonPath("$.errors[0].error",
-                        is("Failed to merge patch request: Text '2023-11-5' could not be parsed "
-                                + "at index 8")))
-                .andExpect(jsonPath("$.errors[0].error_values",
-                        allOf(hasEntry("offset", "line: 1, column: 14"), hasEntry("line", "1"),
-                                hasEntry("column", "14"),
-                                hasEntry("rejected-value", "2023-11-5"))));
+            .andExpect(jsonPath("$.errors[0].error", not(containsString("java"))))
+            .andExpect(jsonPath("$.errors[0]",
+                allOf(hasEntry("location", expectedError.getLocation()),
+                    hasEntry("location_type", expectedError.getLocationType()),
+                    hasEntry("type", expectedError.getType()))))
+            .andExpect(jsonPath("$.errors[0].error",
+                is("Failed to merge patch request: Text '2023-11-5' could not be parsed " +
+                    "at index 8")))
+            .andExpect(jsonPath("$.errors[0].error_values",
+                allOf(hasEntry("offset", "line: 1, column: 14"), hasEntry("line", "1"),
+                    hasEntry("column", "14"), hasEntry("rejected-value", "2023-11-5"))))
+            .andExpect(header().doesNotExist("Location"));
     }
 
     @Test
@@ -392,7 +400,8 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                         .requestAttr("transaction", transaction)
                         .headers(httpHeaders))
                 .andDo(print())
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(header().doesNotExist("Location"));
     }
 
 }
