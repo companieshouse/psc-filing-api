@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,12 +35,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.error.ApiError;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.pscfiling.api.config.AppConfig;
 import uk.gov.companieshouse.pscfiling.api.config.enumerations.PscFilingConfig;
-import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.mapper.PscMapperImpl;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
@@ -62,7 +59,7 @@ import uk.gov.companieshouse.pscfiling.api.validator.PscExistsValidator;
 
 @Tag("web")
 @WebMvcTest(controllers = PscIndividualFilingControllerImpl.class)
-@Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class})
+@Import({PscExistsValidator.class, PscFilingConfig.class, PscMapperImpl.class, AppConfig.class})
 class PscIndividualFilingControllerImplIT extends BaseControllerIT {
 
     private static final URI SELF_URI = URI.create("/transactions/"
@@ -101,9 +98,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     private Clock clock;
     @MockBean
     private Logger logger;
-
-    @Mock
-    private ApiErrorResponseException errorResponseException;
 
     @Autowired
     private MockMvc mockMvc;
@@ -475,23 +469,44 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
             .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
             .andExpect(jsonPath("$.register_entry_date", is(REGISTER_ENTRY_DATE.toString())))
             .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
-                .andExpect(jsonPath("$.country_of_residence").doesNotExist());
+            .andExpect(jsonPath("$.country_of_residence").doesNotExist());
         verify(filingMapper).map(dto);
+    }
+
+    @Test
+    void createFilingWhenPropertyUnrecognisedThenResponse400() throws Exception {
+        final var body = "{" + PSC07_FRAGMENT.replace("ceased_on", "Ceased_on") + "}";
+        final var expectedError = createExpectedValidationError("ignored", "$.Ceased_on", 1, 75);
+
+        mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content(body)
+                .requestAttr("transaction", transaction)
+                .contentType(APPLICATION_JSON)
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(header().doesNotExist("location"))
+            .andExpect(jsonPath("$.errors", hasSize(1)))
+            .andExpect(jsonPath("$.errors[0]",
+                allOf(hasEntry("location", expectedError.getLocation()),
+                    hasEntry("location_type", expectedError.getLocationType()),
+                    hasEntry("type", expectedError.getType()))))
+            .andExpect(jsonPath("$.errors[0].error",
+                containsString("JSON parse error: Property is not recognised: {property-name}")));
     }
 
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
         final Links links = new Links(new URI("/transactions/"
-                + TRANS_ID
-                + "/persons-with-significant-control/individual/"
-                + FILING_ID), new URI("validation_status"));
+            + TRANS_ID
+            + "/persons-with-significant-control/individual/"
+            + FILING_ID), new URI("validation_status"));
         final var filing = PscIndividualFiling.builder()
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .ceasedOn(CEASED_ON_DATE)
-                .registerEntryDate(CEASED_ON_DATE)
-                .links(links)
-                .build();
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .ceasedOn(CEASED_ON_DATE)
+            .registerEntryDate(CEASED_ON_DATE)
+            .links(links)
+            .build();
 
         when(pscIndividualFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
         when(pscFilingService.requestMatchesResourceSelf(any(HttpServletRequest.class),
@@ -526,11 +541,6 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
         expectedError.addErrorValue("column", String.valueOf(column));
 
         return expectedError;
-    }
-
-    private ApiError createExpectedApiError(final String msg, final String location,
-            final LocationType locationType, final ErrorType errorType) {
-        return new ApiError(msg, location, locationType.getValue(), errorType.getType());
     }
 
 }

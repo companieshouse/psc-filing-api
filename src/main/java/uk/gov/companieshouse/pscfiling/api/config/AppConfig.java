@@ -30,12 +30,14 @@ public class AppConfig {
 
     @Bean
     public Jackson2ObjectMapperBuilder objectMapperBuilder() {
-        return new Jackson2ObjectMapperBuilder().serializationInclusion(JsonInclude.Include.NON_NULL)
-                .simpleDateFormat("yyyy-MM-dd")
-                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        return new Jackson2ObjectMapperBuilder().serializationInclusion(
+                JsonInclude.Include.NON_NULL)
+            .simpleDateFormat("yyyy-MM-dd")
+            .failOnUnknownProperties(true) // override Spring Boot default (false)
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     }
 
-    @Bean
+    @Bean("postObjectMapper")
     @Primary
     public ObjectMapper objectMapper() {
         return objectMapperBuilder().build();
