@@ -43,20 +43,22 @@ import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 
 @RestController
 @RequestMapping("/transactions/{transactionId}/persons-with-significant-control/{pscType:"
-        + "(?:legal-person|corporate-entity)}")
+    + "(?:legal-person|corporate-entity)}")
 public class PscWithIdentificationFilingControllerImpl extends BaseFilingControllerImpl
-        implements PscWithIdentificationFilingController {
+    implements PscWithIdentificationFilingController {
 
     private static final String PATCH_RESULT_MSG = "PATCH result";
     private static final String STATUS_MSG = "status";
+    private static final String PATCH_FAILED = "patch failed";
+    private static final String ERROR_MSG = "error";
 
     private final PscWithIdentificationFilingService pscWithIdentificationFilingService;
 
     public PscWithIdentificationFilingControllerImpl(final TransactionService transactionService,
-            final PscFilingService pscFilingService,
-            final PscWithIdentificationFilingService pscWithIdentificationFilingService,
-            final PscMapper filingMapper,
-            final Clock clock, final Logger logger) {
+        final PscFilingService pscFilingService,
+        final PscWithIdentificationFilingService pscWithIdentificationFilingService,
+        final PscMapper filingMapper,
+        final Clock clock, final Logger logger) {
         super(transactionService, pscFilingService, filingMapper, clock, logger);
 
         this.pscWithIdentificationFilingService = pscWithIdentificationFilingService;
@@ -122,24 +124,31 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
+        final var maybePSCFiling = pscFilingService.get(filingResource).filter(
+            f -> pscFilingService.requestMatchesResourceSelf(request, f));
+
+        if (maybePSCFiling.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
         final var patchResult = pscWithIdentificationFilingService.patch(filingResource,
-                mergePatch);
+            mergePatch);
 
         if (patchResult.failedRetrieval()) {
             final var reason = (RetrievalFailureReason) patchResult.getRetrievalFailureReason();
 
-            logMap.put(STATUS_MSG, "patch failed");
-            logMap.put("error", "retrieval failure: " + reason);
+            logMap.put(STATUS_MSG, PATCH_FAILED);
+            logMap.put(ERROR_MSG, "retrieval failure: " + reason);
             logger.infoContext(transId, PATCH_RESULT_MSG, logMap);
 
             throw new FilingResourceNotFoundException(
-                    "Failed to retrieve filing: " + filingResource);
+                "Failed to retrieve filing: " + filingResource);
         }
         else if (patchResult.failedValidation()) {
             final var errors = (List<FieldError>) patchResult.getValidationErrors();
 
-            logMap.put(STATUS_MSG, "patch failed");
-            logMap.put("error", "validation failure: " + errors);
+            logMap.put(STATUS_MSG, PATCH_FAILED);
+            logMap.put(ERROR_MSG, "validation failure: " + errors);
             logger.infoContext(transId, PATCH_RESULT_MSG, logMap);
 
             throw new InvalidPatchException(errors);

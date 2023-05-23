@@ -43,18 +43,20 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NaturesOfControlList;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
+import uk.gov.companieshouse.pscfiling.api.repository.PscFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.repository.PscIndividualFilingRepository;
 import uk.gov.companieshouse.pscfiling.api.service.FilingValidationService;
 import uk.gov.companieshouse.pscfiling.api.service.PscDetailsService;
-import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 
 @Tag("app")
 @SpringBootTest
 @AutoConfigureMockMvc
 class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
-    private static final URI SELF_URI = URI.create("/path/to/self");
-    private static final URI VALIDATION_URI = URI.create("/path/to/self/validation");
+    private static final String RESOURCE_URI_STR = String.format(
+        "/transactions/%s/persons-with-significant-control/individual/%s", TRANS_ID, FILING_ID);
+    private static final URI SELF_URI = URI.create(RESOURCE_URI_STR);
+    private static final URI VALIDATION_URI = URI.create(RESOURCE_URI_STR + "/validation_status");
     private NameElements nameElements;
     private NaturesOfControlList naturesOfControl;
     private Links links;
@@ -67,7 +69,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @MockBean
     private PscApi pscDetails;
     @MockBean
-    private PscFilingService pscFilingService;
+    private PscFilingRepository filingRepository;
     @MockBean
     private PscIndividualFilingRepository individualFilingRepository;
     @MockBean
@@ -118,49 +120,49 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @DisplayName("Expect to update or replace existing fields that are not read only")
     void updateFilingWhenReplacingFields() throws Exception {
         final var body = "{\n"
-                + " \"id\": \"unauthorised\",\n"
-                + "  \"ceased_on\": \"2022-03-03\",\n"
-                + " \"created_at\": \""
-                + SECOND_INSTANT
-                + "\",\n"
-                + " \"updated_at\": \""
-                + FIRST_INSTANT
-                + "\",\n"
-                + "  \"name_elements\": {\n"
-                + "    \"surname\": \"Replaced\"\n"
-                + "  },\n"
-                + " \"natures_of_control\": [\n"
-                + "    \"type4\"\n"
-                + "  ]\n"
-                + "}";
+            + " \"id\": \"unauthorised\",\n"
+            + "  \"ceased_on\": \"2022-03-03\",\n"
+            + " \"created_at\": \""
+            + SECOND_INSTANT
+            + "\",\n"
+            + " \"updated_at\": \""
+            + FIRST_INSTANT
+            + "\",\n"
+            + "  \"name_elements\": {\n"
+            + "    \"surname\": \"Replaced\"\n"
+            + "  },\n"
+            + " \"natures_of_control\": [\n"
+            + "    \"type4\"\n"
+            + "  ]\n"
+            + "}";
         final var filing = PscIndividualFiling.builder()
-                .id(FILING_ID)
-                .createdAt(FIRST_INSTANT)
-                .updatedAt(FIRST_INSTANT)
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .ceasedOn(CEASED_ON_DATE)
-                .registerEntryDate(REGISTER_ENTRY_DATE)
-                .nameElements(nameElements)
-                .naturesOfControl(naturesOfControl)
-                .links(links)
-                .build();
+            .id(FILING_ID)
+            .createdAt(FIRST_INSTANT)
+            .updatedAt(FIRST_INSTANT)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .ceasedOn(CEASED_ON_DATE)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .nameElements(nameElements)
+            .naturesOfControl(naturesOfControl)
+            .links(links)
+            .build();
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-
-        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
-                i -> PscIndividualFiling.builder(i.getArgument(0))
-                        .build()); // copy of first argument
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.save(any(PscIndividualFiling.class))).thenAnswer(
+            i -> PscIndividualFiling.builder(i.getArgument(0))
+                .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
-                        .contentType(APPLICATION_JSON_MERGE_PATCH)
-                        .requestAttr("transaction", transaction)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(FILING_ID)))
-                .andExpect(jsonPath("$.ceased_on", is("2022-03-03")))
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(FILING_ID)))
+            .andExpect(jsonPath("$.ceased_on", is("2022-03-03")))
                 .andExpect(jsonPath("$.name_elements.forename", is("Forename")))
                 .andExpect(jsonPath("$.name_elements.other_forenames", is("Other Forenames")))
                 .andExpect(jsonPath("$.name_elements.title", is("Sir")))
@@ -175,39 +177,40 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @DisplayName("Expect to add new fields to existing filing")
     void updateFilingWhenAddingFields() throws Exception {
         final var body = "{\n"
-                + "  \"ceased_on\": \"2022-10-05\",\n"
-                + "  \"name_elements\": {\n"
-                + "    \"surname\": \"Added\"\n"
-                + "  },\n"
-                + " \"natures_of_control\": [\n"
-                + "    \"type1\",\n"
-                + "    \"type2\",\n"
-                + "    \"type3\",\n"
-                + "    \"type4\"\n"
-                + "  ]\n"
-                + "}";
+            + "  \"ceased_on\": \"2022-10-05\",\n"
+            + "  \"name_elements\": {\n"
+            + "    \"surname\": \"Added\"\n"
+            + "  },\n"
+            + " \"natures_of_control\": [\n"
+            + "    \"type1\",\n"
+            + "    \"type2\",\n"
+            + "    \"type3\",\n"
+            + "    \"type4\"\n"
+            + "  ]\n"
+            + "}";
         final var filing = PscIndividualFiling.builder()
-                .id(FILING_ID)
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .registerEntryDate(REGISTER_ENTRY_DATE)
-                .links(links)
-                .build();
+            .id(FILING_ID)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .links(links)
+            .build();
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
-                i -> PscIndividualFiling.builder(i.getArgument(0))
-                        .build()); // copy of first argument
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.save(any(PscIndividualFiling.class))).thenAnswer(
+            i -> PscIndividualFiling.builder(i.getArgument(0))
+                .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
-                        .contentType(APPLICATION_JSON_MERGE_PATCH)
-                        .requestAttr("transaction", transaction)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(FILING_ID)))
-                .andExpect(jsonPath("$.ceased_on", is(CEASED_ON)))
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(FILING_ID)))
+            .andExpect(jsonPath("$.ceased_on", is(CEASED_ON)))
                 .andExpect(jsonPath("$.name_elements.forename").doesNotExist())
                 .andExpect(jsonPath("$.name_elements.other_forenames").doesNotExist())
                 .andExpect(jsonPath("$.name_elements.title").doesNotExist())
@@ -222,41 +225,42 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @DisplayName("Expected: top level and nested fields are deleted with 'null' and read only fields are unchanged")
     void updateFilingWhenDeletingFields() throws Exception {
         final var body = "{\n"
-                + " \"id\": null,\n"
-                + "  \"ceased_on\": null,\n"
-                + "  \"name_elements\": {\n"
-                + "    \"surname\": null\n"
-                + "  },\n"
-                + " \"links\": {\n"
-                + "    \"self\": null\n"
-                + "  },\n"
-                + " \"natures_of_control\": [\n"
-                + "  ]\n"
-                + "}";
+            + " \"id\": null,\n"
+            + "  \"ceased_on\": null,\n"
+            + "  \"name_elements\": {\n"
+            + "    \"surname\": null\n"
+            + "  },\n"
+            + " \"links\": {\n"
+            + "    \"self\": null\n"
+            + "  },\n"
+            + " \"natures_of_control\": [\n"
+            + "  ]\n"
+            + "}";
         final var filing = PscIndividualFiling.builder()
-                .id(FILING_ID)
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .ceasedOn(CEASED_ON_DATE)
-                .nameElements(nameElements)
-                .links(links)
-                .registerEntryDate(REGISTER_ENTRY_DATE)
-                .build();
+            .id(FILING_ID)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .ceasedOn(CEASED_ON_DATE)
+            .nameElements(nameElements)
+            .links(links)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .build();
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
-                i -> PscIndividualFiling.builder(i.getArgument(0))
-                        .build()); // copy of first argument
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.save(any(PscIndividualFiling.class))).thenAnswer(
+            i -> PscIndividualFiling.builder(i.getArgument(0))
+                .build()); // copy of first argument
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
-                        .contentType(APPLICATION_JSON_MERGE_PATCH)
-                        .requestAttr("transaction", transaction)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(FILING_ID)))
-                .andExpect(jsonPath("$.ceased_on").doesNotExist())
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(FILING_ID)))
+            .andExpect(jsonPath("$.ceased_on").doesNotExist())
                 .andExpect(jsonPath("$.name_elements.forename", is("Forename")))
                 .andExpect(jsonPath("$.name_elements.other_forenames", is("Other Forenames")))
                 .andExpect(jsonPath("$.name_elements.title", is("Sir")))
@@ -272,30 +276,31 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     void updateFilingWhenFieldsAbsentThenTouchedButUnchanged() throws Exception {
         final var body = "{ }";
         final var filing = PscIndividualFiling.builder()
-                .id(FILING_ID)
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .ceasedOn(CEASED_ON_DATE)
-                .nameElements(nameElements)
-                .links(links)
-                .registerEntryDate(REGISTER_ENTRY_DATE)
-                .updatedAt(FIRST_INSTANT)
-                .build();
+            .id(FILING_ID)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .ceasedOn(CEASED_ON_DATE)
+            .nameElements(nameElements)
+            .links(links)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .updatedAt(FIRST_INSTANT)
+            .build();
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
-        when(pscFilingService.save(any(PscIndividualFiling.class))).thenAnswer(
-                i -> PscIndividualFiling.builder(i.getArgument(0))
-                        .build()); // copy of first argument
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.save(any(PscIndividualFiling.class))).thenAnswer(
+            i -> PscIndividualFiling.builder(i.getArgument(0))
+                .build()); // copy of first argument
         when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
-                        .contentType(APPLICATION_JSON_MERGE_PATCH)
-                        .requestAttr("transaction", transaction)
-                        .headers(httpHeaders))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(FILING_ID)))
-                .andExpect(jsonPath("$.reference_etag", is(ETAG)))
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id", is(FILING_ID)))
+            .andExpect(jsonPath("$.reference_etag", is(ETAG)))
                 .andExpect(jsonPath("$.reference_psc_id", is(PSC_ID)))
                 .andExpect(jsonPath("$.ceased_on", is("2022-09-13")))
                 .andExpect(jsonPath("$.name_elements.forename", is("Forename")))
@@ -311,28 +316,29 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @DisplayName("Expect PATCH validation to return an error when validation fails")
     void updateFilingWhenDateInFuture() throws Exception {
         final var body = "{\n"
-                + " \"ceased_on\": \"2023-11-05\", \n"
-                + " \"register_entry_date\": \"2023-11-05\" \n"
-                + "}";
+            + " \"ceased_on\": \"2023-11-05\", \n"
+            + " \"register_entry_date\": \"2023-11-05\" \n"
+            + "}";
         final var filing = PscIndividualFiling.builder()
-                .id(FILING_ID)
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .registerEntryDate(REGISTER_ENTRY_DATE)
-                .links(links)
-                .build();
+            .id(FILING_ID)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .links(links)
+            .build();
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         final var expectedError = "{rejected-value} must be a date in the past or in the present";
         final Map<String, String> expectedValues = Map.of("rejected-value", "2023-11-05");
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
-                        .contentType(APPLICATION_JSON_MERGE_PATCH)
-                        .requestAttr("transaction", transaction)
-                        .headers(httpHeaders))
-                .andDo(print())
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+            .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
                 .andExpect(jsonPath("$.errors[*].error",
@@ -352,20 +358,21 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @DisplayName("Expect PATCH validation error to omit class names")
     void updateFilingWhenDateInvalid() throws Exception {
         final var body = "{\n"
-                + " \"ceased_on\": \"2023-11-5\" \n"
-                + "}";
+            + " \"ceased_on\": \"2023-11-5\" \n"
+            + "}";
         final var filing = PscIndividualFiling.builder()
-                .id(FILING_ID)
-                .referenceEtag(ETAG)
-                .referencePscId(PSC_ID)
-                .registerEntryDate(REGISTER_ENTRY_DATE)
-                .links(links)
-                .build();
+            .id(FILING_ID)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .links(links)
+            .build();
         final var expectedError = createExpectedValidationError(
-                "JSON parse error: Text '2023-11-5' could not be parsed at index 8", "$.ceased_on",
-                1, 14);
+            "JSON parse error: Text '2023-11-5' could not be parsed at index 8", "$.ceased_on",
+            1, 14);
 
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
@@ -393,7 +400,31 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @DisplayName("If the submission ID does not match then return a 404 Not Found response")
     void updateFilingWhenNotFoundThen404() throws Exception {
         final var body = "{ }";
-        when(pscFilingService.get(FILING_ID)).thenReturn(Optional.empty());
+        when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.empty());
+
+        mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
+                .contentType(APPLICATION_JSON_MERGE_PATCH)
+                .requestAttr("transaction", transaction)
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(header().doesNotExist("Location"));
+    }
+
+    @Test
+    @DisplayName("If the request URI does not match the filing's 'self' link then return a 404 " +
+        "Not Found response")
+    void updateFilingWhenTransactionIdMismatchThen404() throws Exception {
+        final var body = "{ }";
+        final URI BAD_SELF_URI = URI.create("/path/to/other_or_bad");
+        final var links = new Links(BAD_SELF_URI, VALIDATION_URI);
+        final var filing = PscIndividualFiling.builder()
+            .id(FILING_ID)
+            .referenceEtag(ETAG)
+            .referencePscId(PSC_ID)
+            .registerEntryDate(REGISTER_ENTRY_DATE)
+            .links(links)
+            .build();
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -401,7 +432,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                         .headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(header().doesNotExist("Location"));
+            .andExpect(header().doesNotExist("Location"));
     }
 
 }
