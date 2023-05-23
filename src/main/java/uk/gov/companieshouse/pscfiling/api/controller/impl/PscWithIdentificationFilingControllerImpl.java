@@ -137,8 +137,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             logMap.put(ERROR_MSG, "retrieval failure: " + reason);
             logger.infoContext(transId, PATCH_RESULT_MSG, logMap);
 
-            throw new FilingResourceNotFoundException(
-                "Failed to retrieve filing: " + filingResource);
+            throw new FilingResourceNotFoundException(filingResource);
         }
         else if (patchResult.failedValidation()) {
             final var errors = (List<FieldError>) patchResult.getValidationErrors();

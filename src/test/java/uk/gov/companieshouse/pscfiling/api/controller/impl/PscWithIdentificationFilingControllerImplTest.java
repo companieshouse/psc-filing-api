@@ -273,7 +273,7 @@ class PscWithIdentificationFilingControllerImplTest {
         final var exception = assertThrows(FilingResourceNotFoundException.class,
             () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
-        assertThat(exception.getMessage(), is("Failed to retrieve filing: " + FILING_ID));
+        assertThat(exception.getMessage(), is(FILING_ID));
     }
 
     @Test
@@ -309,7 +309,7 @@ class PscWithIdentificationFilingControllerImplTest {
         final var exception = assertThrows(FilingResourceNotFoundException.class,
             () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
-        assertThat(exception.getMessage(), is("Failed to retrieve filing: " + FILING_ID));
+        assertThat(exception.getMessage(), is(FILING_ID));
     }
 
 }

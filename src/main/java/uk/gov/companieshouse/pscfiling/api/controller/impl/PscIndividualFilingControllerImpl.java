@@ -135,8 +135,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
             logMap.put(ERROR_MSG, "retrieval failure: " + reason);
             logger.debugContext(transId, PATCH_RESULT_MSG, logMap);
 
-            throw new FilingResourceNotFoundException(
-                "Failed to retrieve filing: " + filingResource);
+            throw new FilingResourceNotFoundException(filingResource);
         }
         else if (patchResult.failedValidation()) {
 
