@@ -41,12 +41,6 @@ class PscWithIdentificationFilingProviderTest {
     }
 
     @Test
-    void setGetRequestId() {
-        testProvider.setRequestId("test_id");
-        assertThat(testProvider.getRequestId(), is("test_id"));
-    }
-
-    @Test
     void provide() {
         var expected = new EntityRetrievalResult<>("etag", filing);
         when(filingService.get(FILING_ID)).thenReturn(Optional.of(filing));

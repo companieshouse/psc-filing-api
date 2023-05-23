@@ -4,11 +4,13 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -32,6 +34,7 @@ import uk.gov.companieshouse.pscfiling.api.mapper.PscMapper;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
+import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
 import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.service.PscIndividualFilingService;
@@ -152,13 +155,24 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
             logMap.put(STATUS_MSG, "patch successful");
             logger.debugContext(transId, PATCH_RESULT_MSG, logMap);
 
-            return pscFilingService.get(filingResource)
+            Optional<PscCommunal> optionalFiling = pscFilingService.get(filingResource);
+
+            return optionalFiling
                     .map(PscIndividualFiling.class::cast)
-                    .map(ResponseEntity::ok)
+                    .map(PscIndividualFilingControllerImpl::createOKResponse)
                     .orElse(ResponseEntity.notFound()
                             .build());
         }
 
+    }
+
+    private static ResponseEntity<PscIndividualFiling> createOKResponse(PscIndividualFiling filing) {
+
+        final var responseHeaders = new HttpHeaders();
+
+        responseHeaders.setLocation(filing.getLinks().getSelf());
+
+        return ResponseEntity.ok().headers(responseHeaders).body(filing);
     }
 
     /**

@@ -6,11 +6,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -82,7 +82,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             final HttpMessageNotReadableException ex, final HttpHeaders headers,
             final HttpStatus status, final WebRequest request) {
 
-        return createRedactedErrorResponseEntity(ex, request, ex.getCause(), "JSON parse error: ");
+        return createRedactedErrorResponseEntity(ex, request, ex.getCause(),
+                validation.get("json-syntax-prefix"));
     }
 
     @Override
@@ -103,9 +104,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             final WebRequest request) {
         final var fieldErrors = ex.getFieldErrors();
 
-        final var errorList = fieldErrors.stream()
-                .map(e -> buildRequestBodyError(e.getDefaultMessage(), getJsonPath(e),
-                        e.getRejectedValue()))
+        final List<ApiError> errorList = fieldErrors.stream()
+                .map(e -> buildRequestBodyError(getFieldErrorApiEnumerationMessage(e),
+                        getJsonPath(e), e.getRejectedValue()))
                 .collect(Collectors.toList());
 
         logError(request, "Invalid filing data", ex, errorList);
@@ -118,7 +119,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleMergePatchException(final MergePatchException ex,
             final WebRequest request) {
         return createRedactedErrorResponseEntity(ex, request, ex.getCause(),
-                "Failed to merge patch request: ");
+                validation.get("patch-merge-error-prefix"));
     }
 
     @ExceptionHandler(ConflictingFilingException.class)
@@ -210,15 +211,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .findFirst()
                 .map(s -> s.replaceAll("^[^.]*", "\\$"))
                 .map(s -> s.replaceAll("([A-Z0-9]+)", "_$1").toLowerCase())
-                .orElse(null);
+                .orElse("$");
     }
 
-    private static String getMismatchErrorMessage(
+    private String getMismatchErrorMessage(
             final MismatchedInputException mismatchedInputException) {
         if (mismatchedInputException instanceof UnrecognizedPropertyException) {
-            final var unrecognized = (UnrecognizedPropertyException) mismatchedInputException;
-
-            return MessageFormat.format("Unknown property \"{0}\"", unrecognized.getPropertyName());
+            return validation.get("unknown-property-name");
         }
         else {
             final var message = mismatchedInputException.getMessage();
@@ -247,6 +246,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             if (cause instanceof MismatchedInputException) {
                 message = getMismatchErrorMessage((MismatchedInputException) cause);
 
+
                 final var fieldNameOpt = ((MismatchedInputException) cause).getPath()
                         .stream()
                         .findFirst()
@@ -263,6 +263,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             }
             error = buildRequestBodyError(baseMessage + message, jsonPath, rejectedValue);
             addLocationInfo(error, location);
+
+            if (cause instanceof UnrecognizedPropertyException) {
+                final var unrecognized = ((UnrecognizedPropertyException) cause);
+
+                error.addErrorValue("property-name", unrecognized.getPropertyName());
+            }
         }
         else {
             message = redactErrorMessage(getMostSpecificCause(ex).getMessage());
@@ -290,7 +296,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         Optional.ofNullable(rejectedValue)
                 .map(Object::toString)
                 .filter(Predicate.not(String::isEmpty))
-                .ifPresent(r -> error.addErrorValue("rejected", r));
+                .ifPresent(r -> error.addErrorValue("rejected-value", r));
 
         return error;
     }
@@ -313,5 +319,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final Throwable rootCause = ExceptionUtils.getRootCause(original);
 
         return rootCause != null ? rootCause : original;
+    }
+
+    private String getFieldErrorApiEnumerationMessage(final FieldError e) {
+        final var codes = Objects.requireNonNull(e.getCodes());
+        return validation.get(codes[codes.length - 1]);
     }
 }

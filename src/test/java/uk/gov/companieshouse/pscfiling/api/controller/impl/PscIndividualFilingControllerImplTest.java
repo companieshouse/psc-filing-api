@@ -256,7 +256,7 @@ class PscIndividualFilingControllerImplTest {
         final var success = new PatchResult();
         final Instant updatedInstant = Instant.parse("2022-11-15T09:44:08.108Z");
         final var updatedFiling = PscIndividualFiling.builder(filing).updatedAt(updatedInstant)
-            .build();
+                .links(links).build();
 
         when(pscFilingService.get(FILING_ID)).thenReturn(Optional.of(filing)).thenReturn(
             Optional.of(updatedFiling));
@@ -272,6 +272,7 @@ class PscIndividualFilingControllerImplTest {
         assertThat(response.getBody(), is(updatedFiling));
         assertThat(response.getBody().getUpdatedAt(),
             is(not(equalTo(response.getBody().getCreatedAt()))));
+        assertThat(response.getHeaders().getLocation(), is(links.getSelf()));
 
     }
 

@@ -15,18 +15,6 @@ public class PscWithIdentificationFilingProviderImpl implements
     private final Logger logger;
     private final PscFilingService pscFilingService;
 
-    @Override
-    public String getRequestId() {
-        return requestId;
-    }
-
-    @Override
-    public void setRequestId(final String requestId) {
-        this.requestId = requestId;
-    }
-
-    private String requestId;
-
     @Autowired
     public PscWithIdentificationFilingProviderImpl(final PscFilingService pscFilingService, final Logger logger) {
         this.pscFilingService = pscFilingService;

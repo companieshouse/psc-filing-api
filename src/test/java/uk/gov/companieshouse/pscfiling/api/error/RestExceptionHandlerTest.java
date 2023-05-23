@@ -5,6 +5,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.Mockito.when;
 
@@ -81,13 +84,36 @@ class RestExceptionHandlerTest {
     private JsonMappingException.Reference mappingReference;
 
     private Map<String, String> validation;
+    private String[] codes1;
+    private String[] codes2;
+    private FieldError fieldError;
+    private FieldError fieldErrorWithRejectedValue;
+    private ApiError expectedError;
+    private ApiError expectedErrorWithRejectedValue;
 
     @BeforeEach
     void setUp() {
-        validation = Map.of("filing-resource-not-found", "Filing resource {filing-resource-id} not found");
+        validation = Map.of("filing-resource-not-found",
+                "Filing resource {filing-resource-id} not found", "NotBlank", "field is blank",
+                "PastOrPresent", "{rejected-value} is future date", "patch-merge-error-prefix",
+                "Failed to merge patch request: ", "unknown-property-name",
+                "Property is not recognised: {property-name}", "json-syntax-prefix",
+                "JSON parse error: ");
         testExceptionHandler = new RestExceptionHandler(validation, logger);
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURI("/path/to/resource");
+        codes1 = new String[]{"code1", "object.addressLine1", "code3", "NotBlank"};
+        codes2 = new String[]{"code1", "object.ceasedOn", "code3", "PastOrPresent"};
+        fieldError = new FieldError("object", "field1", null, false, codes1, null, "error");
+        fieldErrorWithRejectedValue =
+                new FieldError("object", "ceasedOn", "3000-10-13", false, codes2, null,
+                        "errorWithRejectedValue");
+        expectedError =
+                new ApiError("field is blank", "$.address_line_1", "json-path", "ch:validation");
+        expectedErrorWithRejectedValue =
+                new ApiError("{rejected-value} is future date", "$.ceased_on", "json-path",
+                        "ch:validation");
+        expectedErrorWithRejectedValue.addErrorValue("rejected-value", "3000-10-13");
     }
 
     @Test
@@ -246,40 +272,30 @@ class RestExceptionHandlerTest {
 
     @Test
     void handleHttpMessageNotReadableWhenUnrecognizedPropertyException() {
-        final var msg = "Unrecognized field \"ceased_onX\" (class uk.gov.companieshouse.pscfiling" +
-                ".api.model.entity.PscIndividualFiling), not marked as ignorable (18 known " +
-                "properties: \"notified_on\", \"country_of_residence\", \"natures_of_control\", " +
-                "\"reference_etag\", \"statement_type\", \"ceased_on\", \"reference_psc_id\", " +
-                "\"address_same_as_registered_office_address\", \"address\", \"etag\", " +
-                "\"register_entry_date\", \"residential_address\", \"nationality\", " +
-                "\"statement_action_date\", \"date_of_birth\", \"name_elements\", \"kind\", " +
-                "\"residential_address_same_as_correspondence_address\"])\n" +
-                " at [Source: (String)\"{\"ceased_onX\":\"2022-09-13\"}\"; line: 3, " +
-                "column: 7] (through reference chain: uk.gov.companieshouse.pscfiling.api.model" +
-                ".entity.PscIndividualFiling[\"ceased_onX\"])";
         final var message = new MockHttpInputMessage(
                 PSC07_FRAGMENT.replaceAll("ceased_on", "ceased_onX").getBytes());
-
         when(request.getRequest()).thenReturn(servletRequest);
         when(unrecognizedPropertyException.getLocation()).thenReturn(
                 new JsonLocation(null, 100, 3, 7));
         when(unrecognizedPropertyException.getPath()).thenReturn(List.of(mappingReference));
         when(unrecognizedPropertyException.getPropertyName()).thenReturn("ceased_onX");
         when(mappingReference.getFieldName()).thenReturn("ceased_onX");
-
-        final var unrecognizedMsg = "JSON parse error: Unknown property \"ceased_onX\"";
+        final var unrecognizedMsg = "JSON parse error: Property is not recognised: {property-name}";
         final var exceptionMessage =
                 new HttpMessageNotReadableException(unrecognizedMsg, unrecognizedPropertyException,
                         message);
+
         final var response =
                 testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
                         HttpStatus.BAD_REQUEST, request);
+
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError(unrecognizedMsg, "$.ceased_onX", "json-path", "ch:validation");
         expectedError.addErrorValue("offset", "line: 3, column: 7");
         expectedError.addErrorValue("line", "3");
         expectedError.addErrorValue("column", "7");
+        expectedError.addErrorValue("property-name", "ceased_onX");
         final var actualError = Objects.requireNonNull(apiErrors).getErrors().iterator().next();
 
         assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
@@ -359,50 +375,28 @@ class RestExceptionHandlerTest {
     @Test
     void handleInvalidFilingException() {
         when(request.getRequest()).thenReturn(servletRequest);
-
-        final var fieldError = new FieldError("object", "field", "error");
-        final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
-        final var fieldErrorWithRejectedValue =
-                new FieldError("object", "field", "rejectedValue", false, codes, null,
-                        "errorWithRejectedValue");
         final var exception =
                 new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
 
         final var apiErrors = testExceptionHandler.handleInvalidFilingException(exception, request);
 
-        final var expectedError = new ApiError("error", null, "json-path", "ch:validation");
-        final var expectedErrorWithRejectedValue =
-                new ApiError("errorWithRejectedValue", "$.address_line_1", "json-path",
-                        "ch:validation");
-
-        expectedErrorWithRejectedValue.addErrorValue("rejected", "rejectedValue");
-
-        assertThat(apiErrors.getErrors(), contains(expectedError, expectedErrorWithRejectedValue));
+        assertThat(apiErrors.getErrors(), hasSize(2));
+        assertThat(apiErrors.getErrors(),
+                containsInAnyOrder(expectedError, expectedErrorWithRejectedValue));
     }
 
     @Test
     void handleConflictingFilingException() {
         when(request.getRequest()).thenReturn(servletRequest);
+        final var conflictFieldError =
+                new FieldError("ignored", "ignored", "conflict error message");
+        final var exception = new ConflictingFilingException(List.of(conflictFieldError));
 
-        final var fieldError = new FieldError("object", "field", "error");
-        final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
-        final var fieldErrorWithRejectedValue =
-                new FieldError("object", "field", "rejectedValue", false, codes, null,
-                        "errorWithRejectedValue");
-        final var exception =
-                new ConflictingFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
+        final var apiErrors =
+                testExceptionHandler.handleConflictingFilingException(exception, request);
 
-        final var apiErrors = testExceptionHandler.handleConflictingFilingException(exception,
-                request);
-
-        final var expectedError = new ApiError("error", null, "json-path", "ch:validation");
-        final var expectedErrorWithRejectedValue =
-                new ApiError("errorWithRejectedValue", "$.address_line_1", "json-path",
-                        "ch:validation");
-
-        expectedErrorWithRejectedValue.addErrorValue("rejected", "rejectedValue");
-
-        assertThat(apiErrors.getErrors(), contains(expectedError, expectedErrorWithRejectedValue));
+        assertThat(apiErrors.getErrors(),
+                contains(hasProperty("error", is("conflict error message"))));
     }
 
     @ParameterizedTest(name = "[{index}]: cause={0}")
@@ -474,14 +468,7 @@ class RestExceptionHandlerTest {
     void handleMergePatchException() {
         when(request.getRequest()).thenReturn(servletRequest);
 
-        final var fieldError = new FieldError("object", "field", "error");
-        final var codes = new String[]{"code1", "code2.addressLine1", "code3"};
-        final var fieldErrorWithRejectedValue =
-                new FieldError("object", "field", "rejectedValue", false, codes, null,
-                        "errorWithRejectedValue");
-        final var exception =
-                new MergePatchException("Failed to merge patch request",
-                        unrecognizedPropertyException);
+        final var exception = new MergePatchException(unrecognizedPropertyException);
 
         when(unrecognizedPropertyException.getPropertyName()).thenReturn("field");
         when(unrecognizedPropertyException.getLocation()).thenReturn(
@@ -492,21 +479,23 @@ class RestExceptionHandlerTest {
         final var apiErrors = testExceptionHandler.handleMergePatchException(exception, request);
 
         final var expectedError = new ApiError(
-                "Failed to merge patch request: Unknown property \"field\"", "$.field",
-                "json-path",
-                "ch:validation");
+                "Failed to merge patch request: Property is not recognised: {property-name}",
+                "$.field", "json-path", "ch:validation");
         expectedError.addErrorValue("offset", "line: 3, column: 7");
         expectedError.addErrorValue("line", "3");
         expectedError.addErrorValue("column", "7");
+        expectedError.addErrorValue("property-name", "field");
 
         assertThat(((ApiErrors) Objects.requireNonNull(apiErrors.getBody())).getErrors(),
                 contains(expectedError));
     }
 
+
     @Test
     void getMostSpecificCauseWhenPresent() {
         final var cause = new InvalidPatchException(Collections.emptyList());
-        final var exception = new MergePatchException("test", cause);
+
+        final var exception = new MergePatchException(cause);
 
         assertThat(RestExceptionHandler.getMostSpecificCause(exception), is(cause));
     }
