@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.patch.model.PatchResult;
 import uk.gov.companieshouse.pscfiling.api.controller.PscWithIdentificationFilingController;
 import uk.gov.companieshouse.pscfiling.api.error.RetrievalFailureReason;
 import uk.gov.companieshouse.pscfiling.api.exception.FilingResourceNotFoundException;
@@ -124,15 +125,10 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             final HttpServletRequest request) {
 
         final var logMap = LogHelper.createLogMap(transId);
-        final var maybePSCFiling = pscFilingService.get(filingResource).filter(
-            f -> pscFilingService.requestMatchesResourceSelf(request, f));
-
-        if (maybePSCFiling.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        final var patchResult = pscWithIdentificationFilingService.patch(filingResource,
-            mergePatch);
+        final var patchResult = pscFilingService.get(filingResource).filter(
+            f1 -> pscFilingService.requestMatchesResourceSelf(request, f1)).map(
+            f -> pscWithIdentificationFilingService.patch(filingResource, mergePatch)).orElse(
+            new PatchResult(RetrievalFailureReason.FILING_NOT_FOUND));
 
         if (patchResult.failedRetrieval()) {
             final var reason = (RetrievalFailureReason) patchResult.getRetrievalFailureReason();
@@ -141,8 +137,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
             logMap.put(ERROR_MSG, "retrieval failure: " + reason);
             logger.infoContext(transId, PATCH_RESULT_MSG, logMap);
 
-            throw new FilingResourceNotFoundException(
-                "Failed to retrieve filing: " + filingResource);
+            throw new FilingResourceNotFoundException(filingResource);
         }
         else if (patchResult.failedValidation()) {
             final var errors = (List<FieldError>) patchResult.getValidationErrors();

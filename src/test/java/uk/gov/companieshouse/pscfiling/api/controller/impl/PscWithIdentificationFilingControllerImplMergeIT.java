@@ -431,8 +431,15 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                 .contentType(APPLICATION_JSON_MERGE_PATCH)
                 .requestAttr("transaction", transaction)
-                .headers(httpHeaders)).andDo(print()).andExpect(status().isNotFound())
-            .andExpect(header().doesNotExist("Location"));
+                .headers(httpHeaders))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(header().doesNotExist("Location"))
+            .andExpect(jsonPath("$.errors", hasSize(1)))
+            .andExpect(
+                jsonPath("$.errors[0].error", is("Filing resource {filing-resource-id} not found")))
+            .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
+            .andExpect(jsonPath("$.errors[0].location_type", is("resource")));
     }
 
     @Test
@@ -457,7 +464,12 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .requestAttr("transaction", transaction)
                 .headers(httpHeaders))
             .andDo(print())
-            .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.errors", hasSize(1)))
+            .andExpect(jsonPath("$.errors[0].error",
+                is("Filing resource {filing-resource-id} not found")))
+            .andExpect(jsonPath("$.errors[0].type", is("ch:validation")))
+            .andExpect(jsonPath("$.errors[0].location_type", is("resource")));
     }
 
 }

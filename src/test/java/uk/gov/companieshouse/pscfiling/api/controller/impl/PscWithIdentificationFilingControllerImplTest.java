@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -263,7 +262,7 @@ class PscWithIdentificationFilingControllerImplTest {
     }
 
     @Test
-    void updateFilingWhenRetrievalFails() {
+    void updateFilingWhenPatchProviderRetrievalFails() {
         final var failure = new PatchResult(RetrievalFailureReason.FILING_NOT_FOUND);
         final Map<String, Object> map = Collections.emptyMap();
 
@@ -274,7 +273,7 @@ class PscWithIdentificationFilingControllerImplTest {
         final var exception = assertThrows(FilingResourceNotFoundException.class,
             () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
-        assertThat(exception.getMessage(), is("Failed to retrieve filing: " + FILING_ID));
+        assertThat(exception.getMessage(), is(FILING_ID));
     }
 
     @Test
@@ -307,11 +306,10 @@ class PscWithIdentificationFilingControllerImplTest {
         when(pscFilingService.requestMatchesResourceSelf(request, filing)).thenReturn(false);
 
         final Map<String, Object> map = Collections.emptyMap();
-        final var response = testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map,
-            request);
+        final var exception = assertThrows(FilingResourceNotFoundException.class,
+            () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
-        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-        assertThat(response.getBody(), is(nullValue()));
+        assertThat(exception.getMessage(), is(FILING_ID));
     }
 
 }
