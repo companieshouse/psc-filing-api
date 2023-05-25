@@ -1,0 +1,85 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+set separator none
+'left to right direction
+title PSC Filing API: Patch Service Schematic Implementation for PscWithIdentificationFiling
+skinparam BackgroundColor White
+skinparam PackageBackgroundColor White
+skinparam ArrowPadding 2
+skinparam linetype ortho
+skinparam packageStyle frame
+skinparam groupInheritance 2
+'skinparam style strictuml
+'for grouping package names
+hide empty members
+
+legend right
+|=Revision |=Date |
+|    0.1    |     11/05/2023    |
+end legend
+
+skinparam class {
+  BackgroundColor MintCream
+}
+
+interface PatchService<PscWithIdentificationFiling> #GhostWhite{
++patchEntity(id : String) : PatchResult
++save(PscWithIdentificationFiling, String) : int
++getMaxRetries() : int
+}
+
+interface PscWithIdentificationFilingService #GhostWhite extends PatchService {
++get(id : String)
++patch(id : String, Map<String, String>)
++save(PscWithIdentificationFiling)
+}
+
+interface PscWithIdentificationFilingMergeProcessor #GhostWhite{
++mergeEntity(PscWithIdentificationFiling, Map<String, String>) : PscWithIdentificationFiling
+}
+interface PscWithIdentificationFilingPostMergeProcessor #GhostWhite{
++onMerge(PscWithIdentificationFiling)
+}
+interface PscWithIdentificationPatchValidator #GhostWhite{
++validate(PscWithIdentificationFiling) : ValidationResult
+}
+
+interface EntityProvider<PscWithIdentificationFiling> <<external>> #GhostWhite
+interface MergeProcessor<PscWithIdentificationFiling> <<external>> #GhostWhite
+interface PostMergeProcessor<PscWithIdentificationFiling> <<external>> #GhostWhite
+interface PatchValidator<PscWithIdentificationFiling> <<external>> #GhostWhite
+
+interface PscWithIdentificationFilingProvider #GhostWhite{
++provide(id : String) : EntityRetrievalResult<PscWithIdentificationFiling>
+}
+
+class EntityRetrievalResult<PscWithIdentificationFiling> <<external>>{
++getVersion() : String
++getEntity() : PscWithIdentificationFiling
++getFailureReason() : Enum
++isSuccess() : boolean
+}
+class ValidationResult <<external>>{
++isSuccess() : boolean
++getErrors() : Object
+}
+class PatchResult <<external>>{
++isSuccess() : boolean
++getErrors() : Object
+}
+
+PscWithIdentificationFilingService --> EntityProvider :"provided by"
+PscWithIdentificationFilingService --> MergeProcessor : "merged by "
+PscWithIdentificationFilingService ---> PostMergeProcessor : "      completed by "
+PscWithIdentificationFilingService ---> PatchValidator : "validated by"
+PscWithIdentificationFilingService --> PatchResult: "produces "
+PscWithIdentificationFilingProvider --> EntityRetrievalResult: "produces "
+PscWithIdentificationPatchValidator --> ValidationResult: "produces "
+EntityProvider <|..PscWithIdentificationFilingProvider
+MergeProcessor <|..PscWithIdentificationFilingMergeProcessor
+PostMergeProcessor <|.. PscWithIdentificationFilingPostMergeProcessor
+PatchValidator <|.. PscWithIdentificationPatchValidator
+
+
+@enduml
