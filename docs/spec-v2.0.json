@@ -1,0 +1,939 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "PSC Filing API (Private)",
+    "version": "0.1",
+    "description": "Private specification for receiving PSC filings (PSC07 only) by third party software filers and CHS internal users. \n\n__Note__ this includes private endpoints for CHS internal services."
+  },
+  "host": "api.chs.local:4001",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "security": [
+    {
+      "ERIC oauth2": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Filing Data",
+      "description": "For use by the CHS filing resource handler service."
+    },
+    {
+      "name": "Private",
+      "description": "For internal use only"
+    },
+    {
+      "name": "Validation Status",
+      "description": "For public use and for the CHS transaction service when attempting to close a transaction."
+    },
+    {
+      "name": "Public",
+      "description": "For public use"
+    },
+    {
+      "name": "PSC Filing",
+      "description": "For creating, updating, and retrieving PSC filings"
+    }
+  ],
+  "paths": {
+    "/private/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}/filings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "ERIC API Key": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/FilingApi"
+              },
+              "type": "array"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden \n* The authorization identity type must equal 'key' \n* The authenticated user account must have internal user privileges \n* The request must have an API key that has internal application privileges"
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "Filing Data",
+          "Private"
+        ],
+        "operationId": "getFilingsData"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ValidationStatusResponse"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "Validation Status",
+          "Public"
+        ],
+        "operationId": "validate"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/{pscType}": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PscIndividualDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {}
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "PSC Filing",
+          "Public"
+        ],
+        "operationId": "createFiling_1"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FilingFound"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "PSC Filing",
+          "Public"
+        ],
+        "operationId": "getFilingForReview"
+      },
+      "patch": {
+        "consumes": [
+          "application/merge-patch+json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "additionalProperties": {
+                "type": "object"
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {}
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {}
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/FilingNotFound"
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "PSC Filing",
+          "Public"
+        ],
+        "operationId": "updateFiling"
+      }
+    }
+  },
+  "parameters": {
+    "transactionId": {
+      "name": "transactionId",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "description": "The current open transaction ID for the resource",
+      "x-example": "142481-538116-714607"
+    },
+    "pscType": {
+      "name": "pscType",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "enum": [
+        "individual",
+        "corporate-entity",
+        "legal-person"
+      ],
+      "description": "The kind of PSC of the resource",
+      "x-example": "individual"
+    },
+    "filingResourceId": {
+      "name": "filingResourceId",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "description": "The unique filing ID of the resource",
+      "x-example": "63a0776f339d254f9fc04a35"
+    }
+  },
+  "responses": {
+    "FilingFound": {
+      "description": "The filing resource was found.",
+      "schema": {
+        "$ref": "#/definitions/PscIndividualFiling"
+      },
+      "examples": {
+        "application/json": {
+          "ceased_on": "2022-08-29",
+          "links": {
+            "self": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19",
+            "validation_status": "/transactions/021576-444716-850996/persons-with-significant-control/6470946f9f4c3f6c1ed25a19/validation_status"
+          },
+          "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
+          "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
+          "register_entry_date": "2022-10-15",
+          "id": "6470946f9f4c3f6c1ed25a19",
+          "created_at": "2023-05-26T11:13:51.787Z",
+          "updated_at": "2023-05-26T11:13:51.787Z"
+        }
+      }
+    },
+    "FilingNotFound": {
+      "description": "The filing resource could not be found. A filing having the specified combination of transaction ID, filing resource ID and PSC type does not exist.",
+      "schema": {
+        "$ref": "#/definitions/ApiErrors"
+      },
+      "examples": {
+        "application/json": {
+          "errors": [
+            {
+              "error": "Filing resource {filing-resource-id} not found",
+              "error_values": {
+                "{filing-resource-id}": "6470946f9f4c3f6c1ed25a19x"
+              },
+              "location": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19x",
+              "location_type": "resource",
+              "type": "ch:validation"
+            }
+          ]
+        }
+      }
+    },
+    "NotFound": {
+      "description": "The filing resource could not be found because of any of these conditions: \n* The transaction ID in the request path does not match an existing transaction or \n * The filing ID in the request path does not match an existing PSC filing or \n* The combination of the transaction ID, filing resource ID and PSC type does not match an existing PSC filing."
+    },
+    "Forbidden": {
+      "description": "The operation is not allowed or the resource's transaction is not in an open state."
+    },
+    "Unauthorized": {
+      "description": "Invalid or missing credentials",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "error": "Invalid Authorization",
+          "type": "ch:service"
+        }
+      }
+    }
+},
+"securityDefinitions": {
+"ERIC oauth2": {
+"type": "oauth2",
+"flow": "accessCode",
+"authorizationUrl": "http://account.chs.local/oauth2/authorise",
+"tokenUrl": "http://account.chs.local/oauth2/token",
+"scopes": {
+"https://account.companieshouse.gov.uk/user/profile.read": "User profile read permission",
+"https://api.company-information.service.gov.uk/company/{company_number}/persons-with-significant-control.delete": "Grants permissions to remove a PSC from this company"
+}
+},
+"ERIC API Key": {
+"type": "apiKey",
+"name": "api_key",
+"in": "header"
+}
+},
+"definitions": {
+"Address": {
+"properties": {
+"addressLine1": {
+"type": "string"
+},
+"addressLine2": {
+"type": "string"
+},
+"careOf": {
+"type": "string"
+},
+"country": {
+"type": "string"
+},
+"locality": {
+"type": "string"
+},
+"poBox": {
+"type": "string"
+},
+"postalCode": {
+"type": "string"
+},
+"premises": {
+"type": "string"
+},
+"region": {
+"type": "string"
+}
+},
+"required": [
+"addressLine1"
+],
+"type": "object"
+},
+"AddressDto": {
+"properties": {
+"address_line_1": {
+"type": "string"
+},
+"address_line_2": {
+"type": "string"
+},
+"careOf": {
+"type": "string"
+},
+"country": {
+"type": "string"
+},
+"locality": {
+"type": "string"
+},
+"poBox": {
+"type": "string"
+},
+"postalCode": {
+"type": "string"
+},
+"premises": {
+"type": "string"
+},
+"region": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"ApiError": {
+"properties": {
+"error": {
+"type": "string"
+},
+"errorValues": {
+"additionalProperties": {
+"type": "string"
+},
+"type": "object"
+},
+"location": {
+"type": "string"
+},
+"locationType": {
+"type": "string"
+},
+"type": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"FilingNotFoundError": {
+"type": "object",
+"properties": {
+}
+},
+"ApiErrors": {
+"properties": {
+"errors": {
+"items": {
+"$ref": "#/definitions/ApiError"
+},
+"type": "array",
+"uniqueItems": true
+}
+},
+"type": "object"
+},
+"Date3Tuple": {
+"properties": {
+"day": {
+"format": "int32",
+"type": "integer"
+},
+"month": {
+"format": "int32",
+"type": "integer"
+},
+"year": {
+"format": "int32",
+"type": "integer"
+}
+},
+"type": "object"
+},
+"Date3TupleDto": {
+"properties": {
+"day": {
+"format": "int32",
+"type": "integer"
+},
+"month": {
+"format": "int32",
+"type": "integer"
+},
+"year": {
+"format": "int32",
+"type": "integer"
+}
+},
+"type": "object"
+},
+"FilingApi": {
+"properties": {
+"data": {
+"additionalProperties": {
+"type": "object"
+},
+"type": "object"
+},
+"description": {
+"type": "string"
+},
+"description_identifier": {
+"type": "string"
+},
+"description_values": {
+"additionalProperties": {
+"type": "string"
+},
+"type": "object"
+},
+"kind": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"Identification": {
+"properties": {
+"countryRegistered": {
+"type": "string"
+},
+"legalAuthority": {
+"type": "string"
+},
+"legalForm": {
+"type": "string"
+},
+"placeRegistered": {
+"type": "string"
+},
+"registrationNumber": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"Link": {
+"properties": {
+"href": {
+"type": "string"
+},
+"templated": {
+"type": "boolean"
+}
+},
+"type": "object"
+},
+"Links": {
+"properties": {
+"self": {
+"format": "uri",
+"type": "string"
+},
+"validationStatus": {
+"format": "uri",
+"type": "string"
+}
+},
+"type": "object"
+},
+"NameElements": {
+"properties": {
+"forename": {
+"type": "string"
+},
+"otherForenames": {
+"type": "string"
+},
+"other_forenames": {
+"type": "string"
+},
+"surname": {
+"type": "string"
+},
+"title": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"NameElementsDto": {
+"properties": {
+"forename": {
+"type": "string"
+},
+"otherForenames": {
+"type": "string"
+},
+"other_forenames": {
+"type": "string"
+},
+"surname": {
+"type": "string"
+},
+"title": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"PscIndividualDto": {
+"properties": {
+"address": {
+"$ref": "#/definitions/AddressDto"
+},
+"addressSameAsRegisteredOfficeAddress": {
+"type": "boolean"
+},
+"ceasedOn": {
+"format": "date",
+"type": "string"
+},
+"countryOfResidence": {
+"type": "string"
+},
+"dateOfBirth": {
+"$ref": "#/definitions/Date3TupleDto"
+},
+"nameElements": {
+"$ref": "#/definitions/NameElementsDto"
+},
+"nationality": {
+"type": "string"
+},
+"naturesOfControl": {
+"items": {
+"type": "string"
+},
+"type": "array"
+},
+"notifiedOn": {
+"format": "date",
+"type": "string"
+},
+"referenceEtag": {
+"type": "string"
+},
+"referencePscId": {
+"type": "string"
+},
+"registerEntryDate": {
+"format": "date",
+"type": "string"
+},
+"residentialAddress": {
+"$ref": "#/definitions/AddressDto"
+},
+"residentialAddressSameAsCorrespondenceAddress": {
+"type": "boolean"
+}
+},
+"type": "object"
+},
+"PscIndividualFiling": {
+"properties": {
+"address": {
+"$ref": "#/definitions/Address"
+},
+"addressSameAsRegisteredOfficeAddress": {
+"type": "boolean"
+},
+"ceasedOn": {
+"format": "date",
+"type": "string"
+},
+"countryOfResidence": {
+"type": "string"
+},
+"created_at": {
+"format": "date-time",
+"readOnly": true,
+"type": "string"
+},
+"dateOfBirth": {
+"$ref": "#/definitions/Date3Tuple"
+},
+"etag": {
+"type": "string"
+},
+"id": {
+"readOnly": true,
+"type": "string"
+},
+"kind": {
+"type": "string"
+},
+"links": {
+"$ref": "#/definitions/Links"
+},
+"nameElements": {
+"$ref": "#/definitions/NameElements"
+},
+"nationality": {
+"type": "string"
+},
+"naturesOfControl": {
+"items": {
+"type": "string"
+},
+"type": "array"
+},
+"notifiedOn": {
+"format": "date",
+"type": "string"
+},
+"referenceEtag": {
+"type": "string"
+},
+"referencePscId": {
+"type": "string"
+},
+"registerEntryDate": {
+"format": "date",
+"type": "string"
+},
+"residentialAddress": {
+"$ref": "#/definitions/Address"
+},
+"residentialAddressSameAsCorrespondenceAddress": {
+"type": "boolean"
+},
+"statementActionDate": {
+"format": "date",
+"type": "string"
+},
+"statementType": {
+"type": "string"
+},
+"updated_at": {
+"format": "date-time",
+"readOnly": true,
+"type": "string"
+}
+},
+"type": "object"
+},
+"PscWithIdentificationFiling": {
+"properties": {
+"address": {
+"$ref": "#/definitions/Address"
+},
+"addressSameAsRegisteredOfficeAddress": {
+"type": "boolean"
+},
+"ceasedOn": {
+"format": "date",
+"type": "string"
+},
+"created_at": {
+"format": "date-time",
+"readOnly": true,
+"type": "string"
+},
+"etag": {
+"type": "string"
+},
+"id": {
+"readOnly": true,
+"type": "string"
+},
+"identification": {
+"$ref": "#/definitions/Identification"
+},
+"kind": {
+"type": "string"
+},
+"links": {
+"$ref": "#/definitions/Links"
+},
+"name": {
+"type": "string"
+},
+"naturesOfControl": {
+"items": {
+"type": "string"
+},
+"type": "array"
+},
+"notifiedOn": {
+"format": "date",
+"type": "string"
+},
+"referenceEtag": {
+"type": "string"
+},
+"referencePscId": {
+"type": "string"
+},
+"registerEntryDate": {
+"format": "date",
+"type": "string"
+},
+"statementActionDate": {
+"format": "date",
+"type": "string"
+},
+"statementType": {
+"type": "string"
+},
+"updated_at": {
+"format": "date-time",
+"readOnly": true,
+"type": "string"
+}
+},
+"type": "object"
+},
+"ValidationStatusError": {
+"properties": {
+"error": {
+"type": "string"
+},
+"location": {
+"type": "string"
+},
+"location_type": {
+"type": "string"
+},
+"type": {
+"type": "string"
+}
+},
+"type": "object"
+},
+"ValidationStatusResponse": {
+"properties": {
+"errors": {
+"items": {
+"$ref": "#/definitions/ValidationStatusError"
+},
+"type": "array"
+},
+"is_valid": {
+"type": "boolean"
+}
+},
+"type": "object"
+}
+},
+"x-components": {}
+}
