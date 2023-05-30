@@ -76,22 +76,13 @@
             "description": "Forbidden \n* The authorization identity type must equal 'key' \n* The authenticated user account must have internal user privileges \n* The request must have an API key that has internal application privileges"
           },
           "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+              "$ref": "#/responses/FilingNotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -125,22 +116,13 @@
             "$ref": "#/responses/Unauthorized"
           },
           "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/FilingNotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -185,22 +167,13 @@
             "$ref": "#/responses/Forbidden"
           },
           "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/NotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -245,22 +218,13 @@
             "$ref": "#/responses/Forbidden"
           },
           "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/NotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -305,22 +269,13 @@
             "$ref": "#/responses/Forbidden"
           },
           "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/NotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -354,19 +309,13 @@
             "$ref": "#/responses/Unauthorized"
           },
           "404": {
-            "$ref": "#/responses/NotFound"
+            "$ref": "#/responses/FilingNotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -423,16 +372,10 @@
             "$ref": "#/responses/FilingNotFound"
           },
           "409": {
-            "description": "Conflict",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/ApiErrors"
-            }
+            "$ref": "#/responses/InternalServerError"
           }
         },
         "tags": [
@@ -449,7 +392,7 @@
       "in": "path",
       "required": true,
       "type": "string",
-      "description": "The current open transaction ID for the resource",
+      "description": "The current open transaction ID for the filing resource",
       "x-example": "142481-538116-714607"
     },
     "pscType": {
@@ -462,7 +405,7 @@
         "corporate-entity",
         "legal-person"
       ],
-      "description": "The kind of PSC of the resource",
+      "description": "The kind of PSC of the filing resource",
       "x-example": "individual"
     },
     "filingResourceId": {
@@ -470,75 +413,49 @@
       "in": "path",
       "required": true,
       "type": "string",
-      "description": "The unique filing ID of the resource",
+      "description": "The unique ID of the filing resource",
       "x-example": "63a0776f339d254f9fc04a35"
     }
   },
   "responses": {
-    "PscIndividualFilingCreated": {
-      "description": "The filing resource was created.",
+    "Conflict": {
+      "description": "#### Conflict\nThe request could not be fulfilled due to any of:\n* The company's type is not one that allows the request:\n\t- `private-unlimited`\n\t- `ltd`\n\t- `plc`\n\t- `old-public-company`\n\t- `private-limited-guarant-nsc-limited-exemption`\n\t- `private-limited-guarant-nsc`\n\t- `private-unlimited-nsc`\n\t- `private-limited-shares-section-30-exemption`\n* The company's status is one that forbids the request:\n\t- `dissolved`\n\t- `converted-closed`\n* The company has one or more PSCs whose details are protected.",
       "schema": {
-        "$ref": "#/definitions/PscIndividualFiling"
+        "$ref": "#/definitions/ApiErrors"
       },
       "examples": {
         "application/json": {
-          "ceased_on": "2022-08-29",
-          "links": {
-            "self": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19",
-            "validation_status": "/transactions/021576-444716-850996/persons-with-significant-control/6470946f9f4c3f6c1ed25a19/validation_status"
-          },
-          "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
-          "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
-          "register_entry_date": "2022-10-15",
-          "id": "6470946f9f4c3f6c1ed25a19",
-          "created_at": "2023-05-26T11:13:51.787Z",
-          "updated_at": "2023-05-26T11:13:51.787Z"
+          "errors": [
+            {
+              "error": "You cannot submit a filing for a company that is Dissolved",
+              "location": "$",
+              "location_type": "json-path",
+              "type": "ch:validation"
+            }
+          ]
         }
       }
     },
-    "PscCorporateEntityFilingCreated": {
-      "description": "The filing resource was created.",
-      "schema": {
-        "$ref": "#/definitions/PscWithIdentificationFiling"
-      },
+    "CreateFilingBadRequest": {
+      "description": "#### Bad Request\nThe request to create a filing resource contains bad data.",
       "examples": {
         "application/json": {
-          "ceased_on": "2023-04-19",
-          "links": {
-            "self": "/transactions/098781-975316-819849/persons-with-significant-control/corporate-entity/64410d94aa51447dcf469570",
-            "validation_status": "/transactions/098781-975316-819849/persons-with-significant-control/64410d94aa51447dcf469570/validation_status"
-          },
-          "reference_etag": "4e5fda8b2b6dba10862965ee34d80915d7b48266",
-          "reference_psc_id": "fhhMkjhxbWGc0juOZvDhNcbFn8o",
-          "register_entry_date": "2023-04-19",
-          "id": "64410d94aa51447dcf469570",
-          "created_at": "2023-04-20T10:01:56.129Z",
-          "updated_at": "2023-04-20T10:01:56.129Z"
-        }
-      }
-    },
-    "PscLegalPersonFilingCreated": {
-      "description": "The filing resource was created.",
-      "schema": {
-        "$ref": "#/definitions/PscWithIdentificationFiling"
-      },
-      "examples": {
-        "application/json": {
-          "links": {
-            "self": "/transactions/116642-036916-819881/persons-with-significant-control/legal-person/64411a2faa51447dcf469693",
-            "validation_status": "/transactions/116642-036916-819881/persons-with-significant-control/64411a2faa51447dcf469693/validation_status"
-          },
-          "reference_etag": "b1786d54fd49e0cd21a3bf402819370f35d24ad1",
-          "reference_psc_id": "OTk2OTA1NDg4OExJSzBNUjFR",
-          "register_entry_date": "2023-04-19T23:00:00.000Z",
-          "id": "64411a2faa51447dcf469693",
-          "created_at": "2023-04-20T10:55:43.695Z",
-          "updated_at": "2023-04-20T10:55:43.695Z"
+          "errors": [
+            {
+              "error": "{rejected-value} must be a date in the past or in the present",
+              "error_values": {
+                "rejected-value": "3000-08-29"
+              },
+              "location": "$.ceased_on",
+              "location_type": "json-path",
+              "type": "ch:validation"
+            }
+          ]
         }
       }
     },
     "FilingFound": {
-      "description": "The filing resource was found.",
+      "description": "#### OK\nThe response body provides the representation of the found filing resource.",
       "schema": {
         "$ref": "#/definitions/PscIndividualFiling"
       },
@@ -559,7 +476,7 @@
       }
     },
     "FilingNotFound": {
-      "description": "The filing resource could not be found. A filing having the specified combination of transaction ID, filing resource ID and PSC type does not exist.",
+      "description": "#### Not Found\nA filing having the specified combination of transaction ID, filing resource ID and PSC type could not be found.",
       "schema": {
         "$ref": "#/definitions/ApiErrors"
       },
@@ -579,14 +496,94 @@
         }
       }
     },
-    "NotFound": {
-      "description": "The filing resource could not be found because of any of these conditions: \n* The transaction ID in the request path does not match an existing transaction or \n * The filing ID in the request path does not match an existing PSC filing or \n* The combination of the transaction ID, filing resource ID and PSC type does not match an existing PSC filing."
-    },
     "Forbidden": {
-      "description": "The operation is not allowed or the resource's transaction is not in an open state."
+      "description": "#### Forbidden\nThe filing resource transaction is not in an open state, or the operation is otherwise not allowed."
+    },
+    "InternalServerError": {
+      "description": "#### Internal Server Error\nThe request could not be fulfilled due to an internal error.",
+      "schema": {
+        "$ref": "#/definitions/ApiErrors"
+      },
+      "examples": {
+        "application/json": {
+          "errors": [
+            {
+              "error": "Service Unavailable",
+              "location": "/transactions/207544-458216-854608/persons-with-significant-control/individual",
+              "location_type": "resource",
+              "type": "ch:service"
+            }
+          ]
+        }
+      }
+    },
+    "NotFound": {
+      "description": "Not Found\nThe filing resource could not be created due to any of: \n* The transaction ID in the request path does not match an existing transaction or\n* The PSC type in the last segment of the path does not match one of the accepted values:\n\t* `individual`\n\t* `corporate-entity`\n\t* `legal-person`"
+    },
+    "PscIndividualFilingCreated": {
+      "description": "#### Created\nFor convenience the response body provides the representation of the created filing resource.",
+      "schema": {
+        "$ref": "#/definitions/PscIndividualFiling"
+      },
+      "examples": {
+        "application/json": {
+          "ceased_on": "2022-08-29",
+          "links": {
+            "self": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19",
+            "validation_status": "/transactions/021576-444716-850996/persons-with-significant-control/6470946f9f4c3f6c1ed25a19/validation_status"
+          },
+          "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
+          "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
+          "register_entry_date": "2022-10-15",
+          "id": "6470946f9f4c3f6c1ed25a19",
+          "created_at": "2023-05-26T11:13:51.787Z",
+          "updated_at": "2023-05-26T11:13:51.787Z"
+        }
+      }
+    },
+    "PscCorporateEntityFilingCreated": {
+      "description": "#### Created\nFor convenience the response body provides the representation of the created filing resource.",
+      "schema": {
+        "$ref": "#/definitions/PscWithIdentificationFiling"
+      },
+      "examples": {
+        "application/json": {
+          "ceased_on": "2023-04-19",
+          "links": {
+            "self": "/transactions/098781-975316-819849/persons-with-significant-control/corporate-entity/64410d94aa51447dcf469570",
+            "validation_status": "/transactions/098781-975316-819849/persons-with-significant-control/64410d94aa51447dcf469570/validation_status"
+          },
+          "reference_etag": "4e5fda8b2b6dba10862965ee34d80915d7b48266",
+          "reference_psc_id": "fhhMkjhxbWGc0juOZvDhNcbFn8o",
+          "register_entry_date": "2023-04-19",
+          "id": "64410d94aa51447dcf469570",
+          "created_at": "2023-04-20T10:01:56.129Z",
+          "updated_at": "2023-04-20T10:01:56.129Z"
+        }
+      }
+    },
+    "PscLegalPersonFilingCreated": {
+      "description": "#### Created\nFor convenience the response body provides the representation of the created filing resource.",
+      "schema": {
+        "$ref": "#/definitions/PscWithIdentificationFiling"
+      },
+      "examples": {
+        "application/json": {
+          "links": {
+            "self": "/transactions/116642-036916-819881/persons-with-significant-control/legal-person/64411a2faa51447dcf469693",
+            "validation_status": "/transactions/116642-036916-819881/persons-with-significant-control/64411a2faa51447dcf469693/validation_status"
+          },
+          "reference_etag": "b1786d54fd49e0cd21a3bf402819370f35d24ad1",
+          "reference_psc_id": "OTk2OTA1NDg4OExJSzBNUjFR",
+          "register_entry_date": "2023-04-19T23:00:00.000Z",
+          "id": "64411a2faa51447dcf469693",
+          "created_at": "2023-04-20T10:55:43.695Z",
+          "updated_at": "2023-04-20T10:55:43.695Z"
+        }
+      }
     },
     "Unauthorized": {
-      "description": "Invalid or missing credentials",
+      "description": "#### Unauthorized.\nCredentials/authorization are invalid or missing.",
       "schema": {
         "type": "object",
         "properties": {
@@ -600,24 +597,6 @@
         "example": {
           "error": "Invalid Authorization",
           "type": "ch:service"
-        }
-      }
-    },
-    "CreateFilingBadRequest": {
-      "description": "The request to create a filing resource contained bad data.",
-      "examples": {
-        "application/json": {
-          "errors": [
-            {
-              "error": "{rejected-value} must be a date in the past or in the present",
-              "error_values": {
-                "rejected-value": "3000-08-29"
-              },
-              "location": "$.ceased_on",
-              "location_type": "json-path",
-              "type": "ch:validation"
-            }
-          ]
         }
       }
     }
