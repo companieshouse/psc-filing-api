@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "title": "PSC Filing API (Private)",
-    "version": "0.1",
-    "description": "Private specification for receiving PSC filings (PSC07 only) by third party software filers and CHS internal users. \n\n__Note__ this includes private endpoints for CHS internal services."
+    "version": "0.2",
+    "description": "Private specification for the PSC Filings service (currently for PSC07 [Cease a PSC] only). Includes:\n * Public paths for use by third party software filers and \n* Private paths for CHS internal users.\n---\n ### NOTE\nModels include data properties required for any of PSC01 to PSC09, however most are currently unused.\n\nPSC07 requires only\n* `ceased_on`\n* `register_entry-date`\n* `reference_psc_id`\n* `reference_etag`"
   },
   "host": "api.chs.local:4001",
   "basePath": "/",
@@ -12,29 +12,29 @@
   ],
   "security": [
     {
-      "ERIC oauth2": []
+      "OAuth2-ERIC": []
     }
   ],
   "tags": [
     {
-      "name": "Filing Data",
-      "description": "For use by the CHS filing resource handler service."
+      "name": "PSC Filing",
+      "description": "For creating, updating, and retrieving PSC filings"
     },
     {
-      "name": "Private",
-      "description": "For internal use only"
+      "name": "Filing Data",
+      "description": "For use by the CHS filing resource handler service."
     },
     {
       "name": "Validation Status",
       "description": "For public use and for the CHS transaction service when attempting to close a transaction."
     },
     {
-      "name": "Public",
+      "name": "Public Access",
       "description": "For public use"
     },
     {
-      "name": "PSC Filing",
-      "description": "For creating, updating, and retrieving PSC filings"
+      "name": "Private Access",
+      "description": "For internal use only"
     }
   ],
   "paths": {
@@ -45,7 +45,7 @@
         ],
         "security": [
           {
-            "ERIC API Key": []
+            "API-Key-ERIC": []
           }
         ],
         "parameters": [
@@ -96,7 +96,7 @@
         },
         "tags": [
           "Filing Data",
-          "Private"
+          "Private Access"
         ],
         "operationId": "getFilingsData"
       }
@@ -145,12 +145,12 @@
         },
         "tags": [
           "Validation Status",
-          "Public"
+          "Public Access"
         ],
         "operationId": "validate"
       }
     },
-    "/transactions/{transactionId}/persons-with-significant-control/{pscType}": {
+    "/transactions/{transactionId}/persons-with-significant-control/individual": {
       "post": {
         "consumes": [
           "application/json"
@@ -163,25 +163,20 @@
             "$ref": "#/parameters/transactionId"
           },
           {
-            "$ref": "#/parameters/pscType"
-          },
-          {
             "in": "body",
             "name": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/PscIndividualDto"
+              "$ref": "#/definitions/PscIndividual"
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {}
+          "201": {
+            "$ref": "#/responses/PscIndividualFilingCreated"
           },
           "400": {
-            "description": "Bad Request",
-            "schema": {}
+            "$ref": "#/responses/CreateFilingBadRequest"
           },
           "401": {
             "$ref": "#/responses/Unauthorized"
@@ -210,9 +205,129 @@
         },
         "tags": [
           "PSC Filing",
-          "Public"
+          "Public Access"
         ],
-        "operationId": "createFiling_1"
+        "operationId": "createIndividualPscFiling"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/corporate-entity": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PscWithIdentification"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/PscCorporateEntityFilingCreated"
+          },
+          "400": {
+            "$ref": "#/responses/CreateFilingBadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "PSC Filing",
+          "Public Access"
+        ],
+        "operationId": "createCorporateEntityPscFiling"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/legal-person": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PscWithIdentification"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/PscLegalPersonFilingCreated"
+          },
+          "400": {
+            "$ref": "#/responses/CreateFilingBadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/ApiErrors"
+            }
+          }
+        },
+        "tags": [
+          "PSC Filing",
+          "Public Access"
+        ],
+        "operationId": "createLegalPersonPscFiling"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}": {
@@ -256,7 +371,7 @@
         },
         "tags": [
           "PSC Filing",
-          "Public"
+          "Public Access"
         ],
         "operationId": "getFilingForReview"
       },
@@ -322,7 +437,7 @@
         },
         "tags": [
           "PSC Filing",
-          "Public"
+          "Public Access"
         ],
         "operationId": "updateFiling"
       }
@@ -360,6 +475,68 @@
     }
   },
   "responses": {
+    "PscIndividualFilingCreated": {
+      "description": "The filing resource was created.",
+      "schema": {
+        "$ref": "#/definitions/PscIndividualFiling"
+      },
+      "examples": {
+        "application/json": {
+          "ceased_on": "2022-08-29",
+          "links": {
+            "self": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19",
+            "validation_status": "/transactions/021576-444716-850996/persons-with-significant-control/6470946f9f4c3f6c1ed25a19/validation_status"
+          },
+          "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
+          "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
+          "register_entry_date": "2022-10-15",
+          "id": "6470946f9f4c3f6c1ed25a19",
+          "created_at": "2023-05-26T11:13:51.787Z",
+          "updated_at": "2023-05-26T11:13:51.787Z"
+        }
+      }
+    },
+    "PscCorporateEntityFilingCreated": {
+      "description": "The filing resource was created.",
+      "schema": {
+        "$ref": "#/definitions/PscWithIdentificationFiling"
+      },
+      "examples": {
+        "application/json": {
+          "ceased_on": "2023-04-19",
+          "links": {
+            "self": "/transactions/098781-975316-819849/persons-with-significant-control/corporate-entity/64410d94aa51447dcf469570",
+            "validation_status": "/transactions/098781-975316-819849/persons-with-significant-control/64410d94aa51447dcf469570/validation_status"
+          },
+          "reference_etag": "4e5fda8b2b6dba10862965ee34d80915d7b48266",
+          "reference_psc_id": "fhhMkjhxbWGc0juOZvDhNcbFn8o",
+          "register_entry_date": "2023-04-19",
+          "id": "64410d94aa51447dcf469570",
+          "created_at": "2023-04-20T10:01:56.129Z",
+          "updated_at": "2023-04-20T10:01:56.129Z"
+        }
+      }
+    },
+    "PscLegalPersonFilingCreated": {
+      "description": "The filing resource was created.",
+      "schema": {
+        "$ref": "#/definitions/PscWithIdentificationFiling"
+      },
+      "examples": {
+        "application/json": {
+          "links": {
+            "self": "/transactions/116642-036916-819881/persons-with-significant-control/legal-person/64411a2faa51447dcf469693",
+            "validation_status": "/transactions/116642-036916-819881/persons-with-significant-control/64411a2faa51447dcf469693/validation_status"
+          },
+          "reference_etag": "b1786d54fd49e0cd21a3bf402819370f35d24ad1",
+          "reference_psc_id": "OTk2OTA1NDg4OExJSzBNUjFR",
+          "register_entry_date": "2023-04-19T23:00:00.000Z",
+          "id": "64411a2faa51447dcf469693",
+          "created_at": "2023-04-20T10:55:43.695Z",
+          "updated_at": "2023-04-20T10:55:43.695Z"
+        }
+      }
+    },
     "FilingFound": {
       "description": "The filing resource was found.",
       "schema": {
@@ -425,515 +602,802 @@
           "type": "ch:service"
         }
       }
+    },
+    "CreateFilingBadRequest": {
+      "description": "The request to create a filing resource contained bad data.",
+      "examples": {
+        "application/json": {
+          "errors": [
+            {
+              "error": "{rejected-value} must be a date in the past or in the present",
+              "error_values": {
+                "rejected-value": "3000-08-29"
+              },
+              "location": "$.ceased_on",
+              "location_type": "json-path",
+              "type": "ch:validation"
+            }
+          ]
+        }
+      }
     }
-},
-"securityDefinitions": {
-"ERIC oauth2": {
-"type": "oauth2",
-"flow": "accessCode",
-"authorizationUrl": "http://account.chs.local/oauth2/authorise",
-"tokenUrl": "http://account.chs.local/oauth2/token",
-"scopes": {
-"https://account.companieshouse.gov.uk/user/profile.read": "User profile read permission",
-"https://api.company-information.service.gov.uk/company/{company_number}/persons-with-significant-control.delete": "Grants permissions to remove a PSC from this company"
-}
-},
-"ERIC API Key": {
-"type": "apiKey",
-"name": "api_key",
-"in": "header"
-}
-},
-"definitions": {
-"Address": {
-"properties": {
-"addressLine1": {
-"type": "string"
-},
-"addressLine2": {
-"type": "string"
-},
-"careOf": {
-"type": "string"
-},
-"country": {
-"type": "string"
-},
-"locality": {
-"type": "string"
-},
-"poBox": {
-"type": "string"
-},
-"postalCode": {
-"type": "string"
-},
-"premises": {
-"type": "string"
-},
-"region": {
-"type": "string"
-}
-},
-"required": [
-"addressLine1"
-],
-"type": "object"
-},
-"AddressDto": {
-"properties": {
-"address_line_1": {
-"type": "string"
-},
-"address_line_2": {
-"type": "string"
-},
-"careOf": {
-"type": "string"
-},
-"country": {
-"type": "string"
-},
-"locality": {
-"type": "string"
-},
-"poBox": {
-"type": "string"
-},
-"postalCode": {
-"type": "string"
-},
-"premises": {
-"type": "string"
-},
-"region": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"ApiError": {
-"properties": {
-"error": {
-"type": "string"
-},
-"errorValues": {
-"additionalProperties": {
-"type": "string"
-},
-"type": "object"
-},
-"location": {
-"type": "string"
-},
-"locationType": {
-"type": "string"
-},
-"type": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"FilingNotFoundError": {
-"type": "object",
-"properties": {
-}
-},
-"ApiErrors": {
-"properties": {
-"errors": {
-"items": {
-"$ref": "#/definitions/ApiError"
-},
-"type": "array",
-"uniqueItems": true
-}
-},
-"type": "object"
-},
-"Date3Tuple": {
-"properties": {
-"day": {
-"format": "int32",
-"type": "integer"
-},
-"month": {
-"format": "int32",
-"type": "integer"
-},
-"year": {
-"format": "int32",
-"type": "integer"
-}
-},
-"type": "object"
-},
-"Date3TupleDto": {
-"properties": {
-"day": {
-"format": "int32",
-"type": "integer"
-},
-"month": {
-"format": "int32",
-"type": "integer"
-},
-"year": {
-"format": "int32",
-"type": "integer"
-}
-},
-"type": "object"
-},
-"FilingApi": {
-"properties": {
-"data": {
-"additionalProperties": {
-"type": "object"
-},
-"type": "object"
-},
-"description": {
-"type": "string"
-},
-"description_identifier": {
-"type": "string"
-},
-"description_values": {
-"additionalProperties": {
-"type": "string"
-},
-"type": "object"
-},
-"kind": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"Identification": {
-"properties": {
-"countryRegistered": {
-"type": "string"
-},
-"legalAuthority": {
-"type": "string"
-},
-"legalForm": {
-"type": "string"
-},
-"placeRegistered": {
-"type": "string"
-},
-"registrationNumber": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"Link": {
-"properties": {
-"href": {
-"type": "string"
-},
-"templated": {
-"type": "boolean"
-}
-},
-"type": "object"
-},
-"Links": {
-"properties": {
-"self": {
-"format": "uri",
-"type": "string"
-},
-"validationStatus": {
-"format": "uri",
-"type": "string"
-}
-},
-"type": "object"
-},
-"NameElements": {
-"properties": {
-"forename": {
-"type": "string"
-},
-"otherForenames": {
-"type": "string"
-},
-"other_forenames": {
-"type": "string"
-},
-"surname": {
-"type": "string"
-},
-"title": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"NameElementsDto": {
-"properties": {
-"forename": {
-"type": "string"
-},
-"otherForenames": {
-"type": "string"
-},
-"other_forenames": {
-"type": "string"
-},
-"surname": {
-"type": "string"
-},
-"title": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"PscIndividualDto": {
-"properties": {
-"address": {
-"$ref": "#/definitions/AddressDto"
-},
-"addressSameAsRegisteredOfficeAddress": {
-"type": "boolean"
-},
-"ceasedOn": {
-"format": "date",
-"type": "string"
-},
-"countryOfResidence": {
-"type": "string"
-},
-"dateOfBirth": {
-"$ref": "#/definitions/Date3TupleDto"
-},
-"nameElements": {
-"$ref": "#/definitions/NameElementsDto"
-},
-"nationality": {
-"type": "string"
-},
-"naturesOfControl": {
-"items": {
-"type": "string"
-},
-"type": "array"
-},
-"notifiedOn": {
-"format": "date",
-"type": "string"
-},
-"referenceEtag": {
-"type": "string"
-},
-"referencePscId": {
-"type": "string"
-},
-"registerEntryDate": {
-"format": "date",
-"type": "string"
-},
-"residentialAddress": {
-"$ref": "#/definitions/AddressDto"
-},
-"residentialAddressSameAsCorrespondenceAddress": {
-"type": "boolean"
-}
-},
-"type": "object"
-},
-"PscIndividualFiling": {
-"properties": {
-"address": {
-"$ref": "#/definitions/Address"
-},
-"addressSameAsRegisteredOfficeAddress": {
-"type": "boolean"
-},
-"ceasedOn": {
-"format": "date",
-"type": "string"
-},
-"countryOfResidence": {
-"type": "string"
-},
-"created_at": {
-"format": "date-time",
-"readOnly": true,
-"type": "string"
-},
-"dateOfBirth": {
-"$ref": "#/definitions/Date3Tuple"
-},
-"etag": {
-"type": "string"
-},
-"id": {
-"readOnly": true,
-"type": "string"
-},
-"kind": {
-"type": "string"
-},
-"links": {
-"$ref": "#/definitions/Links"
-},
-"nameElements": {
-"$ref": "#/definitions/NameElements"
-},
-"nationality": {
-"type": "string"
-},
-"naturesOfControl": {
-"items": {
-"type": "string"
-},
-"type": "array"
-},
-"notifiedOn": {
-"format": "date",
-"type": "string"
-},
-"referenceEtag": {
-"type": "string"
-},
-"referencePscId": {
-"type": "string"
-},
-"registerEntryDate": {
-"format": "date",
-"type": "string"
-},
-"residentialAddress": {
-"$ref": "#/definitions/Address"
-},
-"residentialAddressSameAsCorrespondenceAddress": {
-"type": "boolean"
-},
-"statementActionDate": {
-"format": "date",
-"type": "string"
-},
-"statementType": {
-"type": "string"
-},
-"updated_at": {
-"format": "date-time",
-"readOnly": true,
-"type": "string"
-}
-},
-"type": "object"
-},
-"PscWithIdentificationFiling": {
-"properties": {
-"address": {
-"$ref": "#/definitions/Address"
-},
-"addressSameAsRegisteredOfficeAddress": {
-"type": "boolean"
-},
-"ceasedOn": {
-"format": "date",
-"type": "string"
-},
-"created_at": {
-"format": "date-time",
-"readOnly": true,
-"type": "string"
-},
-"etag": {
-"type": "string"
-},
-"id": {
-"readOnly": true,
-"type": "string"
-},
-"identification": {
-"$ref": "#/definitions/Identification"
-},
-"kind": {
-"type": "string"
-},
-"links": {
-"$ref": "#/definitions/Links"
-},
-"name": {
-"type": "string"
-},
-"naturesOfControl": {
-"items": {
-"type": "string"
-},
-"type": "array"
-},
-"notifiedOn": {
-"format": "date",
-"type": "string"
-},
-"referenceEtag": {
-"type": "string"
-},
-"referencePscId": {
-"type": "string"
-},
-"registerEntryDate": {
-"format": "date",
-"type": "string"
-},
-"statementActionDate": {
-"format": "date",
-"type": "string"
-},
-"statementType": {
-"type": "string"
-},
-"updated_at": {
-"format": "date-time",
-"readOnly": true,
-"type": "string"
-}
-},
-"type": "object"
-},
-"ValidationStatusError": {
-"properties": {
-"error": {
-"type": "string"
-},
-"location": {
-"type": "string"
-},
-"location_type": {
-"type": "string"
-},
-"type": {
-"type": "string"
-}
-},
-"type": "object"
-},
-"ValidationStatusResponse": {
-"properties": {
-"errors": {
-"items": {
-"$ref": "#/definitions/ValidationStatusError"
-},
-"type": "array"
-},
-"is_valid": {
-"type": "boolean"
-}
-},
-"type": "object"
-}
-},
-"x-components": {}
+  },
+  "securityDefinitions": {
+    "OAuth2-ERIC": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "http://account.chs.local/oauth2/authorise",
+      "tokenUrl": "http://account.chs.local/oauth2/token",
+      "scopes": {
+        "https://account.companieshouse.gov.uk/user/profile.read": "Grants permission to read CHS User profile.",
+        "https://api.company-information.service.gov.uk/company/{company_number}/persons-with-significant-control.delete": "Grants permission to cease a PSC belonging to this company."
+      }
+    },
+    "API-Key-ERIC": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "Address": {
+      "properties": {
+        "address_line_1": {
+          "type": "string"
+        },
+        "address_line_2": {
+          "type": "string"
+        },
+        "care_of": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "locality": {
+          "type": "string"
+        },
+        "po_box": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "premises": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ApiError": {
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "error_values": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "location_type": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "FilingNotFoundError": {
+      "type": "object",
+      "properties": {
+      }
+    },
+    "ApiErrors": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "Date": {
+      "properties": {
+        "day": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "month": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "year": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "FilingApi": {
+      "properties": {
+        "data": {
+          "additionalProperties": {
+            "type": "object"
+          },
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "description_identifier": {
+          "type": "string"
+        },
+        "description_values": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Identification": {
+      "properties": {
+        "country_registered": {
+          "type": "string"
+        },
+        "legal_authority": {
+          "type": "string"
+        },
+        "legal_form": {
+          "type": "string"
+        },
+        "place_registered": {
+          "type": "string"
+        },
+        "registration_number": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Links": {
+      "properties": {
+        "self": {
+          "format": "uri",
+          "type": "string"
+        },
+        "validation_status": {
+          "format": "uri",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "NameElements": {
+      "properties": {
+        "forename": {
+          "type": "string"
+        },
+        "other_forenames": {
+          "type": "string"
+        },
+        "surname": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PscIndividual": {
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "address_same_as_registered_office_address": {
+          "type": "boolean"
+        },
+        "ceased_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "country_of_residence": {
+          "type": "string"
+        },
+        "date_of_birth": {
+          "$ref": "#/definitions/Date"
+        },
+        "name_elements": {
+          "$ref": "#/definitions/NameElements"
+        },
+        "nationality": {
+          "type": "string"
+        },
+        "natures_of_control": {
+          "items": {
+            "type": "string",
+            "enum": [
+              "ownership-of-shares-25-to-50-percent",
+              "ownership-of-shares-50-to-75-percent",
+              "ownership-of-shares-75-to-100-percent",
+              "ownership-of-shares-25-to-50-percent-as-trust",
+              "ownership-of-shares-50-to-75-percent-as-trust",
+              "ownership-of-shares-75-to-100-percent-as-trust",
+              "ownership-of-shares-25-to-50-percent-as-firm",
+              "ownership-of-shares-50-to-75-percent-as-firm",
+              "ownership-of-shares-75-to-100-percent-as-firm",
+              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
+              "voting-rights-25-to-50-percent",
+              "voting-rights-50-to-75-percent",
+              "voting-rights-75-to-100-percent",
+              "voting-rights-25-to-50-percent-as-trust",
+              "voting-rights-50-to-75-percent-as-trust",
+              "voting-rights-75-to-100-percent-as-trust",
+              "voting-rights-25-to-50-percent-as-firm",
+              "voting-rights-50-to-75-percent-as-firm",
+              "voting-rights-75-to-100-percent-as-firm",
+              "voting-rights-more-than-25-percent-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors",
+              "right-to-appoint-and-remove-directors-as-trust",
+              "right-to-appoint-and-remove-directors-as-firm",
+              "significant-influence-or-control",
+              "significant-influence-or-control-as-trust",
+              "significant-influence-or-control-as-firm",
+              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-limited-liability-partnership",
+              "significant-influence-or-control-as-trust-limited-liability-partnership",
+              "significant-influence-or-control-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-registered-overseas-entity",
+              "significant-influence-or-control-as-trust-registered-overseas-entity",
+              "significant-influence-or-control-as-firm-registered-overseas-entity",
+              "part-right-to-share-surplus-assets-25-to-50-percent",
+              "part-right-to-share-surplus-assets-50-to-75-percent",
+              "part-right-to-share-surplus-assets-75-to-100-percent",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
+              "right-to-appoint-and-remove-person",
+              "right-to-appoint-and-remove-person-as-firm",
+              "right-to-appoint-and-remove-person-as-trust",
+              "right-to-appoint-and-remove-directors-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
+            ]
+          },
+          "type": "array"
+        },
+        "notified_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "reference_etag": {
+          "type": "string"
+        },
+        "reference_psc_id": {
+          "type": "string"
+        },
+        "register_entry_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "residential_address": {
+          "$ref": "#/definitions/Address"
+        },
+        "residential_address_same_as_correspondence_address": {
+          "type": "boolean"
+        },
+        "statementActionDate": {
+          "format": "date",
+          "type": "string"
+        },
+        "statementType": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PscIndividualFiling": {
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "address_same_as_registered_office_address": {
+          "type": "boolean"
+        },
+        "ceased_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "country_of_residence": {
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "readOnly": true,
+          "type": "string"
+        },
+        "date_of_birth": {
+          "$ref": "#/definitions/Date"
+        },
+        "etag": {
+          "readOnly": true,
+          "type": "string"
+        },
+        "id": {
+          "readOnly": true,
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "links": {
+          "$ref": "#/definitions/Links"
+        },
+        "name_elements": {
+          "$ref": "#/definitions/NameElements"
+        },
+        "nationality": {
+          "type": "string"
+        },
+        "natures_of_control": {
+          "items": {
+            "type": "string",
+            "enum": [
+              "ownership-of-shares-25-to-50-percent",
+              "ownership-of-shares-50-to-75-percent",
+              "ownership-of-shares-75-to-100-percent",
+              "ownership-of-shares-25-to-50-percent-as-trust",
+              "ownership-of-shares-50-to-75-percent-as-trust",
+              "ownership-of-shares-75-to-100-percent-as-trust",
+              "ownership-of-shares-25-to-50-percent-as-firm",
+              "ownership-of-shares-50-to-75-percent-as-firm",
+              "ownership-of-shares-75-to-100-percent-as-firm",
+              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
+              "voting-rights-25-to-50-percent",
+              "voting-rights-50-to-75-percent",
+              "voting-rights-75-to-100-percent",
+              "voting-rights-25-to-50-percent-as-trust",
+              "voting-rights-50-to-75-percent-as-trust",
+              "voting-rights-75-to-100-percent-as-trust",
+              "voting-rights-25-to-50-percent-as-firm",
+              "voting-rights-50-to-75-percent-as-firm",
+              "voting-rights-75-to-100-percent-as-firm",
+              "voting-rights-more-than-25-percent-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors",
+              "right-to-appoint-and-remove-directors-as-trust",
+              "right-to-appoint-and-remove-directors-as-firm",
+              "significant-influence-or-control",
+              "significant-influence-or-control-as-trust",
+              "significant-influence-or-control-as-firm",
+              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-limited-liability-partnership",
+              "significant-influence-or-control-as-trust-limited-liability-partnership",
+              "significant-influence-or-control-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-registered-overseas-entity",
+              "significant-influence-or-control-as-trust-registered-overseas-entity",
+              "significant-influence-or-control-as-firm-registered-overseas-entity",
+              "part-right-to-share-surplus-assets-25-to-50-percent",
+              "part-right-to-share-surplus-assets-50-to-75-percent",
+              "part-right-to-share-surplus-assets-75-to-100-percent",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
+              "right-to-appoint-and-remove-person",
+              "right-to-appoint-and-remove-person-as-firm",
+              "right-to-appoint-and-remove-person-as-trust",
+              "right-to-appoint-and-remove-directors-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
+            ]
+          },
+          "type": "array"
+        },
+        "notified_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "reference_etag": {
+          "type": "string"
+        },
+        "reference_psc_id": {
+          "type": "string"
+        },
+        "register_entry_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "residential_address": {
+          "$ref": "#/definitions/Address"
+        },
+        "residential_address_same_as_correspondence_address": {
+          "type": "boolean"
+        },
+        "statementActionDate": {
+          "format": "date",
+          "type": "string"
+        },
+        "statementType": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PscWithIdentification": {
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "address_same_as_registered_office_address": {
+          "type": "boolean"
+        },
+        "ceased_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "identification": {
+          "$ref": "#/definitions/Identification"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "links": {
+          "$ref": "#/definitions/Links"
+        },
+        "name": {
+          "type": "string"
+        },
+        "naturesOfControl": {
+          "items": {
+            "type": "string",
+            "enum": [
+              "ownership-of-shares-25-to-50-percent",
+              "ownership-of-shares-50-to-75-percent",
+              "ownership-of-shares-75-to-100-percent",
+              "ownership-of-shares-25-to-50-percent-as-trust",
+              "ownership-of-shares-50-to-75-percent-as-trust",
+              "ownership-of-shares-75-to-100-percent-as-trust",
+              "ownership-of-shares-25-to-50-percent-as-firm",
+              "ownership-of-shares-50-to-75-percent-as-firm",
+              "ownership-of-shares-75-to-100-percent-as-firm",
+              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
+              "voting-rights-25-to-50-percent",
+              "voting-rights-50-to-75-percent",
+              "voting-rights-75-to-100-percent",
+              "voting-rights-25-to-50-percent-as-trust",
+              "voting-rights-50-to-75-percent-as-trust",
+              "voting-rights-75-to-100-percent-as-trust",
+              "voting-rights-25-to-50-percent-as-firm",
+              "voting-rights-50-to-75-percent-as-firm",
+              "voting-rights-75-to-100-percent-as-firm",
+              "voting-rights-more-than-25-percent-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors",
+              "right-to-appoint-and-remove-directors-as-trust",
+              "right-to-appoint-and-remove-directors-as-firm",
+              "significant-influence-or-control",
+              "significant-influence-or-control-as-trust",
+              "significant-influence-or-control-as-firm",
+              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-limited-liability-partnership",
+              "significant-influence-or-control-as-trust-limited-liability-partnership",
+              "significant-influence-or-control-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-registered-overseas-entity",
+              "significant-influence-or-control-as-trust-registered-overseas-entity",
+              "significant-influence-or-control-as-firm-registered-overseas-entity",
+              "part-right-to-share-surplus-assets-25-to-50-percent",
+              "part-right-to-share-surplus-assets-50-to-75-percent",
+              "part-right-to-share-surplus-assets-75-to-100-percent",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
+              "right-to-appoint-and-remove-person",
+              "right-to-appoint-and-remove-person-as-firm",
+              "right-to-appoint-and-remove-person-as-trust",
+              "right-to-appoint-and-remove-directors-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
+            ]
+          },
+          "type": "array"
+        },
+        "reference_etag": {
+          "type": "string"
+        },
+        "reference_psc_id": {
+          "type": "string"
+        },
+        "register_entry_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "statementActionDate": {
+          "format": "date",
+          "type": "string"
+        },
+        "statementType": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "PscWithIdentificationFiling": {
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "address_same_as_registered_office_address": {
+          "type": "boolean"
+        },
+        "ceased_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "readOnly": true,
+          "type": "string"
+        },
+        "etag": {
+          "readOnly": true,
+          "type": "string"
+        },
+        "id": {
+          "readOnly": true,
+          "type": "string"
+        },
+        "identification": {
+          "$ref": "#/definitions/Identification"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "links": {
+          "$ref": "#/definitions/Links"
+        },
+        "name": {
+          "type": "string"
+        },
+        "naturesOfControl": {
+          "items": {
+            "type": "string",
+            "enum": [
+              "ownership-of-shares-25-to-50-percent",
+              "ownership-of-shares-50-to-75-percent",
+              "ownership-of-shares-75-to-100-percent",
+              "ownership-of-shares-25-to-50-percent-as-trust",
+              "ownership-of-shares-50-to-75-percent-as-trust",
+              "ownership-of-shares-75-to-100-percent-as-trust",
+              "ownership-of-shares-25-to-50-percent-as-firm",
+              "ownership-of-shares-50-to-75-percent-as-firm",
+              "ownership-of-shares-75-to-100-percent-as-firm",
+              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
+              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
+              "voting-rights-25-to-50-percent",
+              "voting-rights-50-to-75-percent",
+              "voting-rights-75-to-100-percent",
+              "voting-rights-25-to-50-percent-as-trust",
+              "voting-rights-50-to-75-percent-as-trust",
+              "voting-rights-75-to-100-percent-as-trust",
+              "voting-rights-25-to-50-percent-as-firm",
+              "voting-rights-50-to-75-percent-as-firm",
+              "voting-rights-75-to-100-percent-as-firm",
+              "voting-rights-more-than-25-percent-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
+              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors",
+              "right-to-appoint-and-remove-directors-as-trust",
+              "right-to-appoint-and-remove-directors-as-firm",
+              "significant-influence-or-control",
+              "significant-influence-or-control-as-trust",
+              "significant-influence-or-control-as-firm",
+              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
+              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
+              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
+              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
+              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
+              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
+              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-limited-liability-partnership",
+              "significant-influence-or-control-as-trust-limited-liability-partnership",
+              "significant-influence-or-control-as-firm-limited-liability-partnership",
+              "significant-influence-or-control-registered-overseas-entity",
+              "significant-influence-or-control-as-trust-registered-overseas-entity",
+              "significant-influence-or-control-as-firm-registered-overseas-entity",
+              "part-right-to-share-surplus-assets-25-to-50-percent",
+              "part-right-to-share-surplus-assets-50-to-75-percent",
+              "part-right-to-share-surplus-assets-75-to-100-percent",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
+              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
+              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
+              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
+              "right-to-appoint-and-remove-person",
+              "right-to-appoint-and-remove-person-as-firm",
+              "right-to-appoint-and-remove-person-as-trust",
+              "right-to-appoint-and-remove-directors-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
+              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
+            ]
+          },
+          "type": "array"
+        },
+        "notified_on": {
+          "format": "date",
+          "type": "string"
+        },
+        "reference_etag": {
+          "type": "string"
+        },
+        "reference_psc_id": {
+          "type": "string"
+        },
+        "register_entry_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "statementActionDate": {
+          "format": "date",
+          "type": "string"
+        },
+        "statementType": {
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "readOnly": true,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ValidationStatusError": {
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "location_type": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ValidationStatusResponse": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ValidationStatusError"
+          },
+          "type": "array"
+        },
+        "is_valid": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "x-components": {}
 }
