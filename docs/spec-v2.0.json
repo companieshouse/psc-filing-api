@@ -3,7 +3,7 @@
   "info": {
     "title": "PSC Filing API (Private)",
     "version": "0.3",
-    "description": "Private specification for the PSC Filings service (currently for PSC07 [Cease a PSC] only).\nIncludes:\n * Public paths for use by third party software filers and CHS, and\n* Private paths for CHS internal users only.\n* Data models for any of PSC01 to PSC09\n---\n ### NOTE\n**Only PSC07 is currently supported**. It requires only the following properties:\n* `ceased_on`\n* `register_entry-date`\n* `reference_psc_id`\n* `reference_etag`"
+    "description": "Private specification for the PSC Filings service (currently for PSC07 [Cease a PSC] only).\nIncludes:\n * Public paths for use by third party software filers and CHS, and\n* Private paths for CHS internal users only, and\n* Data models for any of PSC01 to PSC09.\n\n---\n### NOTE\n**Only PSC07 is currently supported**. It requires only the following properties:\n* `ceased_on`\n* `register_entry-date`\n* `reference_psc_id`\n* `reference_etag`"
   },
   "host": "api.chs.local:4001",
   "basePath": "/",
@@ -17,24 +17,8 @@
   ],
   "tags": [
     {
-      "name": "PSC Filing",
-      "description": "For creating, updating, and retrieving PSC filings"
-    },
-    {
-      "name": "Filing Data",
-      "description": "For use by the CHS filing resource handler service."
-    },
-    {
-      "name": "Validation Status",
-      "description": "For public use and for the CHS transaction service when attempting to close a transaction."
-    },
-    {
-      "name": "Public Access",
-      "description": "For public use"
-    },
-    {
-      "name": "Private Access",
-      "description": "For internal use only"
+      "name": "pscFiling",
+      "description": "PSC filing"
     }
   ],
   "paths": {
@@ -81,10 +65,10 @@
           }
         },
         "tags": [
-          "Filing Data",
-          "Private Access"
+          "pscFiling"
         ],
-        "operationId": "getFilingsData"
+        "operationId": "getFilingsData",
+        "x-operationName": "provide filings data"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
@@ -119,15 +103,15 @@
           }
         },
         "tags": [
-          "Validation Status",
-          "Public Access"
+          "pscFiling"
         ],
-        "operationId": "validateFiling"
+        "operationId": "validateFiling",
+        "x-operationName": "validate filing"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/individual": {
       "post": {
-        "description": "Create a filing for an Individual PSC.",
+        "summary": "Create a filing for an Individual PSC.",
         "consumes": [
           "application/json"
         ],
@@ -171,10 +155,10 @@
           }
         },
         "tags": [
-          "PSC Filing",
-          "Public Access"
+          "pscFiling"
         ],
-        "operationId": "createIndividualPscFiling"
+        "operationId": "createIndividualPscFiling",
+        "x-operationName": "create individual filing"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/corporate-entity": {
@@ -223,10 +207,10 @@
           }
         },
         "tags": [
-          "PSC Filing",
-          "Public Access"
+          "pscFiling"
         ],
-        "operationId": "createCorporateEntityPscFiling"
+        "operationId": "createCorporateEntityPscFiling",
+        "x-operationName": "create corporate entity filing"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/legal-person": {
@@ -275,10 +259,10 @@
           }
         },
         "tags": [
-          "PSC Filing",
-          "Public Access"
+          "pscFiling"
         ],
-        "operationId": "createLegalPersonPscFiling"
+        "operationId": "createLegalPersonPscFiling",
+        "x-operationName": "create legal person filing"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}": {
@@ -313,10 +297,10 @@
           }
         },
         "tags": [
-          "PSC Filing",
-          "Public Access"
+          "pscFiling"
         ],
-        "operationId": "getFilingForReview"
+        "operationId": "getFilingForReview",
+        "x-operationName": "get filing for review"
       },
       "patch": {
         "description": "Update permitted properties of a PSC filing resource. Supports adding, replacing or removing properties specified in the request body &mdash; see [RFC7396](https://www.rfc-editor.org/rfc/rfc7396) for details.\n### NOTE\n Certain properties of the filing are **read only**. If present in the request body they will be **ignored**, and `updated_at` will be modified automatically.\n* `id`\n* `created_at`\n* `updated_at` (modified automatically)\n* `links`\n",
@@ -364,10 +348,10 @@
           }
         },
         "tags": [
-          "PSC Filing",
-          "Public Access"
+          "pscFiling"
         ],
-        "operationId": "updateFiling"
+        "operationId": "updateFiling",
+        "x-operationName": "update filing"
       }
     }
   },
@@ -410,6 +394,7 @@
           "type": "object"
         },
         "type": "object",
+        "title": "patchBody",
         "example": {
           "register_entry_date": "2023-02-11"
         }
@@ -632,6 +617,7 @@
       "description": "#### Unauthorized\nRequest credentials/authorization are invalid or missing.",
       "schema": {
         "type": "object",
+        "title": "UnauthorizedResponse",
         "properties": {
           "error": {
             "type": "string"
@@ -713,7 +699,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "Address"
     },
     "ApiError": {
       "properties": {
@@ -736,12 +723,8 @@
           "type": "string"
         }
       },
-      "type": "object"
-    },
-    "FilingNotFoundError": {
       "type": "object",
-      "properties": {
-      }
+      "title": "ApiError"
     },
     "ApiErrors": {
       "properties": {
@@ -753,7 +736,8 @@
           "uniqueItems": true
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "ApiErrors"
     },
     "Date": {
       "properties": {
@@ -770,7 +754,8 @@
           "type": "integer"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "Date"
     },
     "FilingApi": {
       "properties": {
@@ -796,7 +781,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "FilingApi"
     },
     "Identification": {
       "properties": {
@@ -816,7 +802,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "Identification"
     },
     "Links": {
       "properties": {
@@ -829,7 +816,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "Links"
     },
     "NameElements": {
       "properties": {
@@ -846,7 +834,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "NameElements"
     },
     "PscIndividual": {
       "properties": {
@@ -980,7 +969,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "PscIndividual"
     },
     "PscIndividualFiling": {
       "properties": {
@@ -1138,7 +1128,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "PscIndividualFiling"
     },
     "PscWithIdentification": {
       "properties": {
@@ -1262,7 +1253,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "PSCWithIdentification"
     },
     "PscWithIdentificationFiling": {
       "properties": {
@@ -1408,7 +1400,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "PscWithIdentificationFiling"
     },
     "ValidationStatusError": {
       "properties": {
@@ -1425,7 +1418,8 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "ValidationStatusError"
     },
     "ValidationStatus": {
       "properties": {
@@ -1439,8 +1433,8 @@
           "type": "boolean"
         }
       },
-      "type": "object"
+      "type": "object",
+      "title": "ValidationStatus"
     }
-  },
-  "x-components": {}
+  }
 }
