@@ -1,9 +1,13 @@
 {
   "swagger": "2.0",
+  "x-sortMethodsBy": [
+    "operation",
+    "path"
+  ],
   "info": {
     "title": "PSC Filing API (Private)",
-    "version": "0.3",
-    "description": "Private specification for the PSC Filings service (currently for PSC07 [Cease a PSC] only).\nIncludes:\n * Public paths for use by third party software filers and CHS, and\n* Private paths for CHS internal users only, and\n* Data models for any of PSC01 to PSC09.\n\n---\n### NOTE\n**Only PSC07 is currently supported**. It requires only the following properties:\n* `ceased_on`\n* `register_entry-date`\n* `reference_psc_id`\n* `reference_etag`"
+    "version": "0.4",
+    "description": "Private specification for the PSC Filings service (currently for PSC07 [Cease a PSC] only).\nIncludes:\n * Public paths for use by third party software filers and CHS, and\n* Private paths for CHS internal users only, and\n* Data models for PSC07 and associated responses.\n\n---\n### NOTE\nFor a PSC07 filing to be valid, at time of closing the transaction the following properties are required:\n* `ceased_on`\n* `register_entry-date`\n* `reference_psc_id`\n* `reference_etag`\n\nThose properties are optional for the 'create' requests and may be added later using an 'update' request."
   },
   "host": "api.chs.local:4001",
   "basePath": "/",
@@ -12,7 +16,10 @@
   ],
   "security": [
     {
-      "OAuth2-ERIC": []
+      "oauth2": [
+        "https://api.company-information.service.gov.uk/company/*/persons-with-significant-control.delete",
+        "https://account.companieshouse.gov.uk/user/profile.read"
+      ]
     }
   ],
   "tags": [
@@ -22,96 +29,10 @@
     }
   ],
   "paths": {
-    "/private/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}/filings": {
-      "get": {
-        "description": "Provide enhanced filing data needed to submit the PSC filing to CHIPS. For internal use by the filing resource handler service.",
-        "produces": [
-          "application/json"
-        ],
-        "security": [
-          {
-            "API-Key-ERIC": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/transactionId"
-          },
-          {
-            "$ref": "#/parameters/pscType"
-          },
-          {
-            "$ref": "#/parameters/filingResourceId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/FilingData"
-          },
-          "401": {
-            "$ref": "#/responses/Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden \n* The authorization identity type must equal '`key`' and \n* The authenticated user account must have internal user privileges and\n* The request must have an API key that has internal application privileges."
-          },
-          "404": {
-              "$ref": "#/responses/FilingNotFound"
-          },
-          "409": {
-            "$ref": "#/responses/Conflict"
-          },
-          "500": {
-            "description": "#### Internal Server Error\nThe request could not be fulfilled due to:\n* The filing resource transaction is not Closed or\n* an internal error."
-          }
-        },
-        "tags": [
-          "pscFiling"
-        ],
-        "operationId": "getFilingsData",
-        "x-operationName": "provide filings data"
-      }
-    },
-    "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
-      "get": {
-        "description": "Check the validity of a PSC filing. When a request is made to the Transaction Service to close the filing resource transaction, that service makes a request to this path. If valid, the Transaction Service closes the transaction and marks it for processing.",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/transactionId"
-          },
-          {
-            "$ref": "#/parameters/filingResourceId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "#### OK\nThe validation operation completed successfully. The `is_valid` property in the response body indicates the validity of the filing. The `errors` property in the response body contains details of any validation errors.\n#### Examples:\n<table><tr><td>\n\n**is_valid**\n\n</td><td>\n\n**errors**\n\n</td></tr><tr><td>true</td><td>\n\n`[]`\n\n</td></tr><tr><td>false</td><td>\n\n```\n[\n\t{\n\t\t\"error\": \"PSC register entry date must be on or after the date the PSC was ceased\",\n\t\t\"location\": \"$.register_entry_date\",\n\t\t\"type\": \"ch:validation\",\n\t\t\"location_type\": \"json-path\"\n\t}\n]\n```\n\n</td></tr></table>",
-            "schema": {
-              "$ref": "#/definitions/ValidationStatus"
-            }
-          },
-          "401": {
-            "$ref": "#/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/responses/FilingNotFound"
-          },
-          "500": {
-            "$ref": "#/responses/InternalServerError"
-          }
-        },
-        "tags": [
-          "pscFiling"
-        ],
-        "operationId": "validateFiling",
-        "x-operationName": "validate filing"
-      }
-    },
-    "/transactions/{transactionId}/persons-with-significant-control/individual": {
+    "/transactions/{transactionId}/persons-with-significant-control/{pscType}": {
       "post": {
-        "summary": "Create a filing for an Individual PSC.",
+        "summary": "Create a PSC filing resource",
+        "description": "Create a PSC filing of the specified type.",
         "consumes": [
           "application/json"
         ],
@@ -123,12 +44,10 @@
             "$ref": "#/parameters/transactionId"
           },
           {
-            "in": "body",
-            "name": "filingBody",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/PscIndividual"
-            }
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/pscFilingDetails"
           }
         ],
         "responses": {
@@ -158,116 +77,13 @@
           "pscFiling"
         ],
         "operationId": "createIndividualPscFiling",
-        "x-operationName": "create individual filing"
-      }
-    },
-    "/transactions/{transactionId}/persons-with-significant-control/corporate-entity": {
-      "post": {
-        "description": "Create a filing for an Corporate Entity PSC.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/transactionId"
-          },
-          {
-            "in": "body",
-            "name": "filingBody",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/PscWithIdentification"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "$ref": "#/responses/PscCorporateEntityFilingCreated"
-          },
-          "400": {
-            "$ref": "#/responses/CreateFilingBadRequest"
-          },
-          "401": {
-            "$ref": "#/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/responses/NotCreated"
-          },
-          "409": {
-            "$ref": "#/responses/Conflict"
-          },
-          "500": {
-            "$ref": "#/responses/InternalServerError"
-          }
-        },
-        "tags": [
-          "pscFiling"
-        ],
-        "operationId": "createCorporateEntityPscFiling",
-        "x-operationName": "create corporate entity filing"
-      }
-    },
-    "/transactions/{transactionId}/persons-with-significant-control/legal-person": {
-      "post": {
-        "description": "Create a filing for an Legal Person PSC.",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/transactionId"
-          },
-          {
-            "in": "body",
-            "name": "filingBody",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/PscWithIdentification"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "$ref": "#/responses/PscLegalPersonFilingCreated"
-          },
-          "400": {
-            "$ref": "#/responses/CreateFilingBadRequest"
-          },
-          "401": {
-            "$ref": "#/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/responses/NotCreated"
-          },
-          "409": {
-            "$ref": "#/responses/Conflict"
-          },
-          "500": {
-            "$ref": "#/responses/InternalServerError"
-          }
-        },
-        "tags": [
-          "pscFiling"
-        ],
-        "operationId": "createLegalPersonPscFiling",
-        "x-operationName": "create legal person filing"
+        "x-operationName": "create filing"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}": {
       "get": {
-        "description": "Fetch a PSC filing resource.",
+        "summary": "Get this PSC filing resource details",
+        "description": "Get this PSC filing resource details.",
         "produces": [
           "application/json"
         ],
@@ -300,10 +116,11 @@
           "pscFiling"
         ],
         "operationId": "getFilingForReview",
-        "x-operationName": "get filing for review"
+        "x-operationName": "get filing"
       },
       "patch": {
-        "description": "Update permitted properties of a PSC filing resource. Supports adding, replacing or removing properties specified in the request body &mdash; see [RFC7396](https://www.rfc-editor.org/rfc/rfc7396) for details.\n### NOTE\n Certain properties of the filing are **read only**. If present in the request body they will be **ignored**, and `updated_at` will be modified automatically.\n* `id`\n* `created_at`\n* `updated_at` (modified automatically)\n* `links`\n",
+        "summary": "Update this PSC filing resource",
+        "description": "Update permitted properties of a PSC filing resource. Supports adding, replacing or removing properties specified in the request body &mdash; see [RFC7396](https://www.rfc-editor.org/rfc/rfc7396) for details.\n### NOTE\n Certain filing resource properties are **read only** and will be **ignored** if present in the request:\n* `id`\n* `created_at`\n* `updated_at` (modified automatically if the request succeeds)\n* `links`\n",
         "consumes": [
           "application/merge-patch+json"
         ],
@@ -353,6 +170,95 @@
         "operationId": "updateFiling",
         "x-operationName": "update filing"
       }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
+      "get": {
+        "summary": "Check this filing resource for completeness",
+        "description": "Check the validity and completeness of a PSC filing. Primarily for use by the Transaction Service when requested to close the filing resource transaction.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The validation operation completed successfully. The `is_valid` property in the response body indicates the validity of the filing. The `errors` property in the response body contains details of any validation errors.\n#### Examples:\n<table><tr><td>\n\n**is_valid**\n\n</td><td>\n\n**errors**\n\n</td></tr><tr><td>true</td><td>\n\n`[]`\n\n</td></tr><tr><td>false</td><td>\n\n```\n[\n\t{\n\t\t\"error\": \"PSC register entry date must be on or after the date the PSC was ceased\",\n\t\t\"location\": \"$.register_entry_date\",\n\t\t\"type\": \"ch:validation\",\n\t\t\"location_type\": \"json-path\"\n\t}\n]\n```\n\n</td></tr></table>",
+            "schema": {
+              "$ref": "#/definitions/ValidationStatus"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/responses/FilingNotFound"
+          },
+          "500": {
+            "$ref": "#/responses/InternalServerError"
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "validateFiling",
+        "x-operationName": "validate filing"
+      }
+    },
+    "/private/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}/filings": {
+      "get": {
+        "summary": "Get CHIPS-compatible details of this filing resource",
+        "description": "Get the CHIPS-compatible details of this filing resource. For internal use by the filing resource handler service.",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FilingData"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden \n* The authorization identity type must equal '`key`' and \n* The authenticated user account must have internal user privileges and\n* The request must have an API key that has internal application privileges."
+          },
+          "404": {
+              "$ref": "#/responses/FilingNotFound"
+          },
+          "409": {
+            "$ref": "#/responses/Conflict"
+          },
+          "500": {
+            "description": "The request could not be fulfilled due to:\n* The filing resource transaction is not Closed or\n* an internal error."
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "getFilingsData",
+        "x-operationName": "get filing for CHIPS"
+      }
     }
   },
   "parameters": {
@@ -361,7 +267,7 @@
       "in": "path",
       "required": true,
       "type": "string",
-      "description": "The current open transaction ID for the filing resource",
+      "description": "The transaction that this PSC filing is applied to",
       "x-example": "142481-538116-714607"
     },
     "pscType": {
@@ -399,11 +305,20 @@
           "register_entry_date": "2023-02-11"
         }
       }
+    },
+    "pscFilingDetails": {
+      "in": "body",
+      "name": "pscFilingDetails",
+      "required": true,
+      "description": "The PSC filing details",
+      "schema": {
+        "$ref": "#/definitions/PscFiling"
+      }
     }
   },
   "responses": {
     "Conflict": {
-      "description": "#### Conflict\nThe request could not be fulfilled due to any of:\n* The company's type is not one that allows the request:\n\t- `private-unlimited`\n\t- `ltd`\n\t- `plc`\n\t- `old-public-company`\n\t- `private-limited-guarant-nsc-limited-exemption`\n\t- `private-limited-guarant-nsc`\n\t- `private-unlimited-nsc`\n\t- `private-limited-shares-section-30-exemption`\n* The company's status is one that forbids the request:\n\t- `dissolved`\n\t- `converted-closed`\n* The company has one or more PSCs whose details are protected.",
+      "description": "The request could not be fulfilled due to any of:\n* The company's type is not one that allows the request:\n\t- `private-unlimited`\n\t- `ltd`\n\t- `plc`\n\t- `old-public-company`\n\t- `private-limited-guarant-nsc-limited-exemption`\n\t- `private-limited-guarant-nsc`\n\t- `private-unlimited-nsc`\n\t- `private-limited-shares-section-30-exemption`\n* The company's status is one that forbids the request:\n\t- `dissolved`\n\t- `converted-closed`\n* The company has one or more PSCs whose details are protected.",
       "schema": {
         "$ref": "#/definitions/ApiErrors"
       },
@@ -421,7 +336,7 @@
       }
     },
     "CreateFilingBadRequest": {
-      "description": "#### Bad Request\nThe request to create a filing resource contains bad data.",
+      "description": "The request to create a filing resource contains bad data.",
       "examples": {
         "application/json": {
           "errors": [
@@ -439,9 +354,9 @@
       }
     },
     "FilingFound": {
-      "description": "#### OK\nThe response body provides the representation of the found filing resource.",
+      "description": "The response body provides the details of the found filing resource.",
       "schema": {
-        "$ref": "#/definitions/PscIndividualFiling"
+        "$ref": "#/definitions/PscFilingResource"
       },
       "examples": {
         "application/json": {
@@ -452,7 +367,7 @@
           },
           "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
           "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
-          "register_entry_date": "2022-10-15",
+          "register_entry_date": "2022-08-30",
           "id": "6470946f9f4c3f6c1ed25a19",
           "created_at": "2023-05-26T11:13:51.787Z",
           "updated_at": "2023-05-26T11:13:51.787Z"
@@ -460,7 +375,7 @@
       }
     },
     "FilingNotFound": {
-      "description": "#### Not Found\nA filing having the specified combination of transaction ID, filing resource ID and PSC type could not be found.",
+      "description": "A filing with the specified combination of transaction ID, filing resource ID and PSC type could not be found.",
       "schema": {
         "$ref": "#/definitions/ApiErrors"
       },
@@ -481,10 +396,10 @@
       }
     },
     "FilingData": {
-      "description": "#### OK\n",
+      "description": "The CHIPS-compatible details of this filing resource.",
       "schema": {
         "items": {
-          "$ref": "#/definitions/FilingApi"
+          "$ref": "#/definitions/chipsFilingResource"
         },
         "type": "array",
         "example": [
@@ -494,20 +409,20 @@
               "first_name": "Random",
               "other_forenames": "Notreal",
               "last_name": "Person",
-              "ceased_on": "2022-08-30",
-              "register_entry_date": "2022-10-15"
+              "ceased_on": "2022-08-29",
+              "register_entry_date": "2022-08-30"
             },
-            "description": "(PSC07) Notice of ceasing to be a Person of Significant Control for Mr Random Notreal Person on 30 August 2022",
+            "description": "(PSC07) Notice of ceasing to be a Person of Significant Control for Mr Random Notreal Person on 29 August 2022",
             "kind": "psc-filing#cessation#individual"
           }
         ]
       }
     },
     "Forbidden": {
-      "description": "#### Forbidden\nThe filing resource transaction is not in an open state, or the operation is otherwise not allowed."
+      "description": "The filing resource transaction is not in an open state, or the operation is otherwise not allowed."
     },
     "InternalServerError": {
-      "description": "#### Internal Server Error\nThe request could not be fulfilled due to an internal error.",
+      "description": "The request could not be fulfilled due to an internal error.",
       "schema": {
         "$ref": "#/definitions/ApiErrors"
       },
@@ -525,36 +440,15 @@
       }
     },
     "NotCreated": {
-      "description": "Not Found\nThe filing resource could not be created due to any of: \n* The transaction ID in the request path does not match an existing transaction or\n* The PSC type in the last segment of the path does not match one of the accepted values:\n\t* `individual`\n\t* `corporate-entity`\n\t* `legal-person`"
+      "description": "The filing resource could not be created due to any of: \n* The transaction ID in the request path does not match an existing transaction or\n* The PSC type in the last segment of the path does not match one of the accepted values:\n\t* `individual`\n\t* `corporate-entity`\n\t* `legal-person`"
     },
     "NotFound": {
-      "description": "Not Found\nA filing having the specified combination of transaction ID, filing resource ID and PSC type could not be found."
-    },
-    "PscCorporateEntityFilingCreated": {
-      "description": "#### Created\nFor convenience the response body provides the representation of the created filing resource.",
-      "schema": {
-        "$ref": "#/definitions/PscWithIdentificationFiling"
-      },
-      "examples": {
-        "application/json": {
-          "ceased_on": "2023-04-19",
-          "links": {
-            "self": "/transactions/098781-975316-819849/persons-with-significant-control/corporate-entity/64410d94aa51447dcf469570",
-            "validation_status": "/transactions/098781-975316-819849/persons-with-significant-control/64410d94aa51447dcf469570/validation_status"
-          },
-          "reference_etag": "4e5fda8b2b6dba10862965ee34d80915d7b48266",
-          "reference_psc_id": "fhhMkjhxbWGc0juOZvDhNcbFn8o",
-          "register_entry_date": "2023-04-19",
-          "id": "64410d94aa51447dcf469570",
-          "created_at": "2023-04-20T10:01:56.129Z",
-          "updated_at": "2023-04-20T10:01:56.129Z"
-        }
-      }
+      "description": "A filing with the specified combination of transaction ID, filing resource ID and PSC type could not be found."
     },
     "PscIndividualFilingCreated": {
-      "description": "#### Created\nFor convenience the response body provides the representation of the created filing resource.",
+      "description": "For convenience the response body contains details of the created filing resource.",
       "schema": {
-        "$ref": "#/definitions/PscIndividualFiling"
+        "$ref": "#/definitions/PscFilingResource"
       },
       "examples": {
         "application/json": {
@@ -565,37 +459,17 @@
           },
           "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
           "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
-          "register_entry_date": "2022-10-15",
+          "register_entry_date": "2022-08-30",
           "id": "6470946f9f4c3f6c1ed25a19",
           "created_at": "2023-05-26T11:13:51.787Z",
           "updated_at": "2023-05-26T11:13:51.787Z"
         }
       }
     },
-    "PscLegalPersonFilingCreated": {
-      "description": "#### Created\nFor convenience the response body provides the representation of the created filing resource.",
-      "schema": {
-        "$ref": "#/definitions/PscWithIdentificationFiling"
-      },
-      "examples": {
-        "application/json": {
-          "links": {
-            "self": "/transactions/116642-036916-819881/persons-with-significant-control/legal-person/64411a2faa51447dcf469693",
-            "validation_status": "/transactions/116642-036916-819881/persons-with-significant-control/64411a2faa51447dcf469693/validation_status"
-          },
-          "reference_etag": "b1786d54fd49e0cd21a3bf402819370f35d24ad1",
-          "reference_psc_id": "OTk2OTA1NDg4OExJSzBNUjFR",
-          "register_entry_date": "2023-04-19T23:00:00.000Z",
-          "id": "64411a2faa51447dcf469693",
-          "created_at": "2023-04-20T10:55:43.695Z",
-          "updated_at": "2023-04-20T10:55:43.695Z"
-        }
-      }
-    },
     "PscFilingUpdated": {
-      "description": "#### OK\nFor convenience the response body provides the representation of the updated filing resource.",
+      "description": "For convenience the response body provides the details of the updated filing resource.",
       "schema": {
-        "$ref": "#/definitions/PscWithIdentificationFiling"
+        "$ref": "#/definitions/PscFilingResource"
       },
       "examples": {
         "application/json": {
@@ -614,7 +488,7 @@
       }
     },
     "Unauthorized": {
-      "description": "#### Unauthorized\nRequest credentials/authorization are invalid or missing.",
+      "description": "Request credentials/authorization are invalid or missing.",
       "schema": {
         "type": "object",
         "title": "UnauthorizedResponse",
@@ -633,7 +507,7 @@
       }
     },
     "UpdateFilingBadRequest": {
-      "description": "#### Bad Request\nThe request to update a filing resource contains bad data.",
+      "description": "The request to update a filing resource contains bad data.",
       "examples": {
         "application/json": {
           "errors": [
@@ -652,56 +526,23 @@
     }
   },
   "securityDefinitions": {
-    "OAuth2-ERIC": {
+    "oauth2": {
       "type": "oauth2",
       "flow": "accessCode",
       "authorizationUrl": "http://account.chs.local/oauth2/authorise",
       "tokenUrl": "http://account.chs.local/oauth2/token",
       "scopes": {
-        "https://account.companieshouse.gov.uk/user/profile.read": "Grants permission to read CHS User profile.",
-        "https://api.company-information.service.gov.uk/company/{company_number}/persons-with-significant-control.delete": "Grants permission to cease a PSC belonging to this company."
+        "https://api.company-information.service.gov.uk/company/*/persons-with-significant-control.delete": "Grants permission to cease a PSC belonging to this company.",
+        "https://account.companieshouse.gov.uk/user/profile.read": "Grants permission to read the CHS User profile."
       }
     },
-    "API-Key-ERIC": {
+    "api_key": {
       "type": "apiKey",
       "name": "api_key",
       "in": "header"
     }
   },
   "definitions": {
-    "Address": {
-      "properties": {
-        "address_line_1": {
-          "type": "string"
-        },
-        "address_line_2": {
-          "type": "string"
-        },
-        "care_of": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        },
-        "locality": {
-          "type": "string"
-        },
-        "po_box": {
-          "type": "string"
-        },
-        "postal_code": {
-          "type": "string"
-        },
-        "premises": {
-          "type": "string"
-        },
-        "region": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "title": "Address"
-    },
     "ApiError": {
       "properties": {
         "error": {
@@ -739,25 +580,7 @@
       "type": "object",
       "title": "ApiErrors"
     },
-    "Date": {
-      "properties": {
-        "day": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "month": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "year": {
-          "format": "int32",
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "title": "Date"
-    },
-    "FilingApi": {
+    "chipsFilingResource": {
       "properties": {
         "data": {
           "additionalProperties": {
@@ -782,28 +605,8 @@
         }
       },
       "type": "object",
-      "title": "FilingApi"
-    },
-    "Identification": {
-      "properties": {
-        "country_registered": {
-          "type": "string"
-        },
-        "legal_authority": {
-          "type": "string"
-        },
-        "legal_form": {
-          "type": "string"
-        },
-        "place_registered": {
-          "type": "string"
-        },
-        "registration_number": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "title": "Identification"
+      "title": "chipsFilingResource",
+      "description": "CHIPS-compatible PSC filing details"
     },
     "Links": {
       "properties": {
@@ -819,285 +622,47 @@
       "type": "object",
       "title": "Links"
     },
-    "NameElements": {
+    "PscFiling": {
       "properties": {
-        "forename": {
-          "type": "string"
-        },
-        "other_forenames": {
-          "type": "string"
-        },
-        "surname": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "title": "NameElements"
-    },
-    "PscIndividual": {
-      "properties": {
-        "address": {
-          "$ref": "#/definitions/Address"
-        },
-        "address_same_as_registered_office_address": {
-          "type": "boolean"
-        },
         "ceased_on": {
           "format": "date",
-          "type": "string"
-        },
-        "country_of_residence": {
-          "type": "string"
-        },
-        "date_of_birth": {
-          "$ref": "#/definitions/Date"
-        },
-        "name_elements": {
-          "$ref": "#/definitions/NameElements"
-        },
-        "nationality": {
-          "type": "string"
-        },
-        "natures_of_control": {
-          "items": {
-            "type": "string",
-            "enum": [
-              "ownership-of-shares-25-to-50-percent",
-              "ownership-of-shares-50-to-75-percent",
-              "ownership-of-shares-75-to-100-percent",
-              "ownership-of-shares-25-to-50-percent-as-trust",
-              "ownership-of-shares-50-to-75-percent-as-trust",
-              "ownership-of-shares-75-to-100-percent-as-trust",
-              "ownership-of-shares-25-to-50-percent-as-firm",
-              "ownership-of-shares-50-to-75-percent-as-firm",
-              "ownership-of-shares-75-to-100-percent-as-firm",
-              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
-              "voting-rights-25-to-50-percent",
-              "voting-rights-50-to-75-percent",
-              "voting-rights-75-to-100-percent",
-              "voting-rights-25-to-50-percent-as-trust",
-              "voting-rights-50-to-75-percent-as-trust",
-              "voting-rights-75-to-100-percent-as-trust",
-              "voting-rights-25-to-50-percent-as-firm",
-              "voting-rights-50-to-75-percent-as-firm",
-              "voting-rights-75-to-100-percent-as-firm",
-              "voting-rights-more-than-25-percent-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors",
-              "right-to-appoint-and-remove-directors-as-trust",
-              "right-to-appoint-and-remove-directors-as-firm",
-              "significant-influence-or-control",
-              "significant-influence-or-control-as-trust",
-              "significant-influence-or-control-as-firm",
-              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-limited-liability-partnership",
-              "significant-influence-or-control-as-trust-limited-liability-partnership",
-              "significant-influence-or-control-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-registered-overseas-entity",
-              "significant-influence-or-control-as-trust-registered-overseas-entity",
-              "significant-influence-or-control-as-firm-registered-overseas-entity",
-              "part-right-to-share-surplus-assets-25-to-50-percent",
-              "part-right-to-share-surplus-assets-50-to-75-percent",
-              "part-right-to-share-surplus-assets-75-to-100-percent",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
-              "right-to-appoint-and-remove-person",
-              "right-to-appoint-and-remove-person-as-firm",
-              "right-to-appoint-and-remove-person-as-trust",
-              "right-to-appoint-and-remove-directors-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
-            ]
-          },
-          "type": "array"
-        },
-        "notified_on": {
-          "format": "date",
-          "type": "string"
+          "type": "string",
+          "example": "2022-08-29"
         },
         "reference_etag": {
-          "type": "string"
+          "type": "string",
+          "example": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40"
         },
         "reference_psc_id": {
-          "type": "string"
+          "type": "string",
+          "example": "1kdaTltWeaP1EB70SSD9SLmiK5Y"
         },
         "register_entry_date": {
           "format": "date",
-          "type": "string"
-        },
-        "residential_address": {
-          "$ref": "#/definitions/Address"
-        },
-        "residential_address_same_as_correspondence_address": {
-          "type": "boolean"
-        },
-        "statementActionDate": {
-          "format": "date",
-          "type": "string"
-        },
-        "statementType": {
-          "type": "string"
+          "type": "string",
+          "example": "2022-08-30"
         }
       },
       "type": "object",
-      "title": "PscIndividual"
+      "title": "PscFiling"
     },
-    "PscIndividualFiling": {
+    "PscFilingResource": {
       "properties": {
-        "address": {
-          "$ref": "#/definitions/Address"
-        },
-        "address_same_as_registered_office_address": {
-          "type": "boolean"
-        },
         "ceased_on": {
           "format": "date",
           "type": "string"
         },
-        "country_of_residence": {
-          "type": "string"
-        },
         "created_at": {
+          "readOnly": true,
           "format": "date-time",
-          "readOnly": true,
-          "type": "string"
-        },
-        "date_of_birth": {
-          "$ref": "#/definitions/Date"
-        },
-        "etag": {
-          "readOnly": true,
           "type": "string"
         },
         "id": {
           "readOnly": true,
           "type": "string"
         },
-        "kind": {
-          "type": "string"
-        },
         "links": {
           "$ref": "#/definitions/Links"
-        },
-        "name_elements": {
-          "$ref": "#/definitions/NameElements"
-        },
-        "nationality": {
-          "type": "string"
-        },
-        "natures_of_control": {
-          "items": {
-            "type": "string",
-            "enum": [
-              "ownership-of-shares-25-to-50-percent",
-              "ownership-of-shares-50-to-75-percent",
-              "ownership-of-shares-75-to-100-percent",
-              "ownership-of-shares-25-to-50-percent-as-trust",
-              "ownership-of-shares-50-to-75-percent-as-trust",
-              "ownership-of-shares-75-to-100-percent-as-trust",
-              "ownership-of-shares-25-to-50-percent-as-firm",
-              "ownership-of-shares-50-to-75-percent-as-firm",
-              "ownership-of-shares-75-to-100-percent-as-firm",
-              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
-              "voting-rights-25-to-50-percent",
-              "voting-rights-50-to-75-percent",
-              "voting-rights-75-to-100-percent",
-              "voting-rights-25-to-50-percent-as-trust",
-              "voting-rights-50-to-75-percent-as-trust",
-              "voting-rights-75-to-100-percent-as-trust",
-              "voting-rights-25-to-50-percent-as-firm",
-              "voting-rights-50-to-75-percent-as-firm",
-              "voting-rights-75-to-100-percent-as-firm",
-              "voting-rights-more-than-25-percent-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors",
-              "right-to-appoint-and-remove-directors-as-trust",
-              "right-to-appoint-and-remove-directors-as-firm",
-              "significant-influence-or-control",
-              "significant-influence-or-control-as-trust",
-              "significant-influence-or-control-as-firm",
-              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-limited-liability-partnership",
-              "significant-influence-or-control-as-trust-limited-liability-partnership",
-              "significant-influence-or-control-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-registered-overseas-entity",
-              "significant-influence-or-control-as-trust-registered-overseas-entity",
-              "significant-influence-or-control-as-firm-registered-overseas-entity",
-              "part-right-to-share-surplus-assets-25-to-50-percent",
-              "part-right-to-share-surplus-assets-50-to-75-percent",
-              "part-right-to-share-surplus-assets-75-to-100-percent",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
-              "right-to-appoint-and-remove-person",
-              "right-to-appoint-and-remove-person-as-firm",
-              "right-to-appoint-and-remove-person-as-trust",
-              "right-to-appoint-and-remove-directors-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
-            ]
-          },
-          "type": "array"
-        },
-        "notified_on": {
-          "format": "date",
-          "type": "string"
         },
         "reference_etag": {
           "type": "string"
@@ -1107,301 +672,16 @@
         },
         "register_entry_date": {
           "format": "date",
-          "type": "string"
-        },
-        "residential_address": {
-          "$ref": "#/definitions/Address"
-        },
-        "residential_address_same_as_correspondence_address": {
-          "type": "boolean"
-        },
-        "statementActionDate": {
-          "format": "date",
-          "type": "string"
-        },
-        "statementType": {
           "type": "string"
         },
         "updated_at": {
-          "format": "date-time",
           "readOnly": true,
+          "format": "date-time",
           "type": "string"
         }
       },
       "type": "object",
-      "title": "PscIndividualFiling"
-    },
-    "PscWithIdentification": {
-      "properties": {
-        "address": {
-          "$ref": "#/definitions/Address"
-        },
-        "address_same_as_registered_office_address": {
-          "type": "boolean"
-        },
-        "ceased_on": {
-          "format": "date",
-          "type": "string"
-        },
-        "identification": {
-          "$ref": "#/definitions/Identification"
-        },
-        "kind": {
-          "type": "string"
-        },
-        "links": {
-          "$ref": "#/definitions/Links"
-        },
-        "name": {
-          "type": "string"
-        },
-        "naturesOfControl": {
-          "items": {
-            "type": "string",
-            "enum": [
-              "ownership-of-shares-25-to-50-percent",
-              "ownership-of-shares-50-to-75-percent",
-              "ownership-of-shares-75-to-100-percent",
-              "ownership-of-shares-25-to-50-percent-as-trust",
-              "ownership-of-shares-50-to-75-percent-as-trust",
-              "ownership-of-shares-75-to-100-percent-as-trust",
-              "ownership-of-shares-25-to-50-percent-as-firm",
-              "ownership-of-shares-50-to-75-percent-as-firm",
-              "ownership-of-shares-75-to-100-percent-as-firm",
-              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
-              "voting-rights-25-to-50-percent",
-              "voting-rights-50-to-75-percent",
-              "voting-rights-75-to-100-percent",
-              "voting-rights-25-to-50-percent-as-trust",
-              "voting-rights-50-to-75-percent-as-trust",
-              "voting-rights-75-to-100-percent-as-trust",
-              "voting-rights-25-to-50-percent-as-firm",
-              "voting-rights-50-to-75-percent-as-firm",
-              "voting-rights-75-to-100-percent-as-firm",
-              "voting-rights-more-than-25-percent-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors",
-              "right-to-appoint-and-remove-directors-as-trust",
-              "right-to-appoint-and-remove-directors-as-firm",
-              "significant-influence-or-control",
-              "significant-influence-or-control-as-trust",
-              "significant-influence-or-control-as-firm",
-              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-limited-liability-partnership",
-              "significant-influence-or-control-as-trust-limited-liability-partnership",
-              "significant-influence-or-control-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-registered-overseas-entity",
-              "significant-influence-or-control-as-trust-registered-overseas-entity",
-              "significant-influence-or-control-as-firm-registered-overseas-entity",
-              "part-right-to-share-surplus-assets-25-to-50-percent",
-              "part-right-to-share-surplus-assets-50-to-75-percent",
-              "part-right-to-share-surplus-assets-75-to-100-percent",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
-              "right-to-appoint-and-remove-person",
-              "right-to-appoint-and-remove-person-as-firm",
-              "right-to-appoint-and-remove-person-as-trust",
-              "right-to-appoint-and-remove-directors-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
-            ]
-          },
-          "type": "array"
-        },
-        "reference_etag": {
-          "type": "string"
-        },
-        "reference_psc_id": {
-          "type": "string"
-        },
-        "register_entry_date": {
-          "format": "date",
-          "type": "string"
-        },
-        "statementActionDate": {
-          "format": "date",
-          "type": "string"
-        },
-        "statementType": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "title": "PSCWithIdentification"
-    },
-    "PscWithIdentificationFiling": {
-      "properties": {
-        "address": {
-          "$ref": "#/definitions/Address"
-        },
-        "address_same_as_registered_office_address": {
-          "type": "boolean"
-        },
-        "ceased_on": {
-          "format": "date",
-          "type": "string"
-        },
-        "created_at": {
-          "format": "date-time",
-          "readOnly": true,
-          "type": "string"
-        },
-        "etag": {
-          "readOnly": true,
-          "type": "string"
-        },
-        "id": {
-          "readOnly": true,
-          "type": "string"
-        },
-        "identification": {
-          "$ref": "#/definitions/Identification"
-        },
-        "kind": {
-          "type": "string"
-        },
-        "links": {
-          "$ref": "#/definitions/Links"
-        },
-        "name": {
-          "type": "string"
-        },
-        "naturesOfControl": {
-          "items": {
-            "type": "string",
-            "enum": [
-              "ownership-of-shares-25-to-50-percent",
-              "ownership-of-shares-50-to-75-percent",
-              "ownership-of-shares-75-to-100-percent",
-              "ownership-of-shares-25-to-50-percent-as-trust",
-              "ownership-of-shares-50-to-75-percent-as-trust",
-              "ownership-of-shares-75-to-100-percent-as-trust",
-              "ownership-of-shares-25-to-50-percent-as-firm",
-              "ownership-of-shares-50-to-75-percent-as-firm",
-              "ownership-of-shares-75-to-100-percent-as-firm",
-              "ownership-of-shares-more-than-25-percent-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-trust-registered-overseas-entity",
-              "ownership-of-shares-more-than-25-percent-as-firm-registered-overseas-entity",
-              "voting-rights-25-to-50-percent",
-              "voting-rights-50-to-75-percent",
-              "voting-rights-75-to-100-percent",
-              "voting-rights-25-to-50-percent-as-trust",
-              "voting-rights-50-to-75-percent-as-trust",
-              "voting-rights-75-to-100-percent-as-trust",
-              "voting-rights-25-to-50-percent-as-firm",
-              "voting-rights-50-to-75-percent-as-firm",
-              "voting-rights-75-to-100-percent-as-firm",
-              "voting-rights-more-than-25-percent-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-trust-registered-overseas-entity",
-              "voting-rights-more-than-25-percent-as-firm-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors",
-              "right-to-appoint-and-remove-directors-as-trust",
-              "right-to-appoint-and-remove-directors-as-firm",
-              "significant-influence-or-control",
-              "significant-influence-or-control-as-trust",
-              "significant-influence-or-control-as-firm",
-              "right-to-share-surplus-assets-25-to-50-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-trust-limited-liability-partnership",
-              "right-to-share-surplus-assets-25-to-50-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-50-to-75-percent-as-firm-limited-liability-partnership",
-              "right-to-share-surplus-assets-75-to-100-percent-as-firm-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-trust-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-trust-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-trust-limited-liability-partnership",
-              "voting-rights-25-to-50-percent-as-firm-limited-liability-partnership",
-              "voting-rights-50-to-75-percent-as-firm-limited-liability-partnership",
-              "voting-rights-75-to-100-percent-as-firm-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-trust-limited-liability-partnership",
-              "right-to-appoint-and-remove-members-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-limited-liability-partnership",
-              "significant-influence-or-control-as-trust-limited-liability-partnership",
-              "significant-influence-or-control-as-firm-limited-liability-partnership",
-              "significant-influence-or-control-registered-overseas-entity",
-              "significant-influence-or-control-as-trust-registered-overseas-entity",
-              "significant-influence-or-control-as-firm-registered-overseas-entity",
-              "part-right-to-share-surplus-assets-25-to-50-percent",
-              "part-right-to-share-surplus-assets-50-to-75-percent",
-              "part-right-to-share-surplus-assets-75-to-100-percent",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-trust",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-trust",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-trust",
-              "part-right-to-share-surplus-assets-25-to-50-percent-as-firm",
-              "part-right-to-share-surplus-assets-50-to-75-percent-as-firm",
-              "part-right-to-share-surplus-assets-75-to-100-percent-as-firm",
-              "right-to-appoint-and-remove-person",
-              "right-to-appoint-and-remove-person-as-firm",
-              "right-to-appoint-and-remove-person-as-trust",
-              "right-to-appoint-and-remove-directors-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-trust-registered-overseas-entity",
-              "right-to-appoint-and-remove-directors-as-firm-registered-overseas-entity"
-            ]
-          },
-          "type": "array"
-        },
-        "notified_on": {
-          "format": "date",
-          "type": "string"
-        },
-        "reference_etag": {
-          "type": "string"
-        },
-        "reference_psc_id": {
-          "type": "string"
-        },
-        "register_entry_date": {
-          "format": "date",
-          "type": "string"
-        },
-        "statementActionDate": {
-          "format": "date",
-          "type": "string"
-        },
-        "statementType": {
-          "type": "string"
-        },
-        "updated_at": {
-          "format": "date-time",
-          "readOnly": true,
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "title": "PscWithIdentificationFiling"
+      "title": "PscFilingResource"
     },
     "ValidationStatusError": {
       "properties": {
