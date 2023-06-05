@@ -55,6 +55,13 @@
             "description": "For convenience the response body contains details of the created filing resource.",
             "schema": {
               "$ref": "#/definitions/PscFiling"
+            },
+            "headers": {
+              "Location": {
+                "description": "The URI of the newly created filing resource.",
+                "type": "string",
+                "format": "uri"
+              }
             }
           },
           "400": {
@@ -360,6 +367,13 @@
       "description": "For convenience the response body provides the details of the updated filing resource.",
       "schema": {
         "$ref": "#/definitions/PscFiling"
+      },
+      "headers": {
+        "Location": {
+          "description": "The URI of the updated filing resource.",
+          "type": "string",
+          "format": "uri"
+        }
       }
     },
     "Unauthorized": {
