@@ -6,7 +6,7 @@
   ],
   "info": {
     "title": "PSC Filing API (Private)",
-    "version": "0.5",
+    "version": "0.6",
     "description": "An API that allows clients to submit PSC filings. Currently for PSC07 (Cease a PSC) only."
   },
   "host": "api.chs.local:4001",
@@ -309,7 +309,7 @@
   },
   "responses": {
     "Conflict": {
-      "description": "The request could not be fulfilled because all of the following conditions were not satisfied:\n* The company type **must** be any of:\n\t- `private-unlimited`\n\t- `ltd`\n\t- `plc`\n\t- `old-public-company`\n\t- `private-limited-guarant-nsc-limited-exemption`\n\t- `private-limited-guarant-nsc`\n\t- `private-unlimited-nsc`\n\t- `private-limited-shares-section-30-exemption`\n* The company status **must not** be any of:\n\t- `dissolved`\n\t- `converted-closed`\n* The company **must not** have any PSCs whose details are protected.",
+      "description": "The request could not be fulfilled because all of the following conditions were not satisfied:\n\n* The company type **must** be any of:\n\t- `private-unlimited`\n\t- `ltd`\n\t- `plc`\n\t- `old-public-company`\n\t- `private-limited-guarant-nsc-limited-exemption`\n\t- `private-limited-guarant-nsc`\n\t- `private-unlimited-nsc`\n\t- `private-limited-shares-section-30-exemption`\n* The company status **must not** be any of:\n\t- `dissolved`\n\t- `converted-closed`\n* The company **must not** have any PSCs whose details are protected.",
       "schema": {
         "$ref": "#/definitions/ConflictErrors"
       }
