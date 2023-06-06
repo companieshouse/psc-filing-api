@@ -6,7 +6,7 @@
   ],
   "info": {
     "title": "PSC Filing API (Private)",
-    "version": "0.6",
+    "version": "0.7",
     "description": "An API that allows clients to submit PSC filings. Currently for PSC07 (Cease a PSC) only."
   },
   "host": "api.chs.local:4001",
@@ -31,8 +31,8 @@
   "paths": {
     "/transactions/{transactionId}/persons-with-significant-control/{pscType}": {
       "post": {
-        "summary": "Create a PSC filing resource",
-        "description": "Create a PSC filing of the specified type.",
+        "summary": "Create an Open PSC filing resource",
+        "description": "Create an Open PSC filing of the specified type. Requires an Open transaction. The filing becomes Closed when its associated transaction is closed.",
         "consumes": [
           "application/json"
         ],
@@ -58,7 +58,7 @@
             },
             "headers": {
               "Location": {
-                "description": "The URI of the newly created filing resource.",
+                "description": "The URI of the newly created resource.",
                 "type": "string",
                 "format": "uri"
               }
@@ -71,13 +71,16 @@
             "$ref": "#/responses/Unauthorized"
           },
           "403": {
-            "$ref": "#/responses/Forbidden"
+            "$ref": "#/responses/ForbiddenClosed"
           },
           "404": {
             "$ref": "#/responses/NotCreated"
           },
           "409": {
             "$ref": "#/responses/Conflict"
+          },
+          "415": {
+            "$ref": "#/responses/MediaTypeUnsupported"
           },
           "500": {
             "$ref": "#/responses/InternalServerError"
@@ -87,13 +90,13 @@
           "pscFiling"
         ],
         "operationId": "createFiling",
-        "x-operationName": "create filing"
+        "x-operationName": "create"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}": {
       "get": {
-        "summary": "Get this PSC filing resource details",
-        "description": "Get this PSC filing resource details.",
+        "summary": "Get this Open PSC filing resource details",
+        "description": "The filing becomes Closed when its associated transaction is closed.",
         "produces": [
           "application/json"
         ],
@@ -112,9 +115,6 @@
           "200": {
             "$ref": "#/responses/FilingFound"
           },
-          "400": {
-            "$ref": "#/responses/CreateFilingBadRequest"
-          },
           "401": {
             "$ref": "#/responses/Unauthorized"
           },
@@ -129,11 +129,11 @@
           "pscFiling"
         ],
         "operationId": "getFiling",
-        "x-operationName": "get filing"
+        "x-operationName": "get"
       },
       "patch": {
-        "summary": "Update this PSC filing resource",
-        "description": "Update writable properties of a filing resource. See [RFC7396](https://www.rfc-editor.org/rfc/rfc7396) for details, including how to add, replace, and remove properties.",
+        "summary": "Update this Open PSC filing resource",
+        "description": "Update writable properties of an Open filing resource. See [RFC7396](https://www.rfc-editor.org/rfc/rfc7396) for details, including how to add, replace, and remove properties.",
         "consumes": [
           "application/merge-patch+json"
         ],
@@ -165,13 +165,16 @@
             "$ref": "#/responses/Unauthorized"
           },
           "403": {
-            "$ref": "#/responses/Forbidden"
+            "$ref": "#/responses/ForbiddenClosed"
           },
           "404": {
             "$ref": "#/responses/FilingNotFound"
           },
           "409": {
             "$ref": "#/responses/Conflict"
+          },
+          "415": {
+            "$ref": "#/responses/MediaTypeUnsupported"
           },
           "500": {
             "$ref": "#/responses/InternalServerError"
@@ -181,13 +184,13 @@
           "pscFiling"
         ],
         "operationId": "updateFiling",
-        "x-operationName": "update filing"
+        "x-operationName": "update"
       }
     },
     "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
       "get": {
-        "summary": "Check this filing resource for completeness",
-        "description": "Check the validity and completeness of a PSC filing. Primarily for use by the Transaction Service when requested to close the filing resource transaction.",
+        "summary": "Check this Open filing resource for completeness",
+        "description": "Check the validity and completeness of an Open PSC filing resource. Primarily for use by the Transaction Service when requested to close the filing resource transaction.",
         "produces": [
           "application/json"
         ],
@@ -220,13 +223,13 @@
           "pscFiling"
         ],
         "operationId": "validateFiling",
-        "x-operationName": "validate filing"
+        "x-operationName": "validate"
       }
     },
     "/private/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}/filings": {
       "get": {
-        "summary": "Get CHIPS-compatible details of this filing resource",
-        "description": "Get the CHIPS-compatible details of this filing resource. For internal use by the filing resource handler service.",
+        "summary": "Get the Closed PSC filing details",
+        "description": "Get the CHIPS-compatible details of this Closed PSC filing resource. For internal use by the filing resource handler service.\n\n### NOTE\nThe transaction associated with this filing **should** have been Closed before making this request.",
         "produces": [
           "application/json"
         ],
@@ -254,7 +257,7 @@
             "$ref": "#/responses/Unauthorized"
           },
           "403": {
-            "description": "Forbidden \n* The authorization identity type must equal '`key`' and \n* The authenticated user account must have internal user privileges and\n* The request must have an API key that has internal application privileges."
+            "$ref": "#/responses/ForbiddenOpen"
           },
           "404": {
             "$ref": "#/responses/FilingNotFound"
@@ -263,14 +266,14 @@
             "$ref": "#/responses/Conflict"
           },
           "500": {
-            "description": "The request could not be fulfilled because:\n* The filing resource transaction is not Closed or\n* an internal error."
+            "description": "Possible causes include:\n\n* The transaction with ID `transactionId` **must** be in an Closed state\n* An internal error occurred"
           }
         },
         "tags": [
           "pscFiling"
         ],
-        "operationId": "getFilingForChips",
-        "x-operationName": "get filing for CHIPS"
+        "operationId": "getFilingData",
+        "x-operationName": "get closed"
       }
     }
   },
@@ -348,8 +351,11 @@
         "type": "array"
       }
     },
-    "Forbidden": {
-      "description": "The transaction with ID `transactionId` is not in an open state, or the operation is otherwise not allowed."
+    "ForbiddenOpen": {
+      "description": "Possible causes include:\n\n* The authorization identity type **must** equal '`key`'\n* The authenticated user account **must** have internal user privileges\n* The request authorization **must** be an API key that has internal application privileges.\n"
+    },
+    "ForbiddenClosed": {
+      "description": "Possible causes include:\n\n* The transaction with ID `transactionId` **must** be in an Open state"
     },
     "InternalServerError": {
       "description": "The request could not be fulfilled because of an internal error.",
@@ -362,6 +368,21 @@
     },
     "NotFound": {
       "description": "A filing with the specified combination of `transactionId`, `filingResourceId` and `pscType` could not be found."
+    },
+    "MediaTypeUnsupported": {
+      "description": "The content type of the request is not acceptable. Refer to the `Accept-Patch` or `Accept-Post` header for the acceptable content type.",
+      "headers": {
+        "Accept-Patch": {
+          "description": "`application/merge-patch+json`",
+          "type": "string",
+          "format": "uri"
+        },
+        "Accept-Post": {
+          "description": "`application/json`",
+          "type": "string",
+          "format": "uri"
+        }
+      }
     },
     "PscFilingUpdated": {
       "description": "For convenience the response body provides the details of the updated filing resource.",
