@@ -1,6 +1,6 @@
 ${DAPPERDOX}/dapperdox \
     -spec-dir=${PWD}/docs/ \
-    -spec-filename=spec-v2.0.json \
+    -spec-filename=psc-filing-api.json \
     -bind-addr=0.0.0.0:4005 \
     -site-url=http://localhost:4005 \
     -log-level=debug \
