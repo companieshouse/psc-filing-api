@@ -1,0 +1,20 @@
+${DAPPERDOX}/dapperdox \
+    -spec-dir=${PWD}/docs/ \
+    -spec-filename=psc-filing-api.json \
+    -bind-addr=0.0.0.0:4005 \
+    -site-url=http://localhost:4005 \
+    -log-level=debug \
+    -spec-rewrite-url=http://localhost:3123/swagger-2.0 \
+    -spec-rewrite-url=localhost:4003=http://localhost:4005 \
+    -document-rewrite-url=http://localhost:4003=http://localhost:4005 \
+    -default-assets-dir=${DAPPERDOX}/assets \
+    -proxy-path=/developer=http://localhost:4006 \
+    -force-specification-list=true \
+    -author-show-assets=true \
+    -assets-dir=${PWD}/assets \
+    -theme-dir=$HOME/src/SingleService/dapperdox-themes/ \
+    -theme=dapperdox-theme-gov-uk  \
+    #-tls-certificate=server.rsa.crt \
+    #-tls-key=server.rsa.key \
+    #-assets-dir=./examples/overlay/assets \
+   # -spec-dir=examples/specifications/petstore/ \

@@ -1,0 +1,788 @@
+{
+  "swagger": "2.0",
+  "x-sortMethodsBy": [
+    "operation",
+    "path"
+  ],
+  "info": {
+    "title": "PSC Filing API (Private)",
+    "version": "0.8",
+    "description": "An API that allows clients to submit PSC filings. Currently for PSC07 (Cease a PSC) only."
+  },
+  "host": "api.chs.local:4001",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "security": [
+    {
+      "oauth2": [
+        "https://api.company-information.service.gov.uk/company/*/persons-with-significant-control.delete",
+        "https://account.companieshouse.gov.uk/user/profile.read"
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "name": "pscFiling",
+      "description": "Persons with Significant Control"
+    }
+  ],
+  "paths": {
+    "/transactions/{transactionId}/persons-with-significant-control/{pscType}": {
+      "post": {
+        "summary": "Create an Open PSC filing resource",
+        "description": "Create an Open PSC filing of the specified type. Requires an Open transaction. The filing becomes Closed when its associated transaction is closed.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/pscFilingDetails"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "For convenience the response body contains details of the created filing resource.",
+            "schema": {
+              "$ref": "#/definitions/PscFiling"
+            },
+            "headers": {
+              "Location": {
+                "description": "The URI of the newly created resource.",
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/CreateFilingBadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenClosed"
+          },
+          "404": {
+            "$ref": "#/responses/NotCreated"
+          },
+          "409": {
+            "$ref": "#/responses/Conflict"
+          },
+          "415": {
+            "$ref": "#/responses/MediaTypeUnsupported"
+          },
+          "500": {
+            "$ref": "#/responses/InternalServerError"
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "createFiling",
+        "x-operationName": "create"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}": {
+      "get": {
+        "summary": "Get this Open PSC filing resource details",
+        "description": "The filing becomes Closed when its associated transaction is closed.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FilingFound"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/responses/InternalServerError"
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "getFiling",
+        "x-operationName": "get"
+      },
+      "patch": {
+        "summary": "Update this Open PSC filing resource",
+        "description": "Update writable properties of an Open filing resource. See [RFC7396](https://www.rfc-editor.org/rfc/rfc7396) for details, including how to add, replace, and remove properties.",
+        "consumes": [
+          "application/merge-patch+json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          },
+          {
+            "$ref": "#/parameters/pscFilingDetails"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/PscFilingUpdated"
+          },
+          "400": {
+            "$ref": "#/responses/UpdateFilingBadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenClosed"
+          },
+          "404": {
+            "$ref": "#/responses/FilingNotFound"
+          },
+          "409": {
+            "$ref": "#/responses/Conflict"
+          },
+          "415": {
+            "$ref": "#/responses/MediaTypeUnsupported"
+          },
+          "500": {
+            "$ref": "#/responses/InternalServerError"
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "updateFiling",
+        "x-operationName": "update"
+      }
+    },
+    "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
+      "get": {
+        "summary": "Check this Open PSC filing resource for completeness",
+        "description": "Check the validity and completeness of an Open PSC filing resource. Primarily for use by the Transaction Service when requested to close the filing resource transaction.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The response properties `is_valid` and `errors` properties specify the result.",
+            "schema": {
+              "$ref": "#/definitions/ValidationStatus"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/responses/FilingNotFound"
+          },
+          "500": {
+            "$ref": "#/responses/InternalServerError"
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "validateFiling",
+        "x-operationName": "validate"
+      }
+    },
+    "/private/transactions/{transactionId}/persons-with-significant-control/{pscType}/{filingResourceId}/filings": {
+      "get": {
+        "summary": "Get the Closed PSC filing details",
+        "description": "Get the CHIPS-compatible details of this Closed PSC filing resource. For internal use by the filing resource handler service.\n\n### NOTE\nThe transaction associated with this filing **should** have been Closed before making this request.",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "api_key": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/transactionId"
+          },
+          {
+            "$ref": "#/parameters/pscType"
+          },
+          {
+            "$ref": "#/parameters/filingResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FilingData"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenOpen"
+          },
+          "404": {
+            "$ref": "#/responses/FilingNotFound"
+          },
+          "409": {
+            "$ref": "#/responses/Conflict"
+          },
+          "500": {
+            "description": "Possible causes include:\n\n* The transaction with ID `transactionId` **must** be in an Closed state\n* An internal error occurred"
+          }
+        },
+        "tags": [
+          "pscFiling"
+        ],
+        "operationId": "getFilingData",
+        "x-operationName": "get closed"
+      }
+    }
+  },
+  "parameters": {
+    "transactionId": {
+      "name": "transactionId",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "description": "The transaction that this PSC filing is applied to",
+      "x-example": "142481-538116-714607"
+    },
+    "pscType": {
+      "name": "pscType",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "enum": [
+        "individual",
+        "corporate-entity",
+        "legal-person"
+      ],
+      "description": "The kind of PSC of the filing resource",
+      "x-example": "individual"
+    },
+    "filingResourceId": {
+      "name": "filingResourceId",
+      "in": "path",
+      "required": true,
+      "type": "string",
+      "description": "The unique ID of the filing resource",
+      "x-example": "63a0776f339d254f9fc04a35"
+    },
+    "pscFilingDetails": {
+      "in": "body",
+      "name": "pscFilingDetails",
+      "required": true,
+      "description": "The PSC filing details",
+      "schema": {
+        "$ref": "#/definitions/PscFiling"
+      }
+    }
+  },
+  "responses": {
+    "Conflict": {
+      "description": "The request could not be fulfilled because all of the following conditions were not satisfied:\n\n* The company type **must** be any of:\n\t- `private-unlimited`\n\t- `ltd`\n\t- `plc`\n\t- `old-public-company`\n\t- `private-limited-guarant-nsc-limited-exemption`\n\t- `private-limited-guarant-nsc`\n\t- `private-unlimited-nsc`\n\t- `private-limited-shares-section-30-exemption`\n* The company status **must not** be any of:\n\t- `dissolved`\n\t- `converted-closed`\n* The company **must not** have any PSCs whose details are protected.",
+      "schema": {
+        "$ref": "#/definitions/ConflictErrors"
+      }
+    },
+    "CreateFilingBadRequest": {
+      "description": "The request to create a filing resource contains bad data.",
+      "schema": {
+        "$ref": "#/definitions/CreateErrors"
+      }
+    },
+    "FilingFound": {
+      "description": "The response body provides the details of the found filing resource.",
+      "schema": {
+        "$ref": "#/definitions/PscFiling"
+      }
+    },
+    "FilingNotFound": {
+      "description": "A filing with the specified combination of `transactionId`, `filingResourceId` and `pscType` could not be found.",
+      "schema": {
+        "$ref": "#/definitions/NotFoundErrors"
+      }
+    },
+    "FilingData": {
+      "description": "The CHIPS-compatible details of this filing resource.",
+      "schema": {
+        "items": {
+          "$ref": "#/definitions/ChipsFiling"
+        },
+        "type": "array"
+      }
+    },
+    "ForbiddenOpen": {
+      "description": "Possible causes include:\n\n* The authorization identity type **must** equal '`key`'\n* The authenticated user account **must** have internal user privileges\n* The request authorization **must** be an API key that has internal application privileges.\n"
+    },
+    "ForbiddenClosed": {
+      "description": "Possible causes include:\n\n* The transaction with ID `transactionId` **must** be in an Open state"
+    },
+    "InternalServerError": {
+      "description": "The request could not be fulfilled because of an internal error.",
+      "schema": {
+        "$ref": "#/definitions/InternalErrors"
+      }
+    },
+    "NotCreated": {
+      "description": "The filing resource could not be created with the specified combination of `transactionId` and `pscType`."
+    },
+    "NotFound": {
+      "description": "A filing with the specified combination of `transactionId`, `filingResourceId` and `pscType` could not be found."
+    },
+    "MediaTypeUnsupported": {
+      "description": "The content type of the request is not acceptable. Refer to the `Accept-Patch` or `Accept-Post` header for the acceptable content type.",
+      "headers": {
+        "Accept-Patch": {
+          "description": "`application/merge-patch+json`",
+          "type": "string",
+          "format": "uri"
+        },
+        "Accept-Post": {
+          "description": "`application/json`",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "PscFilingUpdated": {
+      "description": "For convenience the response body provides the details of the updated filing resource.",
+      "schema": {
+        "$ref": "#/definitions/PscFiling"
+      },
+      "headers": {
+        "Location": {
+          "description": "The URI of the updated filing resource.",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "Unauthorized": {
+      "description": "Request credentials/authorization are invalid or missing.",
+      "schema": {
+        "type": "object",
+        "readOnly": true,
+        "title": "unauthorized",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "type": {
+            "type": "string",
+            "description": "Error type"
+          }
+        },
+        "example": {
+          "error": "Invalid Authorization",
+          "type": "ch:service"
+        }
+      }
+    },
+    "UpdateFilingBadRequest": {
+      "description": "The request to update a filing resource contains bad data.",
+      "schema": {
+        "$ref": "#/definitions/UpdateErrors"
+      }
+    }
+  },
+  "securityDefinitions": {
+    "oauth2": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "http://account.chs.local/oauth2/authorise",
+      "tokenUrl": "http://account.chs.local/oauth2/token",
+      "scopes": {
+        "https://api.company-information.service.gov.uk/company/*/persons-with-significant-control.delete": "Grants permission to cease a PSC belonging to this company.",
+        "https://account.companieshouse.gov.uk/user/profile.read": "Grants permission to read the CHS User profile."
+      }
+    },
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "ApiError": {
+      "properties": {
+        "error": {
+          "description": "Error message",
+          "type": "string"
+        },
+        "error_values": {
+          "additionalProperties": {
+            "type": "string",
+            "description": "Value name"
+          },
+          "type": "string",
+          "description": "Associated error values"
+        },
+        "location": {
+          "type": "string",
+          "description": "Error location"
+        },
+        "location_type": {
+          "type": "string",
+          "enum": [
+            "resource",
+            "request-body",
+            "json-path"
+          ],
+          "description": "Location type"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "ch:service",
+            "ch:validation"
+          ],
+          "description": "Error type"
+        }
+      },
+      "type": "object",
+      "title": "error"
+    },
+    "CreateErrors": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Errors set"
+        }
+      },
+      "type": "object",
+      "title": "create errors",
+      "example": {
+        "errors": [
+          {
+            "error": "{rejected-value} must be a date in the past or in the present",
+            "error_values": {
+              "rejected-value": "3000-08-29"
+            },
+            "location": "$.ceased_on",
+            "location_type": "json-path",
+            "type": "ch:validation"
+          }
+        ]
+      }
+    },
+    "ConflictErrors": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Errors set"
+        }
+      },
+      "type": "object",
+      "title": "conflict errors",
+      "example": {
+        "errors": [
+          {
+            "error": "You cannot submit a filing for a company that is Dissolved",
+            "location": "$",
+            "location_type": "json-path",
+            "type": "ch:validation"
+          }
+        ]
+      }
+    },
+    "ChipsFiling": {
+      "properties": {
+        "data": {
+          "additionalProperties": {
+            "type": "object",
+            "readOnly": true,
+            "description": "Data name"
+          },
+          "type": "string",
+          "readOnly": true,
+          "description": "Filing data"
+        },
+        "description": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Description"
+        },
+        "description_identifier": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Description identifier"
+        },
+        "description_values": {
+          "additionalProperties": {
+            "type": "string",
+            "readOnly": true,
+            "description": "Description name"
+          },
+          "type": "string",
+          "readOnly": true,
+          "description": "Filing descriptions"
+        },
+        "kind": {
+          "type": "string",
+          "readOnly": true,
+          "description": "Filing kind"
+        }
+      },
+      "type": "object",
+      "title": "filing for chips",
+      "description": "CHIPS-compatible PSC filing details",
+      "example": [
+        {
+          "data": {
+            "title": "Mr",
+            "first_name": "Random",
+            "other_forenames": "Notreal",
+            "last_name": "Person",
+            "ceased_on": "2022-08-29",
+            "register_entry_date": "2022-08-30"
+          },
+          "description": "(PSC07) Notice of ceasing to be a Person of Significant Control for Mr Random Notreal Person on 29 August 2022",
+          "kind": "psc-filing#cessation#individual"
+        }
+      ]
+    },
+    "InternalErrors": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Errors set"
+        }
+      },
+      "type": "object",
+      "title": "internal errors",
+      "example": {
+        "errors": [
+          {
+            "error": "Service Unavailable",
+            "location": "/transactions/207544-458216-854608/persons-with-significant-control/individual",
+            "location_type": "resource",
+            "type": "ch:service"
+          }
+        ]
+      }
+    },
+    "Links": {
+      "description": "Filing resource associated locations",
+      "properties": {
+        "self": {
+          "description": "Filing resource location",
+          "format": "uri",
+          "type": "string",
+          "readOnly": true,
+          "example": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19"
+        },
+        "validation_status": {
+          "description": "Filing resource validation location",
+          "format": "uri",
+          "type": "string",
+          "readOnly": true,
+          "example": "/transactions/021576-444716-850996/persons-with-significant-control/6470946f9f4c3f6c1ed25a19/validation_status"
+        }
+      },
+      "readOnly": true,
+      "type": "object",
+      "title": "links"
+    },
+    "NotFoundErrors": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Errors set"
+        }
+      },
+      "type": "object",
+      "title": "not found errors",
+      "example": {
+        "errors": [
+          {
+            "error": "Filing resource {filing-resource-id} not found",
+            "error_values": {
+              "{filing-resource-id}": "6470946f9f4c3f6c1ed25a19x"
+            },
+            "location": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19x",
+            "location_type": "resource",
+            "type": "ch:validation"
+          }
+        ]
+      }
+    },
+    "PscFiling": {
+      "properties": {
+        "ceased_on": {
+          "description": "PSC cessation date",
+          "format": "date",
+          "type": "string",
+          "example": "2022-08-29"
+        },
+        "created_at": {
+          "description": "Filing resource creation time",
+          "readOnly": true,
+          "format": "date-time",
+          "type": "string",
+          "example": "2023-05-26T11:13:51.787Z"
+        },
+        "id": {
+          "description": "Filing resource ID",
+          "readOnly": true,
+          "type": "string",
+          "example": "6470946f9f4c3f6c1ed25a19"
+        },
+        "links": {
+          "$ref": "#/definitions/Links"
+        },
+        "reference_etag": {
+          "description": "Reference PSC ETag",
+          "type": "string",
+          "example": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40"
+        },
+        "reference_psc_id": {
+          "description": "Reference PSC ID",
+          "type": "string",
+          "example": "1kdaTltWeaP1EB70SSD9SLmiK5Y"
+        },
+        "register_entry_date": {
+          "description": "PSC register updated date",
+          "format": "date",
+          "type": "string",
+          "example": "2022-08-30"
+        },
+        "updated_at": {
+          "description": "Filing resource last modified time",
+          "readOnly": true,
+          "format": "date-time",
+          "type": "string",
+          "example": "2023-05-26T11:13:51.787Z"
+        }
+      },
+      "type": "object",
+      "title": "psc filing",
+      "example": {
+        "ceased_on": "2022-08-29",
+        "links": {
+          "self": "/transactions/021576-444716-850996/persons-with-significant-control/individual/6470946f9f4c3f6c1ed25a19",
+          "validation_status": "/transactions/021576-444716-850996/persons-with-significant-control/6470946f9f4c3f6c1ed25a19/validation_status"
+        },
+        "reference_etag": "8cb9d4c9ba82059ff01ed638105bc41c1bc4db40",
+        "reference_psc_id": "1kdaTltWeaP1EB70SSD9SLmiK5Y",
+        "register_entry_date": "2022-08-30",
+        "id": "6470946f9f4c3f6c1ed25a19",
+        "created_at": "2023-05-26T11:13:51.787Z",
+        "updated_at": "2023-05-26T11:13:51.787Z"
+      }
+    },
+    "UpdateErrors": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Errors set"
+        }
+      },
+      "type": "object",
+      "title": "update errors",
+      "example": {
+        "errors": [
+          {
+            "error": "{rejected-value} must be a date in the past or in the present",
+            "error_values": {
+              "rejected-value": "3000-08-29"
+            },
+            "location": "$.ceased_on",
+            "location_type": "json-path",
+            "type": "ch:validation"
+          }
+        ]
+      }
+    },
+    "ValidationStatus": {
+      "properties": {
+        "errors": {
+          "items": {
+            "$ref": "#/definitions/ApiError"
+          },
+          "type": "array",
+          "uniqueItems": true,
+          "description": "Errors set",
+          "title": "validation errors"
+        },
+        "is_valid": {
+          "type": "boolean",
+          "description": "Validation status"
+        }
+      },
+      "type": "object",
+      "title": "validation status",
+      "example": {
+        "errors": [
+          {
+            "error": "PSC register entry date must be on or after the date the PSC was ceased",
+            "location": "$.register_entry_date",
+            "type": "ch:validation",
+            "location_type": "json-path"
+          }
+        ],
+        "is_valid": false
+      }
+    }
+  }
+}
