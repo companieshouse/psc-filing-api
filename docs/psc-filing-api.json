@@ -6,7 +6,7 @@
   ],
   "info": {
     "title": "PSC Filing API (Private)",
-    "version": "0.7",
+    "version": "0.8",
     "description": "An API that allows clients to submit PSC filings. Currently for PSC07 (Cease a PSC) only."
   },
   "host": "api.chs.local:4001",
@@ -189,7 +189,7 @@
     },
     "/transactions/{transactionId}/persons-with-significant-control/{filingResourceId}/validation_status": {
       "get": {
-        "summary": "Check this Open filing resource for completeness",
+        "summary": "Check this Open PSC filing resource for completeness",
         "description": "Check the validity and completeness of an Open PSC filing resource. Primarily for use by the Transaction Service when requested to close the filing resource transaction.",
         "produces": [
           "application/json"
