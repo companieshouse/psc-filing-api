@@ -63,7 +63,6 @@ import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
-    private static final String CAUSE = "cause";
     private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$",
             Pattern.MULTILINE);
 
@@ -170,12 +169,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(final Exception ex, final Object body,
             final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
-        chLogger.error("INTERNAL ERROR", ex);
-
         final var errorList = List.of(createApiServiceError(ex, request));
-        logError(request, "Internal error", ex, errorList);
+
+        logError(request, "INTERNAL ERROR", ex, errorList);
+
         return super.handleExceptionInternal(ex, new ApiErrors(errorList), headers, status,
-                request);
+            request);
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -184,15 +183,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ApiErrors handleAllUncaughtException(final RuntimeException ex,
             final WebRequest request) {
         final var errorList = List.of(createApiServiceError(ex, request));
-        logError(request, "Unknown error", ex, errorList);
+        logError(request, "Internal error", ex, errorList);
         return new ApiErrors(errorList);
     }
 
     private static ApiError createApiServiceError(final Exception ex, final WebRequest request) {
-        final var error = new ApiError(ex.getMessage(), getRequestURI(request),
-                LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
-        Optional.ofNullable(ex.getCause())
-                .ifPresent(c -> error.addErrorValue(CAUSE, c.getMessage()));
+        final var error = new ApiError("Service Unavailable: {error}",
+            getRequestURI(request), LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
+
+        error.addErrorValue("error",
+            StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
 
         return error;
     }
