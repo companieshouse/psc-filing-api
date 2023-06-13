@@ -88,7 +88,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"company_number\":\"00006400\",\n    \"reference\":\"Snoopy\",\n    \"description\":\"Mandatory transaction description\"\n}",
+					"raw": "{\n    \"company_number\":\"{{company_number}}\",\n    \"reference\":\"{{create_transaction_ref}}\",\n    \"description\":\"{{create_transaction_description}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -149,7 +149,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_etag\": \"8cb9d4c9ba82059ff01ed638105bc41c1bc4db40\",\n    \"reference_psc_id\": \"1kdaTltWeaP1EB70SSD9SLmiK5Y\",\n    \"register_entry_date\": \"2022-10-15\"\n}"
+					"raw": "{\n    \"ceased_on\": \"{{ceased_on}}\",\n    \"reference_etag\": \"{{individual_reference_etag}}\",\n    \"reference_psc_id\": \"{{individual_reference_psc_id}}\",\n    \"register_entry_date\": \"{{register_entry_date}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/individual",
@@ -203,7 +203,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-20\",\n    \"reference_psc_id\": \"67edfE436y35hetsie6zuAZtr\",\n    \"reference_etag\": \"y45ufy6yQEQner54908764fh6zwae34\",\n    \"register_entry_date\": \"2022-10-15\"\n}"
+					"raw": "{\n    \"ceased_on\": \"{{ceased_on}}\",\n    \"reference_etag\": \"{{rle_reference_etag}}\",\n    \"reference_psc_id\": \"{{rle_reference_psc_id}}\",\n    \"register_entry_date\": \"{{register_entry_date}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/corporate-entity",
@@ -257,7 +257,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_etag\": \"31545e75362e2b6966b795b30a018ae083da9054\",\n    \"reference_psc_id\": \"23IYsKsa5GydgySUbYVkhL31s2s\",\n    \"register_entry_date\": \"2022-10-15\"\n}"
+					"raw": "{\n    \"ceased_on\": \"{{ceased_on}}\",\n    \"reference_etag\": \"{{legal_person_reference_etag}}\",\n    \"reference_psc_id\": \"{{legal_person_reference_psc_id}}\",\n    \"register_entry_date\": \"{{register_entry_date}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/legal-person",
@@ -314,7 +314,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-29\",\n    \"reference_psc_id\": \"1kdaTltWeaP1EB70SSD9SLmiK5Y\",\n    \"register_entry_date\": \"2022-08-31\"\n}"
+					"raw": "{\n    \"ceased_on\": \"{{patch_ceased_on}}\",\n    \"register_entry_date\": \"{{patch_register_entry_date}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/individual/{{filing_resource_id}}",
@@ -368,7 +368,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-22\",\n    \"register_entry_date\": \"2022-08-23\"\n}"
+					"raw": "{\n    \"ceased_on\": \"{{patch_ceased_on}}\",\n    \"register_entry_date\": \"{{patch_register_entry_date}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/corporate-entity/{{filing_resource_id}}",
@@ -423,7 +423,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"ceased_on\": \"2022-08-31\",\n    \"register_entry_date\": \"2022-09-10\"\n}"
+					"raw": "{\n    \"ceased_on\": \"{{patch_ceased_on}}\",\n    \"register_entry_date\": \"{{patch_register_entry_date}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}/persons-with-significant-control/legal-person/{{filing_resource_id}}",
@@ -661,7 +661,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"status\": \"closed\",\n    \"reference\": \"Kerpow\"\n}"
+					"raw": "{\n    \"status\": \"{{transaction_closed}}\",\n    \"reference\": \"{{transaction_closed_ref}}\"\n}"
 				},
 				"url": {
 					"raw": "{{base_url}}/transactions/{{transaction_id}}",
