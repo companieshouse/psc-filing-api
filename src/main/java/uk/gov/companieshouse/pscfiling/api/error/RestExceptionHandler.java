@@ -89,11 +89,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
             final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
             final HttpStatus status, final WebRequest request) {
-        logError(request, String.format("Media type not supported: %s", ex.getContentType()), ex);
+        logError(chLogger, request,
+            String.format("Media type not supported: %s", ex.getContentType()), ex);
+
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                .header(HttpHeaders.ACCEPT_PATCH, "application/merge-patch+json")
-                .header("Accept-Post", "application/json")
-                .build();
+            .header(HttpHeaders.ACCEPT_PATCH, "application/merge-patch+json")
+            .header("Accept-Post", "application/json")
+            .build();
     }
 
     @ExceptionHandler(InvalidFilingException.class)
@@ -108,7 +110,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                         getJsonPath(e), e.getRejectedValue()))
                 .collect(Collectors.toList());
 
-        logError(request, "Invalid filing data", ex, errorList);
+        logError(chLogger, request, "Invalid filing data", ex, errorList);
         return new ApiErrors(errorList);
     }
 
@@ -133,7 +135,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                         e.getRejectedValue()))
                 .collect(Collectors.toList());
 
-        logError(request, "Conflicting filing data", ex, errorList);
+        logError(chLogger, request, "Conflicting filing data", ex, errorList);
         return new ApiErrors(errorList);
     }
 
@@ -148,7 +150,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         Optional.ofNullable(ex.getMessage()).ifPresent(m -> error.addErrorValue("{filing-resource-id}", m));
 
         final var errorList = List.of(error);
-        logError(request, ex.getMessage(), ex, errorList);
+        logError(chLogger, request, ex.getMessage(), ex, errorList);
         return new ApiErrors(errorList);
     }
 
@@ -161,17 +163,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ApiErrors handleServiceException(final Exception ex,
             final WebRequest request) {
-        final var errorList = List.of(createApiServiceError(ex, request));
-        logError(request, ex.getMessage(), ex, errorList);
+        final var errorList = List.of(createApiServiceError(ex, request, chLogger));
+        logError(chLogger, request, ex.getMessage(), ex, errorList);
         return new ApiErrors(errorList);
     }
 
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(final Exception ex, final Object body,
             final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
-        final var errorList = List.of(createApiServiceError(ex, request));
+        final var errorList = List.of(createApiServiceError(ex, request, chLogger));
 
-        logError(request, "INTERNAL ERROR", ex, errorList);
+        logError(chLogger, request, "INTERNAL ERROR", ex, errorList);
 
         return super.handleExceptionInternal(ex, new ApiErrors(errorList), headers, status,
             request);
@@ -181,16 +183,23 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiErrors handleAllUncaughtException(final RuntimeException ex,
-            final WebRequest request) {
-        final var errorList = List.of(createApiServiceError(ex, request));
-        logError(request, "Internal error", ex, errorList);
+        final WebRequest request) {
+        final var errorList = List.of(createApiServiceError(ex, request, chLogger));
+        logError(chLogger, request, "Internal error", ex, errorList);
         return new ApiErrors(errorList);
     }
 
-    private static ApiError createApiServiceError(final Exception ex, final WebRequest request) {
-        final var error = new ApiError("Service Unavailable: {error}",
+    private static ApiError createApiServiceError(final Exception ex, final WebRequest request,
+        final Logger chLogger) {
+        final var message = "Service Unavailable: {error}";
+        final var error = new ApiError(message,
             getRequestURI(request), LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
 
+        if (ex instanceof IllegalArgumentException
+            && ex.getCause() != null
+            && ex.getCause().getMessage().matches(".*expected numeric type.*")) {
+            logError(chLogger, request, "A dependent CHS service may be unavailable", ex);
+        }
         error.addErrorValue("error",
             StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
 
@@ -235,7 +244,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<Object> createRedactedErrorResponseEntity(final RuntimeException ex,
             final WebRequest request, final Throwable cause, final String baseMessage) {
         final ApiError error;
-        String message;
+        final String message;
 
         if (cause instanceof JsonProcessingException) {
             final var jpe = (JsonProcessingException) cause;
@@ -275,7 +284,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             error = buildRequestBodyError(baseMessage + message, "$", null);
 
         }
-        logError(request, String.format("Message not readable: %s", message), ex);
+        logError(chLogger, request, String.format("Message not readable: %s", message), ex);
         return ResponseEntity.badRequest()
                 .body(new ApiErrors(List.of(error)));
     }
@@ -291,22 +300,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static ApiError buildRequestBodyError(final String message, final String jsonPath,
             final Object rejectedValue) {
         final var error = new ApiError(message, jsonPath, LocationType.JSON_PATH.getValue(),
-                ErrorType.VALIDATION.getType());
+            ErrorType.VALIDATION.getType());
 
         Optional.ofNullable(rejectedValue)
-                .map(Object::toString)
-                .filter(Predicate.not(String::isEmpty))
-                .ifPresent(r -> error.addErrorValue("rejected-value", r));
+            .map(Object::toString)
+            .filter(Predicate.not(String::isEmpty))
+            .ifPresent(r -> error.addErrorValue("rejected-value", r));
 
         return error;
     }
 
-    private void logError(final WebRequest request, final String msg, final Exception ex) {
-        logError(request, msg, ex, null);
+    private static void logError(final Logger chLogger, final WebRequest request, final String msg,
+        final Exception ex) {
+        logError(chLogger, request, msg, ex, null);
     }
 
-    private void logError(final WebRequest request, final String msg, final Exception ex,
-            @Nullable final List<ApiError> apiErrorList) {
+    private static void logError(final Logger chLogger, final WebRequest request, final String msg,
+        final Exception ex,
+        @Nullable final List<ApiError> apiErrorList) {
         final Map<String, Object> logMap = new HashMap<>();
         final var servletRequest = ((ServletWebRequest) request).getRequest();
         logMap.put("path", servletRequest.getRequestURI());
