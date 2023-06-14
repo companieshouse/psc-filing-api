@@ -197,7 +197,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
         if (ex instanceof IllegalArgumentException
             && ex.getCause() != null
-            && ex.getCause().getMessage().matches(".*expected numeric type.*")) {
+            && ex.getCause().getMessage().contains("expected numeric type")) {
             logError(chLogger, request, "A dependent CHS service may be unavailable", ex);
         }
         error.addErrorValue("error",
