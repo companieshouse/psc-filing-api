@@ -144,10 +144,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ApiErrors handleResourceNotFoundException(final FilingResourceNotFoundException ex,
                                                      final WebRequest request) {
-        final var error = new ApiError(validation.get("filing-resource-not-found"), getRequestURI(request),
+        final var error = new ApiError(validation.get("filing-resource-not-found"),
+                getRequestURI(request),
                 LocationType.RESOURCE.getValue(), ErrorType.VALIDATION.getType());
 
-        Optional.ofNullable(ex.getMessage()).ifPresent(m -> error.addErrorValue("{filing-resource-id}", m));
+        Optional.ofNullable(ex.getMessage())
+                .ifPresent(m -> error.addErrorValue("{filing-resource-id}", m));
 
         final var errorList = List.of(error);
         logError(chLogger, request, ex.getMessage(), ex, errorList);
@@ -193,15 +195,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final Logger chLogger) {
         final var message = "Service Unavailable: {error}";
         final var error = new ApiError(message,
-            getRequestURI(request), LocationType.RESOURCE.getValue(), ErrorType.SERVICE.getType());
+                getRequestURI(request), LocationType.RESOURCE.getValue(),
+                ErrorType.SERVICE.getType());
 
-        if (ex instanceof IllegalArgumentException
-            && ex.getCause() != null
-            && ex.getCause().getMessage().contains("expected numeric type")) {
-            logError(chLogger, request, "A dependent CHS service may be unavailable", ex);
-        }
+        Optional.ofNullable(ex)
+                .filter(IllegalArgumentException.class::isInstance)
+                .map(Throwable::getCause)
+                .map(Throwable::getMessage)
+                .map(m -> m.contains("expected numeric type"))
+                .ifPresent(
+                        c -> logError(chLogger, request,
+                                "A dependent CHS service may be unavailable",
+                                ex));
         error.addErrorValue("error",
-            StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
+                StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
 
         return error;
     }

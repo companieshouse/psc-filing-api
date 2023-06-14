@@ -410,7 +410,8 @@ class RestExceptionHandlerTest {
             new ApiError("Service Unavailable: {error}", "/path/to/resource", "resource",
                 "ch:service");
 
-        expectedError.addErrorValue("error", exception.getMessage());
+        expectedError.addErrorValue("error",
+            StringUtils.defaultIfBlank(exception.getMessage(), "Internal server error"));
 
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
@@ -494,7 +495,9 @@ class RestExceptionHandlerTest {
             Arguments.of(
                 new TransactionServiceException("Transaction details unavailable", causeCause)),
             Arguments.of(
-                new CompanyProfileServiceException("Company profile details unavailable", null)));
+                new CompanyProfileServiceException("Company profile details unavailable", null)),
+            Arguments.of(new NullPointerException(null)),
+            Arguments.of(new IllegalArgumentException("", new NullPointerException(null))));
     }
 
     @Test
