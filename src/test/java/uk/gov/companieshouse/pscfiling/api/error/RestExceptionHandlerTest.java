@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -407,10 +407,11 @@ class RestExceptionHandlerTest {
 
         final var apiErrors = testExceptionHandler.handleServiceException(exception, request);
         final var expectedError =
-                new ApiError(exception.getMessage(), "/path/to/resource", "resource", "ch:service");
+            new ApiError("Service Unavailable: {error}", "/path/to/resource", "resource",
+                "ch:service");
 
-        Optional.ofNullable(exception.getCause())
-                .ifPresent(e -> expectedError.addErrorValue("cause", e.getMessage()));
+        expectedError.addErrorValue("error",
+            StringUtils.defaultIfBlank(exception.getMessage(), "Internal server error"));
 
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
@@ -424,21 +425,53 @@ class RestExceptionHandlerTest {
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
         final var response =
-                testExceptionHandler.handleExceptionInternal(exception, body, new HttpHeaders(),
-                        HttpStatus.INTERNAL_SERVER_ERROR, request);
+            testExceptionHandler.handleExceptionInternal(exception, body, new HttpHeaders(),
+                HttpStatus.INTERNAL_SERVER_ERROR, request);
 
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
-                new ApiError("test", "/path/to/resource", "resource", "ch:service");
+            new ApiError("Service Unavailable: {error}", "/path/to/resource", "resource",
+                "ch:service");
+        expectedError.addErrorValue("error", "test");
 
         assertThat(apiErrors, is(notNullValue()));
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
 
+    @ParameterizedTest(name = "[{index}]: exception={0}")
+    @MethodSource("exceptionProvider")
+    void handleAllUncaughtException(final RuntimeException exception) {
+        when(request.getRequest()).thenReturn(servletRequest);
+        when(request.resolveReference("request")).thenReturn(servletRequest);
+
+        final var apiErrors = testExceptionHandler.handleAllUncaughtException(exception, request);
+
+        final var expectedError =
+            new ApiError("Service Unavailable: {error}", "/path/to/resource", "resource",
+                "ch:service");
+
+        expectedError.addErrorValue("error", StringUtils.defaultIfBlank(exception.getMessage(),
+            "Internal server error"));
+        assertThat(apiErrors.getErrors(), contains(expectedError));
+    }
+
+    private static Stream<Arguments> exceptionProvider() {
+        final var httpErrorCause = new IllegalArgumentException("expected numeric type");
+
+        return Stream.of(
+            Arguments.of(new IllegalArgumentException("", null)),
+            Arguments.of(new IllegalArgumentException("", httpErrorCause)),
+            Arguments.of(new IllegalArgumentException("non-blank", httpErrorCause)),
+            Arguments.of(
+                new IllegalArgumentException("non-blank",
+                    new IllegalArgumentException("other cause"))));
+
+    }
+
     @ParameterizedTest(name = "[{index}]: cause={0}")
     @NullSource
     @MethodSource("causeProvider")
-    void handleAllUncaughtException(final Exception cause) {
+    void handleAllUncaughtExceptionWhenRuntimeExceptionWithCause(final Exception cause) {
         final var exception = new RuntimeException("test", cause);
 
         when(request.getRequest()).thenReturn(servletRequest);
@@ -447,21 +480,24 @@ class RestExceptionHandlerTest {
         final var apiErrors = testExceptionHandler.handleAllUncaughtException(exception, request);
 
         final var expectedError =
-                new ApiError("test", "/path/to/resource", "resource", "ch:service");
+            new ApiError("Service Unavailable: {error}", "/path/to/resource", "resource",
+                "ch:service");
 
-        if (cause != null) {
-            expectedError.addErrorValue("cause", cause.getMessage());
-        }
+        expectedError.addErrorValue("error", "test");
         assertThat(apiErrors.getErrors(), contains(expectedError));
     }
 
     private static Stream<Arguments> causeProvider() {
-        final var cause = new ArithmeticException("DIV/0");
+        final var causeCause = new ArithmeticException("DIV/0");
 
-        return Stream.of(Arguments.of(new PscServiceException("PSCServiceException", cause)),
-                Arguments.of(new TransactionServiceException("TransactionServiceException", cause)),
-                Arguments.of(new CompanyProfileServiceException("CompanyProfileServiceException",
-                        cause)));
+        return Stream.of(
+            Arguments.of(new PscServiceException("PSC details unavailable", causeCause)),
+            Arguments.of(
+                new TransactionServiceException("Transaction details unavailable", causeCause)),
+            Arguments.of(
+                new CompanyProfileServiceException("Company profile details unavailable", null)),
+            Arguments.of(new NullPointerException(null)),
+            Arguments.of(new IllegalArgumentException("", new NullPointerException(null))));
     }
 
     @Test
