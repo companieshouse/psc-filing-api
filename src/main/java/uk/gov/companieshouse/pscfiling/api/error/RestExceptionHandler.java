@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +76,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         this.chLogger = logger;
     }
 
-    @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             final HttpMessageNotReadableException ex, final HttpHeaders headers,
             final HttpStatus status, final WebRequest request) {
@@ -85,7 +84,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 validation.get("json-syntax-prefix"));
     }
 
-    @Override
     protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
             final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
             final HttpStatus status, final WebRequest request) {
@@ -170,7 +168,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
-    @Override
     protected ResponseEntity<Object> handleExceptionInternal(final Exception ex, final Object body,
             final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
         final var errorList = List.of(createApiServiceError(ex, request, chLogger));

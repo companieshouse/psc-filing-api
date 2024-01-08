@@ -6,7 +6,7 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.4</version>
+        <version>2.1.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <artifactId>psc-filing-api</artifactId>
@@ -14,28 +14,28 @@
     <name>psc-filing-api</name>
     <description>Public API for PSC Filings</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>21</java.version>
         <skip.integration.tests>false</skip.integration.tests>
         <skip.unit.tests>false</skip.unit.tests>
         <!-- Spring -->
-        <spring-boot-dependencies.version>2.7.3</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>3.2.1</spring-boot-dependencies.version>
         <!-- Maven -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.2.3</maven-failsafe-plugin.version>
         <!-- Docker -->
-        <jib-maven-plugin.version>3.3.2</jib-maven-plugin.version>
-        <mockito-core.version>4.8.0</mockito-core.version>
-        <equalsverifier.version>3.10.1</equalsverifier.version>
-        <mapstruct.version>1.5.3.Final</mapstruct.version>
+        <jib-maven-plugin.version>3.4.0</jib-maven-plugin.version>
+        <mockito-core.version>5.2.0</mockito-core.version>
+        <equalsverifier.version>3.15.5</equalsverifier.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
         <!--- CH -->
-        <structured-logging.version>1.9.14</structured-logging.version>
-        <private-api-sdk-java.version>2.0.187</private-api-sdk-java.version>
-        <api-sdk-java.version>4.3.30</api-sdk-java.version>
-        <api-sdk-manager-java-library.version>1.0.4</api-sdk-manager-java-library.version>
-        <api-security-java.version>0.4.0</api-security-java.version>
+        <structured-logging.version>3.0.0</structured-logging.version>
+        <private-api-sdk-java.version>4.0.0</private-api-sdk-java.version>
+        <api-sdk-java.version>6.0.3</api-sdk-java.version>
+        <api-sdk-manager-java-library.version>3.0.0</api-sdk-manager-java-library.version>
+        <api-security-java.version>2.0.0</api-security-java.version>
         <!--sonar configuration-->
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
             ${project.basedir}/target/site/jacoco-it/jacoco.xml
@@ -47,7 +47,7 @@
         <sonar.dependencyCheck.jsonReportPath>
             ${project.basedir}/target/dependency-check-report.json
         </sonar.dependencyCheck.jsonReportPath>
-        <api-helper-java.version>1.4.5</api-helper-java.version>
+        <api-helper-java.version>3.0.0</api-helper-java.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -189,6 +189,14 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <from>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21:latest</image>
+                    </from>
+                    <to>
+                        <image>psc-filing-api:latest</image>
+                    </to>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

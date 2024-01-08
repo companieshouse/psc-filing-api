@@ -3,7 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.service.impl;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
