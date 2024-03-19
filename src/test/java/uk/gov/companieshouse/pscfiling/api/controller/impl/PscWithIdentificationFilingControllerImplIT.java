@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.pscfiling.api.controller.impl.ValidationStatusControllerImpl.SERVICE_UNAVAILABLE_ERROR;
 
 import java.net.URI;
 import java.time.Clock;
@@ -117,7 +118,8 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$").doesNotExist());
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].error", is(SERVICE_UNAVAILABLE_ERROR)));
     }
 
     @Test
@@ -186,7 +188,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
                         + ".companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto,org"
                         + ".springframework.validation.BindingResult,jakarta.servlet.http"
-                        + ".HttpServletRequest)", "$", 1, 1);
+                        + ".HttpServletRequest)", "$", 1);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content("")
                         .requestAttr("transaction", transaction)
@@ -215,7 +217,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         + "`CoercionConfig`)\n"
                         + " at [Source: (org.springframework.util"
                         + ".StreamUtils$NonClosingInputStream); line: 1, "
-                        + "column: 1]", "$", 1, 1);
+                        + "column: 1]", "$", 1);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(EMPTY_QUOTED_JSON)
                         .requestAttr("transaction", transaction)
@@ -241,7 +243,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 + "expected close marker for Object (start marker at [Source: (org"
                 + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 2])\n"
                 + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
-                + "line: 1, column: 2]", "$", 1, 1);
+                + "line: 1, column: 2]", "$", 1);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(MALFORMED_JSON)
                         .requestAttr("transaction", transaction)
@@ -269,7 +271,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         + "(start marker at [Source: (org.springframework.util"
                         + ".StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
                         + " at [Source: (org.springframework.util"
-                        + ".StreamUtils$NonClosingInputStream); line: 1, column: 173]", "$", 1,
+                        + ".StreamUtils$NonClosingInputStream); line: 1, column: 173]", "$",
                 173);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content("{" + PSC07_FRAGMENT)
@@ -295,7 +297,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     void createFilingWhenCeasedOnDateUnparseableThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "ABC") + "}";
         final var expectedError =
-                createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
+                createExpectedValidationError("JSON parse error:", "$.ceased_on", 125);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .requestAttr("transaction", transaction)
@@ -320,7 +322,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     void createFilingWhenCeasedOnDateOutsideRangeThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "2022-09-99") + "}";
         final var expectedError =
-                createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
+                createExpectedValidationError("JSON parse error:", "$.ceased_on", 125);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .requestAttr("transaction", transaction)
@@ -346,7 +348,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     void createFilingWhenCeasedOnDateInvalidThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "2022-11-31") + "}";
         final var expectedError =
-                createExpectedValidationError("JSON parse error:", "$.ceased_on", 1, 125);
+                createExpectedValidationError("JSON parse error:", "$.ceased_on", 125);
 
         mockMvc.perform(post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body)
                         .requestAttr("transaction", transaction)
@@ -373,7 +375,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
         final var body = "{" + PSC07_FRAGMENT.replace("2022-09-13", "3000-09-13") + "}";
         final var expectedError =
                 createExpectedValidationError("must be a date in the past or in the present",
-                        "$.ceased_on", 1, 75);
+                        "$.ceased_on", 75);
 
         when(transactionService.getTransaction(TRANS_ID, PASSTHROUGH_HEADER)).thenReturn(
                 transaction);
@@ -452,7 +454,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @Test
     void createFilingWhenPropertyUnrecognisedThenResponse400() throws Exception {
         final var body = "{" + PSC07_FRAGMENT.replace("ceased_on", "Ceased_on") + "}";
-        final var expectedError = createExpectedValidationError("ignored", "$.Ceased_on", 1, 75);
+        final var expectedError = createExpectedValidationError("ignored", "$.Ceased_on", 75);
 
         mockMvc.perform(
             post(URL_PSC_CORPORATE_ENTITY, TRANS_ID).content(body).requestAttr("transaction",
@@ -513,7 +515,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     @Test
     @DisplayName("Bug fix PSC-260")
     void createFilingWhenRequestBadCompanyTypeThenResponse409() throws Exception {
-        final var expectedError = createExpectedValidationError("Ignored", "$", 1, 1);
+        final var expectedError = createExpectedValidationError("Ignored", "$", 1);
         final var body = "{" + PSC07_FRAGMENT + "}";
 
         when(companyInterceptor.preHandle(any(HttpServletRequest.class),
@@ -538,12 +540,13 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.errors[0].error_values").doesNotExist());
     }
 
-    private ApiError createExpectedValidationError(final String msg, final String location,
-            final int line, final int column) {
+    private ApiError createExpectedValidationError(final String msg,
+                                                   final String location,
+                                                   final int column) {
         final var expectedError = new ApiError(msg, location, "json-path", "ch:validation");
 
-        expectedError.addErrorValue("offset", String.format("line: %d, column: %d", line, column));
-        expectedError.addErrorValue("line", String.valueOf(line));
+        expectedError.addErrorValue("offset", String.format("line: %d, column: %d", 1, column));
+        expectedError.addErrorValue("line", String.valueOf(1));
         expectedError.addErrorValue("column", String.valueOf(column));
 
         return expectedError;

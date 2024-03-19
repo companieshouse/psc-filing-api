@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -110,7 +109,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final List<ApiError> errorList = fieldErrors.stream()
                 .map(e -> buildRequestBodyError(getFieldErrorApiEnumerationMessage(e),
                         getJsonPath(e), e.getRejectedValue()))
-                .collect(Collectors.toList());
+                .toList();
 
         logError(chLogger, request, "Invalid filing data", ex, errorList);
         return new ApiErrors(errorList);
@@ -195,8 +194,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return new ApiErrors(errorList);
     }
 
-    private static ApiError createApiServiceError(final Exception ex, final WebRequest request,
-        final Logger chLogger) {
+    private static ApiError createApiServiceError(final Exception ex,
+                                                  final WebRequest request,
+                                                  final Logger chLogger) {
         final var message = "Service Unavailable: {error}";
         final var error = new ApiError(message,
                 getRequestURI(request), LocationType.RESOURCE.getValue(),

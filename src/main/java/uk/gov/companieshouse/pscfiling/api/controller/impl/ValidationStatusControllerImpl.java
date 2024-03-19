@@ -37,6 +37,7 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 public class ValidationStatusControllerImpl implements ValidationStatusController {
     public static final String TRANSACTION_NOT_SUPPORTED_ERROR =
             "Transaction not supported: FEATURE_FLAG_TRANSACTIONS_CLOSABLE=false";
+    public static final String SERVICE_UNAVAILABLE_ERROR = "Service Unavailable: {error}";
     private static final Pattern SELF_URI_PSC_TYPE_PATTERN = Pattern.compile("/persons-with-significant-control/(?<pscType>individual|corporate-entity|legal-person)/");
 
     private final PscFilingService pscFilingService;
