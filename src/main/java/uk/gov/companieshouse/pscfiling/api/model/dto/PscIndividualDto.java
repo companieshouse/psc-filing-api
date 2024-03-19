@@ -150,7 +150,7 @@ public class PscIndividualDto extends PscCommonDto implements PscDtoCommunal {
 
         public Builder dateOfBirth(final Date3TupleDto value) {
             buildSteps.add(data -> data.dateOfBirth = Optional.ofNullable(value)
-                    .map(v -> new Date3TupleDto(v.getDay(), v.getMonth(), v.getYear()))
+                    .map(v -> new Date3TupleDto(v.day(), v.month(), v.year()))
                     .orElse(null));
             return this;
         }

@@ -21,7 +21,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -95,8 +94,6 @@ class PscWithIdentificationFilingControllerImplTest {
     private PscWithIdentificationFiling filing;
     private Links links;
     private Map<String, Resource> resourceMap;
-    private List<FieldError> validationErrors;
-    private String[] bindingErrorCodes;
     private FieldError fieldErrorWithRejectedValue;
 
     @BeforeEach
@@ -116,11 +113,10 @@ class PscWithIdentificationFilingControllerImplTest {
                 .build().toUri(), builder.pathSegment("validation_status")
                 .build().toUri());
         resourceMap = createResources();
-        validationErrors = new ArrayList<>();
-        bindingErrorCodes = new String[]{"code1", "code2.name", "code3"};
+        String[] bindingErrorCodes = new String[]{"code1", "code2.name", "code3"};
         fieldErrorWithRejectedValue =
-                new FieldError("object", "field", "rejectedValue", false, bindingErrorCodes, null,
-                        "errorWithRejectedValue");
+                new FieldError("object", "field", "rejectedValue",
+                        false, bindingErrorCodes, null, "errorWithRejectedValue");
     }
 
     @ParameterizedTest(name = "[{index}] null binding result={0}")
@@ -257,7 +253,7 @@ class PscWithIdentificationFilingControllerImplTest {
         assertThat(response.getBody(), is(updatedFiling));
         assertThat(response.getBody().getUpdatedAt(),
             is(not(equalTo(response.getBody().getCreatedAt()))));
-        assertThat(response.getHeaders().getLocation(), is(links.getSelf()));
+        assertThat(response.getHeaders().getLocation(), is(links.self()));
 
     }
 
@@ -296,8 +292,7 @@ class PscWithIdentificationFilingControllerImplTest {
             () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
         assertThat(exception.getFieldErrors(), hasSize(1));
-        assertThat(exception.getFieldErrors()
-            .get(0), is(error));
+        assertThat(exception.getFieldErrors().getFirst(), is(error));
     }
 
     @Test

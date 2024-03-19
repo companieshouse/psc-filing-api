@@ -53,33 +53,26 @@ public class PscDetailsServiceImpl implements PscDetailsService {
                     + "/"
                     + pscId;
 
-            switch (pscType) {
-                case INDIVIDUAL:
-                    return apiClientService.getApiClient(ericPassThroughHeader)
-                            .pscs()
-                            .getIndividual(uri)
-                            .execute()
-                            .getData();
-
-                case CORPORATE_ENTITY:
-                    return apiClientService.getApiClient(ericPassThroughHeader)
-                            .pscs()
-                            .getCorporateEntity(uri)
-                            .execute()
-                            .getData();
-
-                case LEGAL_PERSON:
-                    return apiClientService.getApiClient(ericPassThroughHeader)
-                            .pscs()
-                            .getLegalPerson(uri)
-                            .execute()
-                            .getData();
-
-                default:
-                    throw new UnsupportedOperationException(
-                            MessageFormat.format("PSC type {0} not supported for PSC ID {1}",
-                                    pscType.name(), pscId));
-            }
+            return switch (pscType) {
+                case INDIVIDUAL -> apiClientService.getApiClient(ericPassThroughHeader)
+                        .pscs()
+                        .getIndividual(uri)
+                        .execute()
+                        .getData();
+                case CORPORATE_ENTITY -> apiClientService.getApiClient(ericPassThroughHeader)
+                        .pscs()
+                        .getCorporateEntity(uri)
+                        .execute()
+                        .getData();
+                case LEGAL_PERSON -> apiClientService.getApiClient(ericPassThroughHeader)
+                        .pscs()
+                        .getLegalPerson(uri)
+                        .execute()
+                        .getData();
+                default -> throw new UnsupportedOperationException(
+                        MessageFormat.format("PSC type {0} not supported for PSC ID {1}",
+                                pscType.name(), pscId));
+            };
 
         }
         catch (final ApiErrorResponseException e) {

@@ -7,29 +7,8 @@ import java.util.StringJoiner;
 /**
  * The Links object.
  */
-public class Links {
+public record Links(URI self, URI validationStatus) {
     public static final String PREFIX_PRIVATE = "/private";
-    private final URI self;
-    private final URI validationStatus;
-
-    public Links(final URI self, final URI validationStatus) {
-        this.self = self;
-        this.validationStatus = validationStatus;
-    }
-
-    /**
-     * @return The psc self uri link
-     */
-    public URI getSelf() {
-        return self;
-    }
-
-    /**
-     * @return The psc validation status uri link.
-     */
-    public URI getValidationStatus() {
-        return validationStatus;
-    }
 
     @Override
     public boolean equals(final Object o) {
@@ -40,13 +19,13 @@ public class Links {
             return false;
         }
         final var links = (Links) o;
-        return Objects.equals(getSelf(), links.getSelf()) && Objects.equals(getValidationStatus(),
-                links.getValidationStatus());
+        return Objects.equals(self(), links.self()) && Objects.equals(validationStatus(),
+                links.validationStatus());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSelf(), getValidationStatus());
+        return Objects.hash(self(), validationStatus());
     }
 
     @Override

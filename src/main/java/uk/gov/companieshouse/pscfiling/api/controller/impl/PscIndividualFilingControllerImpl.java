@@ -95,7 +95,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
         final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap);
         updateTransactionResources(transaction, savedEntity.getLinks());
 
-        return ResponseEntity.created(savedEntity.getLinks().getSelf())
+        return ResponseEntity.created(savedEntity.getLinks().self())
                 .body(savedEntity);
     }
 
@@ -166,7 +166,7 @@ public class PscIndividualFilingControllerImpl extends BaseFilingControllerImpl 
 
         final var responseHeaders = new HttpHeaders();
 
-        responseHeaders.setLocation(filing.getLinks().getSelf());
+        responseHeaders.setLocation(filing.getLinks().self());
 
         return ResponseEntity.ok().headers(responseHeaders).body(filing);
     }

@@ -25,14 +25,14 @@ public class CeasedOnDateValidator extends BaseFilingValidator
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
-        final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
-                validationContext.getDto().getReferencePscId(), validationContext.getPscType(),
-                validationContext.getPassthroughHeader());
-        final var ceasedOn = validationContext.getDto().getCeasedOn();
+        final PscApi pscDetails = pscDetailsService.getPscDetails(validationContext.transaction(),
+                validationContext.dto().getReferencePscId(), validationContext.pscType(),
+                validationContext.passthroughHeader());
+        final var ceasedOn = validationContext.dto().getCeasedOn();
         final var notifiedOn = pscDetails.getNotifiedOn();
 
         if (notifiedOn != null && ceasedOn.isBefore(notifiedOn)) {
-            validationContext.getErrors()
+            validationContext.errors()
                     .add(new FieldError("object", "ceased_on", ceasedOn, false, new String[]{null, "date.ceased_on"},
                             null, validation.get("ceased-date-before-notified-date")));
         }

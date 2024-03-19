@@ -21,6 +21,8 @@ import uk.gov.companieshouse.pscfiling.api.service.PscFilingService;
 import uk.gov.companieshouse.pscfiling.api.utils.LogHelper;
 import uk.gov.companieshouse.pscfiling.api.utils.MapHelper;
 
+import static uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.*;
+
 /**
  * Produces Filing Data format for consumption as JSON by filing-resource-handler external service.
  */
@@ -87,26 +89,21 @@ public class FilingDataServiceImpl implements FilingDataService {
 
     private void setFilingDescription(final FilingApi filing, final PscTypeConstants pscType) {
         var name = "";
-        switch (pscType) {
-            case INDIVIDUAL:
-                final var names = new String[]{(String) filing.getData().get("title"),
-                                               (String) filing.getData().get("first_name"),
-                                               (String) filing.getData().get("other_forenames"),
-                                               (String) filing.getData().get("last_name")};
-                final var sb = new StringBuilder();
-                for (final String str : names)
-                    if (str != null) {
-                        sb.append(str).append(" ");
-                    }
-                final var result = sb.toString();
-                name = result.trim();
-                break;
-            case CORPORATE_ENTITY:
-                // fall through
-            case LEGAL_PERSON:
-                name = (String) filing.getData().get("name");
-                break;
 
+        if (INDIVIDUAL.equals(pscType)) {
+            final var names = new String[]{(String) filing.getData().get("title"),
+                    (String) filing.getData().get("first_name"),
+                    (String) filing.getData().get("other_forenames"),
+                    (String) filing.getData().get("last_name")};
+            final var sb = new StringBuilder();
+            for (final String str : names)
+                if (str != null) {
+                    sb.append(str).append(" ");
+                }
+            final var result = sb.toString();
+            name = result.trim();
+        } else if (CORPORATE_ENTITY.equals(pscType) || LEGAL_PERSON.equals(pscType)) {
+            name = (String) filing.getData().get("name");
         }
 
         final var date = LocalDate.parse(filing.getData().get("ceased_on").toString());

@@ -71,7 +71,7 @@ class FilingDataMapperTest {
 
     @Test
     void isoDateOfBirth() {
-        final Date3Tuple tuple = new Date3Tuple(dob1.getDay(), dob1.getMonth(), dob1.getYear());
+        final Date3Tuple tuple = new Date3Tuple(dob1.day(), dob1.month(), dob1.year());
 
         final var stringDob = testMapper.isoDateOfBirth(tuple);
 
@@ -90,10 +90,10 @@ class FilingDataMapperTest {
 
     @Test
     void mapDateOfBirth() {
-        final var expected = new Date3Tuple(0, dob1.getMonth(), dob1.getYear());
+        final var expected = new Date3Tuple(0, dob1.month(), dob1.year());
         final var dob = new DateOfBirth();
-        dob.setMonth((long) dob1.getMonth());
-        dob.setYear((long) dob1.getYear());
+        dob.setMonth((long) dob1.month());
+        dob.setYear((long) dob1.year());
 
         final var tuple = testMapper.map(dob);
 
@@ -121,28 +121,27 @@ class FilingDataMapperTest {
     @Test
     void filingToIndividualFilingDataDto() {
         final NameElements nameElements = createNameElements();
-        final PscCommunal filing = PscIndividualFiling.builder()
+        final PscIndividualFiling filing = PscIndividualFiling.builder()
                 .nameElements(nameElements)
-                .dateOfBirth(new Date3Tuple(dob1.getDay(), dob1.getMonth(), dob1.getYear()))
+                .dateOfBirth(new Date3Tuple(dob1.day(), dob1.month(), dob1.year()))
                 .registerEntryDate(localDate1)
                 .ceasedOn(localDate2)
                 .build();
 
         final var filingDataDto = (IndividualFilingDataDto) testMapper.map(filing, PscTypeConstants.INDIVIDUAL);
-        final var expected = (PscIndividualFiling) filing;
 
-        assertThat(filingDataDto.getTitle(), is(equalTo(expected.getNameElements().getTitle())));
+        assertThat(filingDataDto.getTitle(), is(equalTo(filing.getNameElements().getTitle())));
         assertThat(filingDataDto.getFirstName(),
-                is(equalTo(expected.getNameElements().getForename())));
+                is(equalTo(filing.getNameElements().getForename())));
         assertThat(filingDataDto.getOtherForenames(),
-                is(equalTo(expected.getNameElements().getOtherForenames())));
+                is(equalTo(filing.getNameElements().getOtherForenames())));
         assertThat(filingDataDto.getLastName(),
-                is(equalTo(expected.getNameElements().getSurname())));
+                is(equalTo(filing.getNameElements().getSurname())));
         assertThat(filingDataDto.getDateOfBirth(),
-                is(equalTo(toIsoDate(expected.getDateOfBirth()))));
+                is(equalTo(toIsoDate(filing.getDateOfBirth()))));
         assertThat(filingDataDto.getRegisterEntryDate(),
-                is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
-        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
+                is(equalTo(toIsoDate(filing.getRegisterEntryDate()))));
+        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(filing.getCeasedOn()))));
     }
 
     @Test
@@ -206,53 +205,51 @@ class FilingDataMapperTest {
     void filingToCorporateIdentificationFilingDataDto() {
 
         final Identification identification = createIdentification();
-        final PscCommunal filing = PscWithIdentificationFiling.builder()
+        final PscWithIdentificationFiling filing = PscWithIdentificationFiling.builder()
                 .identification(identification)
                 .registerEntryDate(localDate1)
                 .ceasedOn(localDate2)
                 .build();
 
         final var filingDataDto = (WithIdentificationFilingDataDto) testMapper.map(filing,PscTypeConstants.CORPORATE_ENTITY );
-        final var expected = (PscWithIdentificationFiling) filing;
 
         assertThat(filingDataDto.getCountryRegistered(),
-                is(equalTo(expected.getIdentification().getCountryRegistered())));
+                is(equalTo(filing.getIdentification().getCountryRegistered())));
         assertThat(filingDataDto.getLegalAuthority(),
-                is(equalTo(expected.getIdentification().getLegalAuthority())));
+                is(equalTo(filing.getIdentification().getLegalAuthority())));
         assertThat(filingDataDto.getLegalForm(),
-                is(equalTo(expected.getIdentification().getLegalForm())));
+                is(equalTo(filing.getIdentification().getLegalForm())));
         assertThat(filingDataDto.getPlaceRegistered(),
-                is(equalTo(expected.getIdentification().getPlaceRegistered())));
+                is(equalTo(filing.getIdentification().getPlaceRegistered())));
         assertThat(filingDataDto.getRegistrationNumber(),
-                is(equalTo(expected.getIdentification().getRegistrationNumber())));
+                is(equalTo(filing.getIdentification().getRegistrationNumber())));
         assertThat(filingDataDto.getRegisterEntryDate(),
-                is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
-        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
+                is(equalTo(toIsoDate(filing.getRegisterEntryDate()))));
+        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(filing.getCeasedOn()))));
     }
 
     @Test
     void filingToLegalPersonIdentificationFilingDataDto() {
 
         final Identification identification = createIdentification();
-        final PscCommunal filing = PscWithIdentificationFiling.builder()
+        final PscWithIdentificationFiling filing = PscWithIdentificationFiling.builder()
                 .identification(identification)
                 .registerEntryDate(localDate1)
                 .ceasedOn(localDate2)
                 .build();
 
         final var filingDataDto = (WithIdentificationFilingDataDto) testMapper.map(filing,PscTypeConstants.LEGAL_PERSON );
-        final var expected = (PscWithIdentificationFiling) filing;
 
         assertThat(filingDataDto.getCountryRegistered(), is(nullValue()));
         assertThat(filingDataDto.getLegalAuthority(),
-                is(equalTo(expected.getIdentification().getLegalAuthority())));
+                is(equalTo(filing.getIdentification().getLegalAuthority())));
         assertThat(filingDataDto.getLegalForm(),
-                is(equalTo(expected.getIdentification().getLegalForm())));
+                is(equalTo(filing.getIdentification().getLegalForm())));
         assertThat(filingDataDto.getPlaceRegistered(), is(nullValue()));
         assertThat(filingDataDto.getRegistrationNumber(), is(nullValue()));
         assertThat(filingDataDto.getRegisterEntryDate(),
-                is(equalTo(toIsoDate(expected.getRegisterEntryDate()))));
-        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(expected.getCeasedOn()))));
+                is(equalTo(toIsoDate(filing.getRegisterEntryDate()))));
+        assertThat(filingDataDto.getCeasedOn(), is(equalTo(toIsoDate(filing.getCeasedOn()))));
     }
 
     @Test
@@ -361,7 +358,7 @@ class FilingDataMapperTest {
 
     private static String toIsoDate(final Date3Tuple tuple) {
         return DateTimeFormatter.ISO_LOCAL_DATE.format(
-                LocalDate.of(tuple.getYear(), tuple.getMonth(), tuple.getDay()));
+                LocalDate.of(tuple.year(), tuple.month(), tuple.day()));
     }
 
     private static NameElements createNameElements() {

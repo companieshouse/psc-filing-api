@@ -98,7 +98,6 @@ class PscIndividualFilingControllerImplTest {
     private Links links;
     private Map<String, Resource> resourceMap;
     private List<FieldError> validationErrors;
-    private String[] bindingErrorCodes;
     private FieldError fieldErrorWithRejectedValue;
 
     @BeforeEach
@@ -119,7 +118,7 @@ class PscIndividualFilingControllerImplTest {
             .build().toUri());
         resourceMap = createResources();
         validationErrors = new ArrayList<>();
-        bindingErrorCodes = new String[]{"code1", "code2.name", "code3"};
+        String[] bindingErrorCodes = new String[]{"code1", "code2.name", "code3"};
         fieldErrorWithRejectedValue =
                 new FieldError("object", "field", "rejectedValue", false, bindingErrorCodes, null,
                         "errorWithRejectedValue");
@@ -149,9 +148,7 @@ class PscIndividualFilingControllerImplTest {
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction);
-        final var context =
-                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
-                        PASSTHROUGH_HEADER);
+        new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE, PASSTHROUGH_HEADER);
         assertThat(validationErrors, is(empty()));
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
@@ -183,9 +180,9 @@ class PscIndividualFilingControllerImplTest {
         // refEq needed to compare Map value objects; Resource does not override equals()
         verify(transaction).setResources(refEq(resourceMap));
         verify(transactionService).updateTransaction(transaction);
-        final var context =
-                new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE,
-                        PASSTHROUGH_HEADER);
+
+        new FilingValidationContext<>(dto, validationErrors, transaction, PSC_TYPE, PASSTHROUGH_HEADER);
+
         assertThat(validationErrors, is(empty()));
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
     }
@@ -271,7 +268,7 @@ class PscIndividualFilingControllerImplTest {
         assertThat(response.getBody(), is(updatedFiling));
         assertThat(response.getBody().getUpdatedAt(),
             is(not(equalTo(response.getBody().getCreatedAt()))));
-        assertThat(response.getHeaders().getLocation(), is(links.getSelf()));
+        assertThat(response.getHeaders().getLocation(), is(links.self()));
 
     }
 
@@ -309,8 +306,7 @@ class PscIndividualFilingControllerImplTest {
             () -> testController.updateFiling(TRANS_ID, PSC_TYPE, FILING_ID, map, request));
 
         assertThat(exception.getFieldErrors(), hasSize(1));
-        assertThat(exception.getFieldErrors()
-            .get(0), is(error));
+        assertThat(exception.getFieldErrors().getFirst(), is(error));
     }
 
     @Test

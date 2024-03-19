@@ -17,11 +17,11 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFil
 public interface PscMapper {
 
     default PscCommunal map(final PscDtoCommunal dto) {
-        if (dto instanceof PscIndividualDto) {
-            return map((PscIndividualDto) dto);
+        if (dto instanceof PscIndividualDto pscDto) {
+            return map(pscDto);
         }
-        else if (dto instanceof PscWithIdentificationDto) {
-            return map((PscWithIdentificationDto) dto);
+        else if (dto instanceof PscWithIdentificationDto pscDto) {
+            return map(pscDto);
         }
         else {
             return null;
@@ -49,11 +49,11 @@ public interface PscMapper {
     PscWithIdentificationFiling map(final PscWithIdentificationDto dto);
 
     default PscDtoCommunal map(final PscCommunal filing) {
-        if (filing instanceof PscIndividualFiling) {
-            return map((PscIndividualFiling) filing);
+        if (filing instanceof PscIndividualFiling pscFiling) {
+            return map(pscFiling);
         }
-        else if (filing instanceof PscWithIdentificationFiling) {
-            return map((PscWithIdentificationFiling) filing);
+        else if (filing instanceof PscWithIdentificationFiling pscFiling) {
+            return map(pscFiling);
         }
         else {
             return null;
@@ -69,8 +69,8 @@ public interface PscMapper {
         if (tuple == null) {
             return null;
         }
-        return DateTimeFormatter.ISO_LOCAL_DATE.format(
-                LocalDate.of(tuple.getYear(), tuple.getMonth(), tuple.getDay()));
+
+        return DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.of(tuple.year(), tuple.month(), tuple.day()));
     }
 
     @Mapping(target = "day", ignore = true)

@@ -20,12 +20,12 @@ public class PscRegisterEntryDateValidator extends BaseFilingValidator
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
-        final var registerEntryDate = validationContext.getDto().getRegisterEntryDate();
-        final var ceasedOnDate = validationContext.getDto().getCeasedOn();
+        final var registerEntryDate = validationContext.dto().getRegisterEntryDate();
+        final var ceasedOnDate = validationContext.dto().getCeasedOn();
 
         if (registerEntryDate.isBefore(ceasedOnDate)) {
 
-            validationContext.getErrors()
+            validationContext.errors()
                     .add(new FieldError("object", "register_entry_date", registerEntryDate, false,
                             new String[]{null, "date.register_entry_date"}, null,
                             validation.get("register-date-before-ceased-date")));

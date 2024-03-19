@@ -74,7 +74,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
             + FILING_ID
             + "/validation_status");
     private Links links;
-    private NaturesOfControlList naturesOfControl;
     @MockBean
     private TransactionService transactionService;
     @MockBean
@@ -106,7 +105,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
     void setUp() throws Exception {
         baseSetUp();
         links = new Links(SELF_URI, VALIDATION_URI);
-        naturesOfControl = new NaturesOfControlList(List.of("type1", "type2", "type3"));
+        new NaturesOfControlList(List.of("type1", "type2", "type3"));
     }
 
     @Test

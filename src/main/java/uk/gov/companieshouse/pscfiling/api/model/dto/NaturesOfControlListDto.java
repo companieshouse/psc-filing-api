@@ -8,10 +8,8 @@ import java.util.List;
  * A dto to store a list of natures of control.
  */
 public class NaturesOfControlListDto extends ArrayList<String> {
-    public NaturesOfControlListDto() {
-    }
 
-    public NaturesOfControlListDto(final Collection<? extends String> c) {
+    public NaturesOfControlListDto(final Collection<String> c) {
         super(c);
     }
 

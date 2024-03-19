@@ -31,9 +31,8 @@ class FilingValidationContextTest {
     @BeforeEach
     void setUp() {
         errors = new ArrayList<>();
-        testContext =
-                new FilingValidationContext<>(dto, errors, transaction, PscTypeConstants.INDIVIDUAL,
-                        PASSTHROUGH_HEADER);
+        testContext = new FilingValidationContext<>(dto, errors, transaction, PscTypeConstants.INDIVIDUAL,
+                PASSTHROUGH_HEADER);
     }
 
     @Test
@@ -50,12 +49,14 @@ class FilingValidationContextTest {
                         PscTypeConstants.INDIVIDUAL, PASSTHROUGH_HEADER));
     }
 
+    @Test
     void constructorWhenTransactionNull() {
         assertThrows(NullPointerException.class,
                 () -> new FilingValidationContext<>(dto, errors, null, PscTypeConstants.INDIVIDUAL,
                         PASSTHROUGH_HEADER));
     }
 
+    @Test
     void constructorWhenPscTypeNull() {
         assertThrows(NullPointerException.class,
                 () -> new FilingValidationContext<>(dto, errors, transaction, null,
@@ -64,27 +65,27 @@ class FilingValidationContextTest {
 
     @Test
     void getDto() {
-        assertThat(testContext.getDto(), is(sameInstance(dto)));
+        assertThat(testContext.dto(), is(sameInstance(dto)));
     }
 
     @Test
     void getErrors() {
-        assertThat(testContext.getErrors(), is(errors));
+        assertThat(testContext.errors(), is(errors));
     }
 
     @Test
     void getTransaction() {
-        assertThat(testContext.getTransaction(), is(sameInstance(transaction)));
+        assertThat(testContext.transaction(), is(sameInstance(transaction)));
     }
 
     @Test
     void getPscType() {
-        assertThat(testContext.getPscType(), is(PscTypeConstants.INDIVIDUAL));
+        assertThat(testContext.pscType(), is(PscTypeConstants.INDIVIDUAL));
     }
 
     @Test
     void getPassthroughHeader() {
-        assertThat(testContext.getPassthroughHeader(), is(PASSTHROUGH_HEADER));
+        assertThat(testContext.passthroughHeader(), is(PASSTHROUGH_HEADER));
     }
 
     @Test

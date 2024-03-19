@@ -37,12 +37,12 @@ class FilingForPscTypeValidChainTest {
 
     @Test
     void getPscType() {
-        assertThat(testChain.getPscType(), is(PscTypeConstants.INDIVIDUAL));
+        assertThat(testChain.pscType(), is(PscTypeConstants.INDIVIDUAL));
     }
 
     @Test
     void getFirst() {
-        assertThat(testChain.getFirst(), is(sameInstance(firstValid)));
+        assertThat(testChain.first(), is(sameInstance(firstValid)));
     }
 
     @Test

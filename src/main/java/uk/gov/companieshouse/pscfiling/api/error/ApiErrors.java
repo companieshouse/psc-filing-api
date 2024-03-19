@@ -38,12 +38,11 @@ public class ApiErrors {
      * Add a collection of new error to the error set.
      *
      * @param moreErrors the APIError collection to add
-     * @return true if the error set changed as a result
      */
-    public boolean addAll(final Collection<ApiError> moreErrors) {
+    public void addAll(final Collection<ApiError> moreErrors) {
         Objects.requireNonNull(errors, "'errors' cannot be null");
 
-        return errors.addAll(moreErrors);
+        errors.addAll(moreErrors);
     }
 
     /**

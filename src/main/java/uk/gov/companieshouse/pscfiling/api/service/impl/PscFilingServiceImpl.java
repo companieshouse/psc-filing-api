@@ -64,7 +64,7 @@ public class PscFilingServiceImpl implements PscFilingService {
 
     @Override
     public boolean requestMatchesResourceSelf(final HttpServletRequest request, final PscCommunal pscFiling) {
-        final var selfLinkUri = pscFiling.getLinks().getSelf();
+        final var selfLinkUri = pscFiling.getLinks().self();
         final URI requestUri;
         try {
             requestUri = new URI(request.getRequestURI());

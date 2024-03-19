@@ -75,7 +75,7 @@ class PscIndividualPatchValidatorImplTest {
                 .validate(any(), any());
 
         final var result = testValidator.validate(dummyFiling);
-        final var error = ((List<FieldError>) result.getErrors()).get(0);
+        final var error = ((List<FieldError>) result.getErrors()).getFirst();
 
         assertThat(result.isSuccess(), is(false));
         assertThat(error, is(equalTo(expectedError)));

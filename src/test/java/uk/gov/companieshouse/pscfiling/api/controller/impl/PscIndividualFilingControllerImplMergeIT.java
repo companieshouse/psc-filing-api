@@ -37,8 +37,6 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
-import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NameElements;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NaturesOfControlList;
@@ -100,20 +98,15 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         when(patchServiceProperties.getMaxRetries()).thenReturn(1);
     }
 
-    private ApiError createExpectedValidationError(final String msg, final String location,
-            final int line, final int column) {
-        final var expectedError = new ApiError(msg, location, "json-path", "ch:validation");
+    private ApiError createExpectedValidationError() {
+        final var expectedError = new ApiError("JSON parse error: Text '2023-11-5' could not be parsed at index 8",
+                "$.ceased_on", "json-path", "ch:validation");
 
-        expectedError.addErrorValue("offset", String.format("line: %d, column: %d", line, column));
-        expectedError.addErrorValue("line", String.valueOf(line));
-        expectedError.addErrorValue("column", String.valueOf(column));
+        expectedError.addErrorValue("offset", String.format("line: %d, column: %d", 1, 14));
+        expectedError.addErrorValue("line", String.valueOf(1));
+        expectedError.addErrorValue("column", String.valueOf(14));
 
         return expectedError;
-    }
-
-    private ApiError createExpectedApiError(final String msg, final String location,
-            final LocationType locationType, final ErrorType errorType) {
-        return new ApiError(msg, location, locationType.getValue(), errorType.getType());
     }
 
     @Test
@@ -170,24 +163,25 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.natures_of_control", containsInAnyOrder("type4")))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
                 .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
     @DisplayName("Expect to add new fields to existing filing")
     void updateFilingWhenAddingFields() throws Exception {
-        final var body = "{\n"
-            + "  \"ceased_on\": \"2022-10-05\",\n"
-            + "  \"name_elements\": {\n"
-            + "    \"surname\": \"Added\"\n"
-            + "  },\n"
-            + " \"natures_of_control\": [\n"
-            + "    \"type1\",\n"
-            + "    \"type2\",\n"
-            + "    \"type3\",\n"
-            + "    \"type4\"\n"
-            + "  ]\n"
-            + "}";
+        final var body = """
+                {
+                  "ceased_on": "2022-10-05",
+                  "name_elements": {
+                    "surname": "Added"
+                  },
+                 "natures_of_control": [
+                    "type1",
+                    "type2",
+                    "type3",
+                    "type4"
+                  ]
+                }""";
         final var filing = PscIndividualFiling.builder()
             .id(FILING_ID)
             .referenceEtag(ETAG)
@@ -218,24 +212,25 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.natures_of_control",
                         containsInAnyOrder("type1", "type2", "type3", "type4")))
                 .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
     @DisplayName("Expected: top level and nested fields are deleted with 'null' and read only fields are unchanged")
     void updateFilingWhenDeletingFields() throws Exception {
-        final var body = "{\n"
-            + " \"id\": null,\n"
-            + "  \"ceased_on\": null,\n"
-            + "  \"name_elements\": {\n"
-            + "    \"surname\": null\n"
-            + "  },\n"
-            + " \"links\": {\n"
-            + "    \"self\": null\n"
-            + "  },\n"
-            + " \"natures_of_control\": [\n"
-            + "  ]\n"
-            + "}";
+        final var body = """
+                {
+                 "id": null,
+                  "ceased_on": null,
+                  "name_elements": {
+                    "surname": null
+                  },
+                 "links": {
+                    "self": null
+                  },
+                 "natures_of_control": [
+                  ]
+                }""";
         final var filing = PscIndividualFiling.builder()
             .id(FILING_ID)
             .referenceEtag(ETAG)
@@ -268,7 +263,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.natures_of_control", is(empty())))
                 .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
                 .andExpect(jsonPath("$.updated_at", is(FIRST_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
@@ -309,7 +304,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
                 .andExpect(jsonPath("$.name_elements.surname", is("Surname")))
                 .andExpect(jsonPath("$.register_entry_date", is("2022-09-14")))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
@@ -358,9 +353,10 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @Test
     @DisplayName("Expect PATCH validation error to omit class names")
     void updateFilingWhenDateInvalid() throws Exception {
-        final var body = "{\n"
-            + " \"ceased_on\": \"2023-11-5\" \n"
-            + "}";
+        final var body = """
+                {
+                 "ceased_on": "2023-11-5"\s
+                }""";
         final var filing = PscIndividualFiling.builder()
             .id(FILING_ID)
             .referenceEtag(ETAG)
@@ -369,8 +365,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
             .links(links)
             .build();
         final var expectedError = createExpectedValidationError(
-            "JSON parse error: Text '2023-11-5' could not be parsed at index 8", "$.ceased_on",
-            1, 14);
+        );
 
         when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(individualFilingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
@@ -419,15 +414,6 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         "Not Found response")
     void updateFilingWhenTransactionIdMismatchThen404() throws Exception {
         final var body = "{ }";
-        final URI BAD_SELF_URI = URI.create("/path/to/other_or_bad");
-        final var links = new Links(BAD_SELF_URI, VALIDATION_URI);
-        final var filing = PscIndividualFiling.builder()
-            .id(FILING_ID)
-            .referenceEtag(ETAG)
-            .referencePscId(PSC_ID)
-            .registerEntryDate(REGISTER_ENTRY_DATE)
-            .links(links)
-            .build();
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                 .contentType(APPLICATION_JSON_MERGE_PATCH)

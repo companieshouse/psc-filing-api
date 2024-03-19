@@ -87,7 +87,7 @@ class PscMapperTest {
                 .address(addressDto)
                 .addressSameAsRegisteredOfficeAddress(true)
                 .nameElements(nameElementsDto)
-                .dateOfBirth(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear()))
+                .dateOfBirth(new Date3TupleDto(dob1.day(), dob1.month(), dob1.year()))
                 .countryOfResidence("countryOfResidence")
                 .naturesOfControl(List.of("a", "b", "c"))
                 .referenceEtag("referenceEtag")
@@ -187,7 +187,7 @@ class PscMapperTest {
         assertThat(dto.getNotifiedOn(), is(localDate1));
         assertThat(dto.getCountryOfResidence(), is("countryOfResidence"));
         assertThat(dto.getDateOfBirth(),
-                is(new Date3TupleDto(dob1.getDay(), dob1.getMonth(), dob1.getYear())));
+                is(new Date3TupleDto(dob1.day(), dob1.month(), dob1.year())));
         assertThat(dto.getNameElements(), is(nameElementsDto));
         assertThat(dto.getNaturesOfControl(), contains("a", "b", "c"));
         assertThat(dto.getReferenceEtag(), is("referenceEtag"));
@@ -247,7 +247,7 @@ class PscMapperTest {
 
     @Test
     void isoDateOfBirth() {
-        final var tuple = new Date3Tuple(dob1.getDay(), dob1.getMonth(), dob1.getYear());
+        final var tuple = new Date3Tuple(dob1.day(), dob1.month(), dob1.year());
 
         final var isoDateOfBirth = testMapper.isoDateOfBirth(tuple);
 
