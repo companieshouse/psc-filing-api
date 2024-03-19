@@ -2,7 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.controller.impl;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;

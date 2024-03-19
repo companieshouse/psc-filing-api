@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,10 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -77,18 +79,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            final HttpMessageNotReadableException ex, final HttpHeaders headers,
-            final HttpStatus status, final WebRequest request) {
-
-        return createRedactedErrorResponseEntity(ex, request, ex.getCause(),
-                validation.get("json-syntax-prefix"));
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(@NonNull final HttpMessageNotReadableException ex,
+                                                                  @NonNull final HttpHeaders headers,
+                                                                  @NonNull final HttpStatusCode status,
+                                                                  @NonNull final WebRequest request) {
+        return createRedactedErrorResponseEntity(ex, request, ex.getCause(), validation.get("json-syntax-prefix"));
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
-            final HttpMediaTypeNotSupportedException ex, final HttpHeaders headers,
-            final HttpStatus status, final WebRequest request) {
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(@NonNull final HttpMediaTypeNotSupportedException ex,
+                                                                     @NonNull final HttpHeaders headers,
+                                                                     @NonNull final HttpStatusCode status,
+                                                                     @NonNull final WebRequest request) {
         logError(chLogger, request,
             String.format("Media type not supported: %s", ex.getContentType()), ex);
 
@@ -133,7 +135,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final var errorList = fieldErrors.stream()
                 .map(e -> buildRequestBodyError(e.getDefaultMessage(), getJsonPath(e),
                         e.getRejectedValue()))
-                .collect(Collectors.toList());
+                .toList();
 
         logError(chLogger, request, "Conflicting filing data", ex, errorList);
         return new ApiErrors(errorList);
@@ -171,14 +173,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleExceptionInternal(final Exception ex, final Object body,
-            final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
+    protected ResponseEntity<Object> handleExceptionInternal(@NonNull final Exception ex,
+                                                             @Nullable final Object body,
+                                                             @NonNull final HttpHeaders headers,
+                                                             @NonNull final HttpStatusCode statusCode,
+                                                             @NonNull final WebRequest request) {
         final var errorList = List.of(createApiServiceError(ex, request, chLogger));
 
         logError(chLogger, request, "INTERNAL ERROR", ex, errorList);
 
-        return super.handleExceptionInternal(ex, new ApiErrors(errorList), headers, status,
-            request);
+        return super.handleExceptionInternal(ex, new ApiErrors(errorList), headers, statusCode, request);
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -207,8 +211,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                         c -> logError(chLogger, request,
                                 "A dependent CHS service may be unavailable",
                                 ex));
-        error.addErrorValue("error",
-                StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
+
+        if (ex != null) {
+            error.addErrorValue("error",
+                    StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
+        }
 
         return error;
     }
@@ -253,14 +260,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiError error;
         final String message;
 
-        if (cause instanceof JsonProcessingException) {
-            final var jpe = (JsonProcessingException) cause;
+        if (cause instanceof JsonProcessingException jpe) {
             final var location = jpe.getLocation();
             var jsonPath = "$";
             Object rejectedValue = null;
 
-            if (cause instanceof MismatchedInputException) {
-                message = getMismatchErrorMessage((MismatchedInputException) cause);
+            if (cause instanceof MismatchedInputException mie) {
+                message = getMismatchErrorMessage(mie);
 
 
                 final var fieldNameOpt = ((MismatchedInputException) cause).getPath()
@@ -280,9 +286,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             error = buildRequestBodyError(baseMessage + message, jsonPath, rejectedValue);
             addLocationInfo(error, location);
 
-            if (cause instanceof UnrecognizedPropertyException) {
-                final var unrecognized = ((UnrecognizedPropertyException) cause);
-
+            if (cause instanceof UnrecognizedPropertyException unrecognized) {
                 error.addErrorValue("property-name", unrecognized.getPropertyName());
             }
         }

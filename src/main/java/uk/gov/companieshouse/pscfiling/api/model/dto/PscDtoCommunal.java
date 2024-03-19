@@ -2,7 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.model.dto;
 
 import java.time.LocalDate;
 import java.util.List;
-import javax.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.PastOrPresent;
 
 public interface PscDtoCommunal {
     AddressDto getAddress();

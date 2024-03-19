@@ -22,8 +22,8 @@ import java.net.URI;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -202,7 +202,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
                         + ".controller.PscIndividualFilingControllerImpl.save(java.lang.String,uk"
                         + ".gov.companieshouse.pscfiling.api.model.PscTypeConstants,uk.gov"
                         + ".companieshouse.pscfiling.api.model.dto.PscIndividualDto,org"
-                        + ".springframework.validation.BindingResult,javax.servlet.http"
+                        + ".springframework.validation.BindingResult,jakarta.servlet.http"
                         + ".HttpServletRequest)", "$", 1, 1);
 
         mockMvc.perform(post(URL_PSC_INDIVIDUAL, TRANS_ID).content("")

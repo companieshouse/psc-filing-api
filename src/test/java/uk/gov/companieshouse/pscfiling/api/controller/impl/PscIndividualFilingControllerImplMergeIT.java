@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.net.URI;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -314,10 +315,11 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     @Test
     @DisplayName("Expect PATCH validation to return an error when validation fails")
     void updateFilingWhenDateInFuture() throws Exception {
+        final String futureDateString = LocalDate.now().plusDays(2).toString();
         final var body = "{\n"
-            + " \"ceased_on\": \"2023-11-05\", \n"
-            + " \"register_entry_date\": \"2023-11-05\" \n"
-            + "}";
+                + " \"ceased_on\": \"" + futureDateString + "\", \n"
+                + " \"register_entry_date\": \"" + futureDateString + "\" \n"
+                + "}";
         final var filing = PscIndividualFiling.builder()
             .id(FILING_ID)
             .referenceEtag(ETAG)
@@ -331,7 +333,7 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
         when(clock.instant()).thenReturn(FIRST_INSTANT);
 
         final var expectedError = "{rejected-value} must be a date in the past or in the present";
-        final Map<String, String> expectedValues = Map.of("rejected-value", "2023-11-05");
+        final Map<String, String> expectedValues = Map.of("rejected-value", futureDateString);
 
         mockMvc.perform(patch(URL_PSC_INDIVIDUAL_RESOURCE, TRANS_ID, FILING_ID).content(body)
                 .contentType(APPLICATION_JSON_MERGE_PATCH)

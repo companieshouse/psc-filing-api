@@ -1,24 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress>
+    <suppress until="2024-09-01Z">
         <notes><![CDATA[
-          File name: structured-logging-1.9.14.jar
-          ]]></notes>
-        <packageUrl regex="true">^pkg:maven/uk\.gov\.companieshouse/structured\-logging@.*$</packageUrl>
-        <cpe>cpe:/a:apache:log4j</cpe>
-    </suppress>
-
-    <suppress until="2023-05-25Z">
-        <notes><![CDATA[
-           File name: spring-web-5.3.22.jar
-
-           Suppressed for 6 months
-
-           A JIRA ticket has been created to track this vulnerability - https://companieshouse.atlassian.net/browse/DEBT-1742
-
-           It is unlikely that this library will be updated and therefore that the suppression will be removed.
-           ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
-        <cve>CVE-2016-1000027</cve>
+   file name: jackson-databind-2.15.2.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2023-35116</cve>
     </suppress>
 </suppressions>
