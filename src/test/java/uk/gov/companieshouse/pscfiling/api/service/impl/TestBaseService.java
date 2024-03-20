@@ -23,7 +23,7 @@ public class TestBaseService {
     static <PscTypeConstants extends Enum<PscTypeConstants>> PscTypeConstants[] addNewEnumValue() {
         final EnumSet<PscTypeConstants> enumSet = EnumSet.allOf((Class<PscTypeConstants>) enumPscTypeConstants);
         final PscTypeConstants[] newValues =
-                (PscTypeConstants[]) Array.newInstance(uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants.class, enumSet.size() + 1);
+                (PscTypeConstants[]) Array.newInstance(enumPscTypeConstants, enumSet.size() + 1);
         int i = 0;
         for (final PscTypeConstants value : enumSet) {
             newValues[i] = value;
