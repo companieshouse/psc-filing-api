@@ -47,6 +47,8 @@ import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
 
+import static uk.gov.companieshouse.pscfiling.api.controller.impl.ValidationStatusControllerImpl.SERVICE_UNAVAILABLE_ERROR;
+
 /**
  * Handle exceptions caused by client REST requests, propagated from Spring or the service
  * controllers.
@@ -165,7 +167,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ApiErrors handleServiceException(final Exception ex,
-            final WebRequest request) {
+                                            final WebRequest request) {
         final var errorList = List.of(createApiServiceError(ex, request, chLogger));
         logError(chLogger, request, ex.getMessage(), ex, errorList);
         return new ApiErrors(errorList);
@@ -197,8 +199,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static ApiError createApiServiceError(final Exception ex,
                                                   final WebRequest request,
                                                   final Logger chLogger) {
-        final var message = "Service Unavailable: {error}";
-        final var error = new ApiError(message,
+        final var error = new ApiError(SERVICE_UNAVAILABLE_ERROR,
                 getRequestURI(request), LocationType.RESOURCE.getValue(),
                 ErrorType.SERVICE.getType());
 
@@ -207,15 +208,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .map(Throwable::getCause)
                 .map(Throwable::getMessage)
                 .map(m -> m.contains("expected numeric type"))
-                .ifPresent(
-                        c -> logError(chLogger, request,
-                                "A dependent CHS service may be unavailable",
-                                ex));
+                .ifPresent(c -> logError(chLogger, request, "A dependent CHS service may be unavailable", ex));
 
-        if (ex != null) {
-            error.addErrorValue("error",
-                    StringUtils.defaultIfBlank(ex.getMessage(), "Internal server error"));
+        String errorMessage = "Internal server error";
+        if (ex != null && ex.getMessage() != null && !ex.getMessage().trim().isEmpty()) {
+            errorMessage = ex.getMessage();
         }
+
+        error.addErrorValue("error", errorMessage);
 
         return error;
     }
