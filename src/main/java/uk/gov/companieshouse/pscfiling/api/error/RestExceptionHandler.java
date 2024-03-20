@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.exception.CompanyProfileServiceException;
@@ -46,8 +47,6 @@ import uk.gov.companieshouse.pscfiling.api.exception.InvalidFilingException;
 import uk.gov.companieshouse.pscfiling.api.exception.MergePatchException;
 import uk.gov.companieshouse.pscfiling.api.exception.PscServiceException;
 import uk.gov.companieshouse.pscfiling.api.exception.TransactionServiceException;
-
-import static uk.gov.companieshouse.pscfiling.api.controller.impl.ValidationStatusControllerImpl.SERVICE_UNAVAILABLE_ERROR;
 
 /**
  * Handle exceptions caused by client REST requests, propagated from Spring or the service
@@ -179,9 +178,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                                                              @NonNull final HttpHeaders headers,
                                                              @NonNull final HttpStatusCode statusCode,
                                                              @NonNull final WebRequest request) {
-        final var errorList = List.of(createApiServiceError(ex, request, chLogger));
-
-        logError(chLogger, request, "INTERNAL ERROR", ex, errorList);
+        List<ApiError> errorList = null;
+        if (!(ex instanceof NoResourceFoundException)) {
+            errorList = List.of(createApiServiceError(ex, request, chLogger));
+            logError(chLogger, request, "INTERNAL ERROR", ex, errorList);
+        }
 
         return super.handleExceptionInternal(ex, new ApiErrors(errorList), headers, statusCode, request);
     }
@@ -199,7 +200,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static ApiError createApiServiceError(final Exception ex,
                                                   final WebRequest request,
                                                   final Logger chLogger) {
-        final var error = new ApiError(SERVICE_UNAVAILABLE_ERROR,
+        final var error = new ApiError("Service Unavailable: {error}",
                 getRequestURI(request), LocationType.RESOURCE.getValue(),
                 ErrorType.SERVICE.getType());
 

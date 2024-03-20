@@ -16,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.pscfiling.api.controller.impl.ValidationStatusControllerImpl.SERVICE_UNAVAILABLE_ERROR;
 
 import java.net.URI;
 import java.time.Clock;
@@ -117,8 +116,7 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
                         TRANS_ID).content(body).contentType("application/json").headers(httpHeaders))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].error", is(SERVICE_UNAVAILABLE_ERROR)));
+                .andExpect(jsonPath("$").doesNotExist());
     }
 
     @Test
