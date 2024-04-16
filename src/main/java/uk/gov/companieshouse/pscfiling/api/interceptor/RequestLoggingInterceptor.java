@@ -19,7 +19,7 @@ public class RequestLoggingInterceptor implements HandlerInterceptor, RequestLog
 
     @Autowired
     public RequestLoggingInterceptor() {
-        logger = LoggerFactory.getLogger(PscFilingApiApplication.APP_NAMESPACE);
+        logger = LoggerFactory.getLogger(PscFilingApiApplication.APPLICATION_NAME_SPACE);
     }
 
     @Override
