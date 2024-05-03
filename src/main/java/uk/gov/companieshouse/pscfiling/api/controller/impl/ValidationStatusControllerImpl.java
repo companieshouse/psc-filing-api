@@ -2,7 +2,7 @@ package uk.gov.companieshouse.pscfiling.api.controller.impl;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.model.transaction.Transaction;
@@ -61,7 +60,6 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     }
 
     @Override
-    @ResponseBody
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{filingResourceId}/validation_status", produces = {"application/json"})
     public ValidationStatusResponse validate(
@@ -110,7 +108,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
     private ValidationStatusError[] calculateIsValid(final PscCommunal pscFiling,
             final String passthroughHeader, final Transaction transaction) {
 
-        final var self = pscFiling.getLinks().getSelf().getPath();
+        final var self = pscFiling.getLinks().self().getPath();
         final var matcher = SELF_URI_PSC_TYPE_PATTERN.matcher(self);
 
         if (matcher.find()) {
@@ -139,7 +137,7 @@ public class ValidationStatusControllerImpl implements ValidationStatusControlle
             pscType, passthroughHeader);
 
         filingValidationService.validate(context);
-        return errorMapper.map(context.getErrors());
+        return errorMapper.map(context.errors());
     }
 
 }

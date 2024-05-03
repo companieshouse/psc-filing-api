@@ -26,13 +26,13 @@ public class PscIsActiveValidator extends BaseFilingValidator {
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
         final PscApi pscDetails;
-        pscDetails = pscDetailsService.getPscDetails(validationContext.getTransaction(),
-                validationContext.getDto().getReferencePscId(), validationContext.getPscType(),
-            validationContext.getPassthroughHeader());
+        pscDetails = pscDetailsService.getPscDetails(validationContext.transaction(),
+                validationContext.dto().getReferencePscId(), validationContext.pscType(),
+            validationContext.passthroughHeader());
 
         if (Optional.ofNullable(pscDetails.getCeasedOn()).isPresent()) {
-            validationContext.getErrors()
-                .add(new FieldError("object", "ceased_on", validationContext.getDto().getCeasedOn(),
+            validationContext.errors()
+                .add(new FieldError("object", "ceased_on", validationContext.dto().getCeasedOn(),
                     false, new String[]{null, "date.ceased_on"}, null,
                     validation.get("psc-is-ceased")));
         }

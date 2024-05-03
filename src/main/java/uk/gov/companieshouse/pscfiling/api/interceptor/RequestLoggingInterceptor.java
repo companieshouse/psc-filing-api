@@ -1,8 +1,9 @@
 package uk.gov.companieshouse.pscfiling.api.interceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -18,17 +19,22 @@ public class RequestLoggingInterceptor implements HandlerInterceptor, RequestLog
 
     @Autowired
     public RequestLoggingInterceptor() {
-        logger = LoggerFactory.getLogger(PscFilingApiApplication.APP_NAMESPACE);
+        logger = LoggerFactory.getLogger(PscFilingApiApplication.APPLICATION_NAME_SPACE);
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(@NonNull HttpServletRequest request,
+                             @NonNull HttpServletResponse response,
+                             @NonNull Object handler) {
         logStartRequestProcessing(request, logger);
         return true;
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
+    public void postHandle(@NonNull HttpServletRequest request,
+                           @NonNull HttpServletResponse response,
+                           @NonNull Object handler,
+                           ModelAndView modelAndView) {
         logEndRequestProcessing(request, response, logger);
     }
 }

@@ -269,7 +269,7 @@ public class PscCommon implements PscCommunal, Touchable {
         public Builder links(final Links value) {
 
             commonBuildSteps.add(data -> data.links = Optional.ofNullable(value)
-                    .map(v -> new Links(v.getSelf(), v.getValidationStatus()))
+                    .map(v -> new Links(v.self(), v.validationStatus()))
                     .orElse(null));
             return this;
         }

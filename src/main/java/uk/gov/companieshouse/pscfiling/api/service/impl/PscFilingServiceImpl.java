@@ -3,7 +3,7 @@ package uk.gov.companieshouse.pscfiling.api.service.impl;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.entity.PscIndividualFiling;
@@ -64,7 +64,7 @@ public class PscFilingServiceImpl implements PscFilingService {
 
     @Override
     public boolean requestMatchesResourceSelf(final HttpServletRequest request, final PscCommunal pscFiling) {
-        final var selfLinkUri = pscFiling.getLinks().getSelf();
+        final var selfLinkUri = pscFiling.getLinks().self();
         final URI requestUri;
         try {
             requestUri = new URI(request.getRequestURI());

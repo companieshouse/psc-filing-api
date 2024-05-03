@@ -83,9 +83,6 @@ class RestExceptionHandlerTest {
     @Mock
     private JsonMappingException.Reference mappingReference;
 
-    private Map<String, String> validation;
-    private String[] codes1;
-    private String[] codes2;
     private FieldError fieldError;
     private FieldError fieldErrorWithRejectedValue;
     private ApiError expectedError;
@@ -93,7 +90,7 @@ class RestExceptionHandlerTest {
 
     @BeforeEach
     void setUp() {
-        validation = Map.of("filing-resource-not-found",
+        Map<String, String> validation = Map.of("filing-resource-not-found",
                 "Filing resource {filing-resource-id} not found", "NotBlank", "field is blank",
                 "PastOrPresent", "{rejected-value} is future date", "patch-merge-error-prefix",
                 "Failed to merge patch request: ", "unknown-property-name",
@@ -102,8 +99,8 @@ class RestExceptionHandlerTest {
         testExceptionHandler = new RestExceptionHandler(validation, logger);
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURI("/path/to/resource");
-        codes1 = new String[]{"code1", "object.addressLine1", "code3", "NotBlank"};
-        codes2 = new String[]{"code1", "object.ceasedOn", "code3", "PastOrPresent"};
+        String[] codes1 = new String[]{"code1", "object.addressLine1", "code3", "NotBlank"};
+        String[] codes2 = new String[]{"code1", "object.ceasedOn", "code3", "PastOrPresent"};
         fieldError = new FieldError("object", "field1", null, false, codes1, null, "error");
         fieldErrorWithRejectedValue =
                 new FieldError("object", "ceasedOn", "3000-10-13", false, codes2, null,
@@ -120,16 +117,13 @@ class RestExceptionHandlerTest {
     void handleHttpMessageNotReadableWhenJsonBlank() {
         when(request.getRequest()).thenReturn(servletRequest);
 
-        final var message = new MockHttpInputMessage(BLANK_JSON_QUOTED.getBytes());
-        final var exceptionMessage = new HttpMessageNotReadableException("Unexpected end-of-input: "
-                + "expected close marker for Object (start marker at [Source: (org"
-                + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
-                + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
-                + "line: 1, column: 2]", message);
+        final var exceptionMessage = getHttpMessageNotReadableException(BLANK_JSON_QUOTED);
 
         final var response =
                 testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
                         HttpStatus.BAD_REQUEST, request);
+
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError("JSON parse error: Unexpected end-of-input", "$", "json-path",
@@ -141,20 +135,25 @@ class RestExceptionHandlerTest {
         assertThat(actualError, is(samePropertyValuesAs(expectedError)));
     }
 
-    @Test
-    void handleHttpMessageNotReadableWhenJsonMalformed() {
-        when(request.getRequest()).thenReturn(servletRequest);
-
-        final var message = new MockHttpInputMessage(MALFORMED_JSON_QUOTED.getBytes());
-        final var exceptionMessage = new HttpMessageNotReadableException("Unexpected end-of-input: "
+    private static HttpMessageNotReadableException getHttpMessageNotReadableException(String blankJsonQuoted) {
+        final var message = new MockHttpInputMessage(blankJsonQuoted.getBytes());
+        return new HttpMessageNotReadableException("Unexpected end-of-input: "
                 + "expected close marker for Object (start marker at [Source: (org"
                 + ".springframework.util.StreamUtils$NonClosingInputStream); line: 1, column: 1])\n"
                 + " at [Source: (org.springframework.util.StreamUtils$NonClosingInputStream); "
                 + "line: 1, column: 2]", message);
+    }
 
-        final var response =
-                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
-                        HttpStatus.BAD_REQUEST, request);
+    @Test
+    void handleHttpMessageNotReadableWhenJsonMalformed() {
+        when(request.getRequest()).thenReturn(servletRequest);
+
+        final var exceptionMessage = getHttpMessageNotReadableException(MALFORMED_JSON_QUOTED);
+
+        final var response = testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                HttpStatus.BAD_REQUEST, request);
+
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError = new ApiError(
                 "JSON parse error: Unexpected end-of-input", "$",
@@ -186,6 +185,8 @@ class RestExceptionHandlerTest {
         final var response =
                 testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
                         HttpStatus.BAD_REQUEST, request);
+
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError("JSON parse error: Text 'ABC' could not be parsed at index 0",
@@ -213,11 +214,11 @@ class RestExceptionHandlerTest {
         when(mismatchedInputException.getPath()).thenReturn(List.of(mappingReference));
         when(mappingReference.getFieldName()).thenReturn("ceased_on");
 
-        final var exceptionMessage =
-                new HttpMessageNotReadableException(msg, mismatchedInputException, message);
-        final var response =
-                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
-                        HttpStatus.BAD_REQUEST, request);
+        final var exceptionMessage = new HttpMessageNotReadableException(msg, mismatchedInputException, message);
+        final var response = testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                HttpStatus.BAD_REQUEST, request);
+
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError("JSON parse error: ",
@@ -253,11 +254,11 @@ class RestExceptionHandlerTest {
         final var dateParseMsg =
                 "JSON parse error: Text '2022-09-99' could not be parsed: Invalid value for "
                         + "DayOfMonth (valid values 1 - 28/31): 99";
-        final var exceptionMessage =
-                new HttpMessageNotReadableException(dateParseMsg, invalidFormatException, message);
-        final var response =
-                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
-                        HttpStatus.BAD_REQUEST, request);
+        final var exceptionMessage = new HttpMessageNotReadableException(dateParseMsg, invalidFormatException, message);
+        final var response = testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                HttpStatus.BAD_REQUEST, request);
+
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError(dateParseMsg, "$.ceased_on", "json-path", "ch:validation");
@@ -281,14 +282,13 @@ class RestExceptionHandlerTest {
         when(unrecognizedPropertyException.getPropertyName()).thenReturn("ceased_onX");
         when(mappingReference.getFieldName()).thenReturn("ceased_onX");
         final var unrecognizedMsg = "JSON parse error: Property is not recognised: {property-name}";
-        final var exceptionMessage =
-                new HttpMessageNotReadableException(unrecognizedMsg, unrecognizedPropertyException,
+        final var exceptionMessage = new HttpMessageNotReadableException(unrecognizedMsg, unrecognizedPropertyException,
                         message);
 
-        final var response =
-                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
-                        HttpStatus.BAD_REQUEST, request);
+        final var response = testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                HttpStatus.BAD_REQUEST, request);
 
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError(unrecognizedMsg, "$.ceased_onX", "json-path", "ch:validation");
@@ -317,13 +317,12 @@ class RestExceptionHandlerTest {
         when(jsonParseException.getMessage()).thenReturn(msg);
         when(jsonParseException.getLocation()).thenReturn(new JsonLocation(null, 100, 3, 7));
 
-        final var exceptionMessage =
-                new HttpMessageNotReadableException(msg, jsonParseException, message);
+        final var exceptionMessage = new HttpMessageNotReadableException(msg, jsonParseException, message);
 
-        final var response =
-                testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
-                        HttpStatus.BAD_REQUEST, request);
+        final var response = testExceptionHandler.handleHttpMessageNotReadable(exceptionMessage, headers,
+                HttpStatus.BAD_REQUEST, request);
 
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
                 new ApiError("JSON parse error: " + msg, "$", "json-path", "ch:validation");
@@ -344,10 +343,10 @@ class RestExceptionHandlerTest {
 
         when(request.getRequest()).thenReturn(servletRequest);
 
-        final var response =
-                testExceptionHandler.handleHttpMediaTypeNotSupported(exception, headers,
-                        HttpStatus.UNSUPPORTED_MEDIA_TYPE, request);
+        final var response = testExceptionHandler.handleHttpMediaTypeNotSupported(exception, headers,
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE, request);
 
+        assertThat(response, is(notNullValue()));
         assertThat(response.getStatusCode(), is(HttpStatus.UNSUPPORTED_MEDIA_TYPE));
         assertThat(response.getHeaders().getAcceptPatch(), contains(mediaMergePatch));
         assertThat(response.getHeaders().get("Accept-Post"),
@@ -424,10 +423,10 @@ class RestExceptionHandlerTest {
         when(request.getRequest()).thenReturn(servletRequest);
         when(request.resolveReference("request")).thenReturn(servletRequest);
 
-        final var response =
-            testExceptionHandler.handleExceptionInternal(exception, body, new HttpHeaders(),
+        final var response = testExceptionHandler.handleExceptionInternal(exception, body, new HttpHeaders(), 
                 HttpStatus.INTERNAL_SERVER_ERROR, request);
 
+        assertThat(response, is(notNullValue()));
         final var apiErrors = (ApiErrors) response.getBody();
         final var expectedError =
             new ApiError("Service Unavailable: {error}", "/path/to/resource", "resource",

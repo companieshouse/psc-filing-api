@@ -29,19 +29,14 @@ public interface FilingDataMapper {
             return filing;
         }
 
-        switch (pscType) {
-            case INDIVIDUAL:
-                return enhanceIndividual((PscIndividualFiling) filing, details);
-
-            case CORPORATE_ENTITY:
-                // fall through
-            case LEGAL_PERSON:
-                return enhanceWithIdentification((PscWithIdentificationFiling) filing, details);
-
-            default:
-                throw new UnsupportedOperationException(
-                        MessageFormat.format("PSC type {0} not supported", pscType.name()));
-        }
+        return switch (pscType) {
+            case INDIVIDUAL -> enhanceIndividual((PscIndividualFiling) filing, details);
+            // fall through
+            case CORPORATE_ENTITY, LEGAL_PERSON ->
+                    enhanceWithIdentification((PscWithIdentificationFiling) filing, details);
+            default -> throw new UnsupportedOperationException(
+                    MessageFormat.format("PSC type {0} not supported", pscType.name()));
+        };
     }
 
     default PscIndividualFiling enhanceIndividual(@MappingTarget final PscIndividualFiling filing,
@@ -65,19 +60,12 @@ public interface FilingDataMapper {
 
     default FilingDtoCommunal map(final PscCommunal filing, final PscTypeConstants pscType) {
 
-        switch (pscType) {
-            case INDIVIDUAL:
-                return mapIndividual((PscIndividualFiling) filing);
-
-            case CORPORATE_ENTITY:
-                return mapCorporateEntity((PscWithIdentificationFiling) filing);
-
-            case LEGAL_PERSON:
-                return mapLegalPerson((PscWithIdentificationFiling) filing);
-
-            default:
-                return null;
-        }
+        return switch (pscType) {
+            case INDIVIDUAL -> mapIndividual((PscIndividualFiling) filing);
+            case CORPORATE_ENTITY -> mapCorporateEntity((PscWithIdentificationFiling) filing);
+            case LEGAL_PERSON -> mapLegalPerson((PscWithIdentificationFiling) filing);
+            default -> null;
+        };
     }
 
     @Mapping(target = "firstName", source = "nameElements.forename")
@@ -98,7 +86,7 @@ public interface FilingDataMapper {
             return null;
         }
         return DateTimeFormatter.ISO_LOCAL_DATE.format(
-                LocalDate.of(tuple.getYear(), tuple.getMonth(), tuple.getDay()));
+                LocalDate.of(tuple.year(), tuple.month(), tuple.day()));
     }
 
     @Mapping(target = "day", ignore = true)

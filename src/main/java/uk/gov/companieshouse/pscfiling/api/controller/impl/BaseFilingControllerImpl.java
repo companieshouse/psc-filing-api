@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import uk.gov.companieshouse.api.model.transaction.Resource;
@@ -97,13 +97,13 @@ public class BaseFilingControllerImpl {
         final Map<String, Resource> resourceMap = new HashMap<>();
         final var resource = new Resource();
         final var linksMap = new HashMap<>(
-                Map.of("resource", links.getSelf().toString(), VALIDATION_STATUS,
-                        links.getValidationStatus().toString()));
+                Map.of("resource", links.self().toString(), VALIDATION_STATUS,
+                        links.validationStatus().toString()));
 
         resource.setKind("psc-filing");
         resource.setLinks(linksMap);
         resource.setUpdatedAt(clock.instant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        resourceMap.put(links.getSelf().toString(), resource);
+        resourceMap.put(links.self().toString(), resource);
         return resourceMap;
     }
 

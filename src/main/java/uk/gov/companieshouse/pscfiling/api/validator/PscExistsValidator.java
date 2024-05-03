@@ -26,15 +26,15 @@ public class PscExistsValidator extends BaseFilingValidator
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> validationContext) {
 
         try {
-            pscDetailsService.getPscDetails(validationContext.getTransaction(), validationContext.getDto()
-                                .getReferencePscId(), validationContext.getPscType(),
-                        validationContext.getPassthroughHeader());
+            pscDetailsService.getPscDetails(validationContext.transaction(), validationContext.dto()
+                                .getReferencePscId(), validationContext.pscType(),
+                        validationContext.passthroughHeader());
             // Validation should not continue if PSC does not exist
             super.validate(validationContext);
         }
         catch (FilingResourceNotFoundException e) {
-            validationContext.getErrors().add(
-                    new FieldError("object", "reference_psc_id", validationContext.getDto().getReferencePscId(), false,
+            validationContext.errors().add(
+                    new FieldError("object", "reference_psc_id", validationContext.dto().getReferencePscId(), false,
                             new String[]{null, "notFound.reference_psc_id"}, null, validation.get("psc-reference-id-not-found")));
         }
     }

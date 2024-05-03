@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.net.URI;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,8 +37,6 @@ import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.model.psc.PscApi;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.PatchServiceProperties;
-import uk.gov.companieshouse.pscfiling.api.error.ErrorType;
-import uk.gov.companieshouse.pscfiling.api.error.LocationType;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Identification;
 import uk.gov.companieshouse.pscfiling.api.model.entity.Links;
 import uk.gov.companieshouse.pscfiling.api.model.entity.NaturesOfControlList;
@@ -102,20 +101,17 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         when(patchServiceProperties.getMaxRetries()).thenReturn(1);
     }
 
-    private ApiError createExpectedValidationError(final String msg, final String location,
-            final int line, final int column) {
-        final var expectedError = new ApiError(msg, location, "json-path", "ch:validation");
+    private ApiError createExpectedValidationError() {
+        final var expectedError = new ApiError("JSON parse error: Text '2023-11-5' could not be parsed at index 8",
+                "$.ceased_on",
+                "json-path",
+                "ch:validation");
 
-        expectedError.addErrorValue("offset", String.format("line: %d, column: %d", line, column));
-        expectedError.addErrorValue("line", String.valueOf(line));
-        expectedError.addErrorValue("column", String.valueOf(column));
+        expectedError.addErrorValue("offset", String.format("line: %d, column: %d", 1, 14));
+        expectedError.addErrorValue("line", String.valueOf(1));
+        expectedError.addErrorValue("column", String.valueOf(14));
 
         return expectedError;
-    }
-
-    private ApiError createExpectedApiError(final String msg, final String location,
-            final LocationType locationType, final ErrorType errorType) {
-        return new ApiError(msg, location, locationType.getValue(), errorType.getType());
     }
 
     @Test
@@ -176,7 +172,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.natures_of_control", containsInAnyOrder("type4")))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
                 .andExpect(jsonPath("$.created_at", is(FIRST_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
@@ -229,7 +225,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.natures_of_control",
                         containsInAnyOrder("type1", "type2", "type3", "type4")))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
@@ -237,19 +233,20 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
             "Expected: top level and nested fields are deleted with 'null' and read only fields "
                     + "are unchanged")
     void updateFilingWhenDeletingFields() throws Exception {
-        final var body = "{\n"
-            + " \"id\": null,\n"
-            + "  \"ceased_on\": null,\n"
-            + "  \"name\": null,\n"
-            + "  \"identification\": {\n"
-            + "    \"country_registered\": null\n"
-            + "  },\n"
-            + " \"links\": {\n"
-            + "    \"self\": null\n"
-            + "  },\n"
-            + " \"natures_of_control\": [\n"
-            + "  ]\n"
-            + "}";
+        final var body = """
+                {
+                 "id": null,
+                  "ceased_on": null,
+                  "name": null,
+                  "identification": {
+                    "country_registered": null
+                  },
+                 "links": {
+                    "self": null
+                  },
+                 "natures_of_control": [
+                  ]
+                }""";
         final var filing = PscWithIdentificationFiling.builder()
             .id(FILING_ID)
             .referenceEtag(ETAG)
@@ -287,7 +284,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.natures_of_control", is(empty())))
                 .andExpect(jsonPath("$.links.self", is(SELF_URI.toString())))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
@@ -306,8 +303,6 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .registerEntryDate(REGISTER_ENTRY_DATE)
                 .updatedAt(FIRST_INSTANT)
                 .build();
-        final var expectedFiling = PscWithIdentificationFiling.builder(filing).updatedAt(
-                SECOND_INSTANT).build();
 
         when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(withIdentificationFilingRepository.findById(FILING_ID)).thenReturn(
@@ -336,15 +331,16 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .andExpect(jsonPath("$.identification.country_registered", is("country")))
                 .andExpect(jsonPath("$.register_entry_date", is("2022-09-14")))
                 .andExpect(jsonPath("$.updated_at", is(SECOND_INSTANT.toString())))
-                .andExpect(header().stringValues("Location", links.getSelf().toString()));
+                .andExpect(header().stringValues("Location", links.self().toString()));
     }
 
     @Test
     @DisplayName("Expect PATCH validation to returns all errors when validation fails")
     void updateFilingWhenDatesInFuture() throws Exception {
+        final String futureDateString = LocalDate.now().plusDays(2).toString();
         final var body = "{\n"
-                + " \"ceased_on\": \"2023-11-05\", \n"
-                + " \"register_entry_date\": \"2023-11-05\" \n"
+                + " \"ceased_on\": \"" + futureDateString + "\", \n"
+                + " \"register_entry_date\": \"" + futureDateString + "\" \n"
                 + "}";
         final var filing = PscWithIdentificationFiling.builder()
                 .id(FILING_ID)
@@ -358,7 +354,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         when(clock.instant()).thenReturn(SECOND_INSTANT);
 
         final var expectedError = "{rejected-value} must be a date in the past or in the present";
-        final Map<String, String> expectedValues = Map.of("rejected-value", "2023-11-05");
+        final Map<String, String> expectedValues = Map.of("rejected-value", futureDateString);
 
         mockMvc.perform(patch(URL_PSC_CORPORATE_RESOURCE, TRANS_ID, FILING_ID).content(body)
                         .contentType(APPLICATION_JSON_MERGE_PATCH)
@@ -383,9 +379,10 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
     @Test
     @DisplayName("Expect PATCH validation error to omit class names")
     void updateFilingWhenDateInvalid() throws Exception {
-        final var body = "{\n"
-                + " \"ceased_on\": \"2023-11-5\" \n"
-                + "}";
+        final var body = """
+                {
+                 "ceased_on": "2023-11-5"\s
+                }""";
         final var filing = PscWithIdentificationFiling.builder()
                 .id(FILING_ID)
                 .referenceEtag(ETAG)
@@ -394,8 +391,7 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
                 .links(links)
                 .build();
         final var expectedError = createExpectedValidationError(
-                "JSON parse error: Text '2023-11-5' could not be parsed at index 8", "$.ceased_on",
-                1, 14);
+        );
 
         when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
         when(clock.instant()).thenReturn(SECOND_INSTANT);

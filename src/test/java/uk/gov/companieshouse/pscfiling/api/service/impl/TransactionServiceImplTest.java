@@ -62,12 +62,12 @@ class TransactionServiceImplTest extends TestBaseService {
     @BeforeEach
     void setUp() {
         testService = new TransactionServiceImpl(apiClientService, logger);
-        testTransaction = testTransaction(TRANS_ID);
+        testTransaction = testTransaction();
     }
 
     @Test
     void getTransactionWhenFound() throws IOException, URIValidationException {
-        when(apiResponse.getData()).thenReturn(testTransaction(TRANS_ID));
+        when(apiResponse.getData()).thenReturn(testTransaction());
         when(transactionsGet.execute()).thenReturn(apiResponse);
         when(transactionsResourceHandler.get("/transactions/" + TRANS_ID)).thenReturn(
                 transactionsGet);
@@ -76,7 +76,7 @@ class TransactionServiceImplTest extends TestBaseService {
 
         var transaction = testService.getTransaction(TRANS_ID,PASSTHROUGH_HEADER);
 
-        assertThat(transaction, samePropertyValuesAs(testTransaction(TRANS_ID)));
+        assertThat(transaction, samePropertyValuesAs(testTransaction()));
     }
 
     @Test
@@ -132,9 +132,9 @@ class TransactionServiceImplTest extends TestBaseService {
 
     }
 
-    private Transaction testTransaction(String id) {
+    private Transaction testTransaction() {
         var transaction = new Transaction();
-        transaction.setId(id);
+        transaction.setId(TestBaseService.TRANS_ID);
         return transaction;
     }
 

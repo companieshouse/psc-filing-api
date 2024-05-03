@@ -23,7 +23,6 @@ import uk.gov.companieshouse.pscfiling.api.validator.FilingValidationContext;
 @ExtendWith(MockitoExtension.class)
 class FilingValidationServiceImplTest {
     private FilingValidationService testService;
-    private List<? extends FilingForPscTypeValid> forPscTypeValids;
     @Mock
     private FilingValid firstFilingValid;
     @Mock
@@ -31,13 +30,14 @@ class FilingValidationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        forPscTypeValids = List.of(new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, firstFilingValid));
+        List<? extends FilingForPscTypeValid> forPscTypeValids =
+                List.of(new FilingForPscTypeValidChain(PscTypeConstants.INDIVIDUAL, firstFilingValid));
         testService = new FilingValidationServiceImpl(forPscTypeValids);
     }
 
     @Test
     void validate() {
-        when(context.getPscType()).thenReturn(PscTypeConstants.INDIVIDUAL);
+        when(context.pscType()).thenReturn(PscTypeConstants.INDIVIDUAL);
 
         testService.validate(context);
 
@@ -47,7 +47,7 @@ class FilingValidationServiceImplTest {
 
     @Test
     void validateWhenPscTypeNotSupported() {
-        when(context.getPscType()).thenReturn(PscTypeConstants.CORPORATE_ENTITY);
+        when(context.pscType()).thenReturn(PscTypeConstants.CORPORATE_ENTITY);
 
         final var exception = assertThrows(UnsupportedOperationException.class,
                 () -> testService.validate(context));

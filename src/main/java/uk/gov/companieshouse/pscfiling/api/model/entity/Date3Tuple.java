@@ -19,37 +19,8 @@ import java.util.StringJoiner;
  *  <p>o = required</p>
  *  <p>x = forbidden</p>
  * </table>
- *
  */
-public class Date3Tuple {
-    private final int day;
-    private final int month;
-    private final int year;
-
-    /** Construct a Full/Partial Date Tuple.
-     *
-     * @param day the day, 0 := partial DoB
-     * @param month the month
-     * @param year the year
-     */
-    public Date3Tuple(final int day, final int month, final int year) {
-        this.day = day;
-        this.month = month;
-        this.year = year;
-    }
-
-    public int getDay() {
-        return day;
-    }
-
-    public int getMonth() {
-        return month;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
+public record Date3Tuple(int day, int month, int year) {
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -59,13 +30,13 @@ public class Date3Tuple {
             return false;
         }
         final Date3Tuple that = (Date3Tuple) o;
-        return Objects.equals(getDay(), that.getDay()) && Objects.equals(getMonth(),
-                that.getMonth()) && Objects.equals(getYear(), that.getYear());
+        return Objects.equals(day(), that.day()) && Objects.equals(month(),
+                that.month()) && Objects.equals(year(), that.year());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDay(), getMonth(), getYear());
+        return Objects.hash(day(), month(), year());
     }
 
     @Override

@@ -3,9 +3,10 @@ package uk.gov.companieshouse.pscfiling.api.interceptor;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -21,10 +22,10 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @Component
 public class CompanyInterceptor implements HandlerInterceptor {
 
-    private Map<String, String> validation;
-    private Map<String, List<String>> company;
-    private Map<String, String> companyStatus;
-    private CompanyProfileService companyProfileService;
+    private final Map<String, String> validation;
+    private final Map<String, List<String>> company;
+    private final Map<String, String> companyStatus;
+    private final CompanyProfileService companyProfileService;
     private final Logger logger;
 
     public CompanyInterceptor(CompanyProfileService companyProfileService,
@@ -40,7 +41,9 @@ public class CompanyInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(HttpServletRequest request,
+                             @NonNull HttpServletResponse response,
+                             @NonNull Object handler) {
         var transaction = (Transaction) request.getAttribute(AttributeName.TRANSACTION.getValue());
         Objects.requireNonNull(transaction, "Transaction missing from request");
         final var passthroughHeader = request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());

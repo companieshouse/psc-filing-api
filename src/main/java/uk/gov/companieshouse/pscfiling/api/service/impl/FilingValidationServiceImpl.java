@@ -21,18 +21,18 @@ public class FilingValidationServiceImpl implements FilingValidationService {
     @Autowired
     FilingValidationServiceImpl(final List<? extends FilingForPscTypeValid> forPscTypeValids) {
         this.filingValidByPscType = forPscTypeValids.stream()
-                .collect(Collectors.toMap(FilingForPscTypeValid::getPscType, Function.identity()));
+                .collect(Collectors.toMap(FilingForPscTypeValid::pscType, Function.identity()));
     }
 
 
     @Override
     public <T extends PscDtoCommunal> void validate(final FilingValidationContext<T> context) {
-        Optional.ofNullable(filingValidByPscType.get(context.getPscType()))
-                .map(FilingForPscTypeValid::getFirst)
+        Optional.ofNullable(filingValidByPscType.get(context.pscType()))
+                .map(FilingForPscTypeValid::first)
                 .ifPresentOrElse(v -> v.validate(context), () -> {
                     throw new UnsupportedOperationException(
                             MessageFormat.format("Validation not defined for PSC type ''{0}''",
-                                context.getPscType()));
+                                context.pscType()));
                 });
     }
 

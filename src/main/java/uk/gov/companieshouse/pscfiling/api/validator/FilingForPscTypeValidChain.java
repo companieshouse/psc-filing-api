@@ -4,24 +4,11 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import uk.gov.companieshouse.pscfiling.api.model.PscTypeConstants;
 
-public class FilingForPscTypeValidChain implements FilingForPscTypeValid {
-    private final PscTypeConstants pscType;
-    private final FilingValid first;
-
+public record FilingForPscTypeValidChain(PscTypeConstants pscType, FilingValid first) implements FilingForPscTypeValid {
     public FilingForPscTypeValidChain(final PscTypeConstants pscType,
-            final FilingValid first) {
+                                      final FilingValid first) {
         this.pscType = Objects.requireNonNull(pscType);
         this.first = Objects.requireNonNull(first);
-    }
-
-    @Override
-    public PscTypeConstants getPscType() {
-        return pscType;
-    }
-
-    @Override
-    public FilingValid getFirst() {
-        return first;
     }
 
     @Override

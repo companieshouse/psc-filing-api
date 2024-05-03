@@ -238,7 +238,7 @@ public class PscIndividualFiling extends PscCommon implements PscCommunal, Touch
         public Builder dateOfBirth(final Date3Tuple value) {
 
             buildSteps.add(data -> data.dateOfBirth = Optional.ofNullable(value)
-                    .map(v -> new Date3Tuple(v.getDay(), v.getMonth(), v.getYear()))
+                    .map(v -> new Date3Tuple(v.day(), v.month(), v.year()))
                     .orElse(null));
             return this;
         }

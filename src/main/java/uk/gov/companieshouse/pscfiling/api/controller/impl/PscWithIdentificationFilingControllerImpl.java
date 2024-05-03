@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.http.HttpHeaders;
@@ -98,7 +98,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
         final var savedEntity = saveFilingWithLinks(entity, transId, request, logMap, pscType);
         updateTransactionResources(transaction, savedEntity.getLinks());
 
-        return ResponseEntity.created(savedEntity.getLinks().getSelf()).body(savedEntity);
+        return ResponseEntity.created(savedEntity.getLinks().self()).body(savedEntity);
     }
 
     /**
@@ -167,7 +167,7 @@ public class PscWithIdentificationFilingControllerImpl extends BaseFilingControl
 
         final var responseHeaders = new HttpHeaders();
 
-        responseHeaders.setLocation(filing.getLinks().getSelf());
+        responseHeaders.setLocation(filing.getLinks().self());
 
         return ResponseEntity.ok().headers(responseHeaders).body(filing);
     }

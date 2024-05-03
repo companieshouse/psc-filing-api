@@ -11,7 +11,7 @@ public class NaturesOfControlList extends ArrayList<String> {
     public NaturesOfControlList() {
     }
 
-    public NaturesOfControlList(final Collection<? extends String> c) {
+    public NaturesOfControlList(final Collection<String> c) {
         super(c);
     }
 

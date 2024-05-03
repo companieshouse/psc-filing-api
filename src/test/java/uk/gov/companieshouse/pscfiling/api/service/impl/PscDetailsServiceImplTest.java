@@ -64,7 +64,7 @@ class PscDetailsServiceImplTest extends TestBaseService {
 
     @BeforeAll
     public static void setUpForClass() {
-        PscTypeConstants[] newEnumValues = addNewEnumValue(PscTypeConstants.class);
+        PscTypeConstants[] newEnumValues = addNewEnumValue();
         myMockedEnum = mockStatic(PscTypeConstants.class);
         myMockedEnum.when(PscTypeConstants::values).thenReturn(newEnumValues);
         mockedValue = newEnumValues[newEnumValues.length - 1];
