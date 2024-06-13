@@ -9,7 +9,7 @@ locals {
   docker_repo                = "psc-filing-api"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
   lb_listener_rule_priority  = 170
-  lb_listener_paths          = ["/persons-with-significant-control", "/transactions/*/persons-with-significant-control","/transactions/*/persons-with-significant-control/*", "/private/transactions/*/persons-with-significant-control", "/persons-with-significant-control/healthcheck"]
+  lb_listener_paths          = ["/persons-with-significant-control", "/transactions/*/persons-with-significant-control","/transactions/*/persons-with-significant-control/*", "/private/transactions/*/persons-with-significant-control/*", "/persons-with-significant-control/healthcheck"]
   healthcheck_path           = "/persons-with-significant-control/healthcheck" # healthcheck path for psc filing api 
   healthcheck_matcher        = "200"
   vpc_name                   = local.stack_secrets["vpc_name"]
