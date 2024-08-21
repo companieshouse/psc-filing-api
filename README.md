@@ -11,7 +11,7 @@ Requirements
 
 To build psc-filing-api, you will need:
 * [Git](https://git-scm.com/downloads)
-* [Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+* [Java 21](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/downloads-list.html)
 * [Maven](https://maven.apache.org/download.cgi)
 * [MongoDB](https://www.mongodb.com/)
 * Internal Companies House core services
