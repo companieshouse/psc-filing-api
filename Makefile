@@ -30,10 +30,6 @@ submodules:
 
 FAIL_BUILD_CVSS_LIMIT ?= 0
 
-.PHONY: security-report
-security-report:
-	mvn org.owasp:dependency-check-maven:check -DassemblyAnalyzerEnabled=false
-
 .PHONY: test-unit
 test-unit:
 	echo "make test-unit does nothing, use build target instead"
