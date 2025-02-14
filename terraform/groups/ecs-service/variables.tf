@@ -47,6 +47,12 @@ variable "eric_memory" {
   default = 512
 }
 
+variable "log_level" {
+  default     = "info"
+  type        = string
+  description = "The log level for services to use: trace, debug, info or error"
+}
+
 variable "max_task_count" {
   type        = number
   description = "The maximum number of tasks for this service."
@@ -150,6 +156,6 @@ variable "ssm_version_prefix" {
 
 variable "use_set_environment_files" {
   type        = bool
-  default     = false
+  default     = true
   description = "Toggle default global and shared environment files"
 }
