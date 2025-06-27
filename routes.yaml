@@ -1,7 +1,0 @@
-app_name: psc-filing-api
-group: api
-weight: 900
-routes:
-  1: ^/persons-with-significant-control
-  2: ^/transactions/.*/persons-with-significant-control
-  3: ^/private/transactions/.*/persons-with-significant-control
