@@ -19,7 +19,6 @@
         <skip.unit.tests>false</skip.unit.tests>
         <!-- Spring -->
         <spring-boot-dependencies.version>3.5.3</spring-boot-dependencies.version>
-        <spring-web.version>6.2.8</spring-web.version>
         <!-- Maven -->
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -79,12 +78,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <!--Overriding spring-web version to remove vulnerability-->
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring-web.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
