@@ -34,7 +34,7 @@
         <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
         <!--- CH -->
         <structured-logging.version>3.0.32</structured-logging.version>
-        <private-api-sdk-java.version>4.0.315</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.316</private-api-sdk-java.version>
         <api-sdk-java.version>6.3.1</api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.7</api-sdk-manager-java-library.version>
         <api-security-java.version>2.0.8</api-security-java.version>
