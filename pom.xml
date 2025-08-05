@@ -37,6 +37,7 @@
         <api-sdk-java.version>6.4.3</api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.7</api-sdk-manager-java-library.version>
         <api-security-java.version>2.0.8</api-security-java.version>
+        <api-helper-java.version>3.0.1</api-helper-java.version>
 
         <!-- Jackson -->
         <fasterxml-jackson.version>2.19.1</fasterxml-jackson.version>
@@ -50,7 +51,8 @@
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login/>
         <sonar.password/>
-        <api-helper-java.version>3.0.1</api-helper-java.version>
+        <sonar.projectKey>uk.gov.companieshouse:psc-filing-api</sonar.projectKey>
+        <sonar.projectName>psc-filing-api</sonar.projectName>
     </properties>
     <dependencyManagement>
         <dependencies>
