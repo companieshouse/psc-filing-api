@@ -2,11 +2,12 @@ package uk.gov.companieshouse.pscfiling.api.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * The Individual filing data dto
