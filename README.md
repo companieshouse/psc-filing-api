@@ -68,7 +68,7 @@ AWS_SECRET_ACCESS_KEY| The secret access key of the AWS account that psc-filing-
 
 1. Enable the `psc-filing` module
 
-1. Run `tilt up` and wait for all services to start
+1. Run `chs-dev up` and wait for all services to start
 
 ### To make local changes
 
