@@ -68,12 +68,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Pattern PARSE_MESSAGE_PATTERN = Pattern.compile("(Text .*)$",
             Pattern.MULTILINE);
 
-    @Autowired
-    @Qualifier(value = "validation")
     protected Map<String, String> validation;
     private final Logger chLogger;
 
-    public RestExceptionHandler(final Map<String, String> validation, final Logger logger) {
+    @Autowired
+    public RestExceptionHandler(@Qualifier(value = "validation") final Map<String, String> validation, final Logger logger) {
         this.validation = validation;
         this.chLogger = logger;
     }

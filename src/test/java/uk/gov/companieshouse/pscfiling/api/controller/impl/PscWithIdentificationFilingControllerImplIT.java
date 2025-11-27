@@ -17,21 +17,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -73,28 +73,28 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
             + FILING_ID
             + "/validation_status");
     private Links links;
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
-    @MockBean
+    @MockitoBean
     private PscDetailsService pscDetailsService;
-    @MockBean
+    @MockitoBean
     private PscApi pscDetails;
-    @MockBean
+    @MockitoBean
     private PscFilingService pscFilingService;
-    @MockBean
+    @MockitoBean
     private PscWithIdentificationFilingService pscWithIdentificationFilingService;
-    @MockBean
+    @MockitoBean
     private PscWithIdentificationFilingProvider pscWithIdentificationFilingProvider;
-    @MockBean
+    @MockitoBean
     private PscWithIdentificationFilingMergeProcessor pscWithIdentificationFilingMergeProcessor;
-    @MockBean
+    @MockitoBean
     private PscWithIdentificationFilingPostMergeProcessor
             pscWithIdentificationFilingPostMergeProcessor;
-    @SpyBean
+    @MockitoSpyBean
     private PscMapper filingMapper;
-    @MockBean
+    @MockitoBean
     private Clock clock;
-    @MockBean
+    @MockitoBean
     private Logger logger;
 
     @Autowired
@@ -473,11 +473,6 @@ class PscWithIdentificationFilingControllerImplIT extends BaseControllerIT {
             .ceasedOn(CEASED_ON_DATE)
             .registerEntryDate(CEASED_ON_DATE)
             .build();
-
-        final Links links = new Links(new URI("/transactions/" + TRANS_ID +
-            "/persons-with-significant-control/corporate-entity/" + FILING_ID),
-            new URI("validation_status"));
-
         final var filing = PscWithIdentificationFiling.builder()
                 .referenceEtag(ETAG)
                 .referencePscId(PSC_ID)

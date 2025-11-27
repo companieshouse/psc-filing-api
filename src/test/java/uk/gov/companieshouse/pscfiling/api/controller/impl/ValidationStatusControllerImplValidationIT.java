@@ -20,10 +20,10 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -59,13 +59,13 @@ class ValidationStatusControllerImplValidationIT extends BaseControllerIT {
     private static final String SELF_FRAGMENT =
             "/transactions/" + TRANS_ID + "/persons-with-significant-control/";
 
-    @MockBean
+    @MockitoBean
     private PscFilingService pscFilingService;
-    @MockBean
+    @MockitoBean
     private PscDetailsService pscDetailsService;
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
-    @MockBean
+    @MockitoBean
     private Logger logger;
     @Autowired
     private MockMvc mockMvc;

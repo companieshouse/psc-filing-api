@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.pscfiling.api.validator;
 
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import uk.gov.companieshouse.api.model.psc.PscApi;
@@ -32,7 +32,7 @@ public class PscEtagValidator extends BaseFilingValidator implements FilingValid
                 validationContext.dto().getReferencePscId(), validationContext.pscType(),
                 validationContext.passthroughHeader());
 
-        if (!StringUtils.equals(pscDetails.getEtag(), validationContext.dto().getReferenceEtag())) {
+        if (!Strings.CS.equals(pscDetails.getEtag(), validationContext.dto().getReferenceEtag())) {
             validationContext.errors()
                     .add(new FieldError("object", "reference_etag", validationContext.dto().getReferenceEtag(),
                             false, new String[]{null, "notMatch.reference_etag"}, null,

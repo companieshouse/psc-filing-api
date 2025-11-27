@@ -18,21 +18,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -77,29 +77,29 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
     private NameElements nameElements;
     private Links links;
     private NaturesOfControlList naturesOfControl;
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
-    @MockBean
+    @MockitoBean
     private PscDetailsService pscDetailsService;
-    @MockBean
+    @MockitoBean
     private FilingValidationService filingValidationService;
-    @MockBean
+    @MockitoBean
     private PscApi pscDetails;
-    @MockBean
+    @MockitoBean
     private PscFilingService pscFilingService;
-    @MockBean
+    @MockitoBean
     private PscIndividualFilingService pscIndividualFilingService;
-    @MockBean
+    @MockitoBean
     private PscIndividualFilingProvider pscIndividualFilingProvider;
-    @MockBean
+    @MockitoBean
     private PscIndividualFilingMergeProcessor pscIndividualFilingMergeProcessor;
-    @MockBean
+    @MockitoBean
     private PscIndividualFilingPostMergeProcessor pscIndividualFilingPostMergeProcessor;
-    @SpyBean
+    @MockitoSpyBean
     private PscMapper filingMapper;
-    @MockBean
+    @MockitoBean
     private Clock clock;
-    @MockBean
+    @MockitoBean
     private Logger logger;
 
     @Autowired
@@ -499,7 +499,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
 
     @Test
     void getFilingForReviewThenResponse200() throws Exception {
-        final Links links = new Links(new URI("/transactions/"
+        final Links reqLinks = new Links(new URI("/transactions/"
             + TRANS_ID
             + "/persons-with-significant-control/individual/"
             + FILING_ID), new URI("validation_status"));
@@ -508,7 +508,7 @@ class PscIndividualFilingControllerImplIT extends BaseControllerIT {
             .referencePscId(PSC_ID)
             .ceasedOn(CEASED_ON_DATE)
             .registerEntryDate(CEASED_ON_DATE)
-            .links(links)
+            .links(reqLinks)
             .build();
 
         when(pscIndividualFilingService.get(FILING_ID)).thenReturn(Optional.of(filing));

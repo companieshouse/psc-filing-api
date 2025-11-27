@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,11 +85,6 @@ class RestExceptionHandlerTest {
     @Mock
     private JsonMappingException.Reference mappingReference;
 
-    private FieldError fieldError;
-    private FieldError fieldErrorWithRejectedValue;
-    private ApiError expectedError;
-    private ApiError expectedErrorWithRejectedValue;
-
     @BeforeEach
     void setUp() {
         Map<String, String> validation = Map.of("filing-resource-not-found",
@@ -100,18 +96,6 @@ class RestExceptionHandlerTest {
         testExceptionHandler = new RestExceptionHandler(validation, logger);
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURI("/path/to/resource");
-        String[] codes1 = new String[]{"code1", "object.addressLine1", "code3", "NotBlank"};
-        String[] codes2 = new String[]{"code1", "object.ceasedOn", "code3", "PastOrPresent"};
-        fieldError = new FieldError("object", "field1", null, false, codes1, null, "error");
-        fieldErrorWithRejectedValue =
-                new FieldError("object", "ceasedOn", "3000-10-13", false, codes2, null,
-                        "errorWithRejectedValue");
-        expectedError =
-                new ApiError("field is blank", "$.address_line_1", "json-path", "ch:validation");
-        expectedErrorWithRejectedValue =
-                new ApiError("{rejected-value} is future date", "$.ceased_on", "json-path",
-                        "ch:validation");
-        expectedErrorWithRejectedValue.addErrorValue("rejected-value", "3000-10-13");
     }
 
     @Test
@@ -375,14 +359,30 @@ class RestExceptionHandlerTest {
     @Test
     void handleInvalidFilingException() {
         when(request.getRequest()).thenReturn(servletRequest);
-        final var exception =
-                new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
+        final var exception = getInvalidFilingException();
+        final var expectedError =
+                new ApiError("field is blank", "$.address_line_1", "json-path", "ch:validation");
+        final var expectedErrorWithRejectedValue =
+                new ApiError("{rejected-value} is future date", "$.ceased_on", "json-path",
+                        "ch:validation");
+        expectedErrorWithRejectedValue.addErrorValue("rejected-value", "3000-10-13");
 
         final var apiErrors = testExceptionHandler.handleInvalidFilingException(exception, request);
 
         assertThat(apiErrors.getErrors(), hasSize(2));
         assertThat(apiErrors.getErrors(),
                 containsInAnyOrder(expectedError, expectedErrorWithRejectedValue));
+    }
+
+    @NotNull
+    private InvalidFilingException getInvalidFilingException() {
+        final var fieldError = new FieldError("object", "field1", null, false,
+            new String[]{"code1", "object.addressLine1", "code3", "NotBlank"}, null, "error");
+        final var fieldErrorWithRejectedValue = new FieldError("object", "ceasedOn", "3000-10-13", false,
+            new String[]{"code1", "object.ceasedOn", "code3", "PastOrPresent"}, null,
+                "errorWithRejectedValue");
+
+        return new InvalidFilingException(List.of(fieldError, fieldErrorWithRejectedValue));
     }
 
     @Test

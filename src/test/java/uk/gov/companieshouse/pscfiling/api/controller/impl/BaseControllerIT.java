@@ -5,8 +5,8 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.companieshouse.api.interceptor.OpenTransactionInterceptor;
 import uk.gov.companieshouse.api.interceptor.TransactionInterceptor;
@@ -53,13 +53,13 @@ public class BaseControllerIT {
     protected static final String REGISTER_ENTRY = "2022-10-05";
     protected HttpHeaders httpHeaders;
     protected Transaction transaction;
-    @MockBean
+    @MockitoBean
     protected TransactionInterceptor transactionInterceptor;
-    @MockBean
+    @MockitoBean
     protected OpenTransactionInterceptor openTransactionInterceptor;
-    @MockBean
+    @MockitoBean
     protected CompanyInterceptor companyInterceptor;
-    @MockBean
+    @MockitoBean
     protected InternalUserInterceptor internalUserInterceptor;
 
     void baseSetUp() throws Exception {

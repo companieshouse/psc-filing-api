@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import uk.gov.companieshouse.api.model.common.DateOfBirth;
+import uk.gov.companieshouse.pscfiling.api.model.dto.Date3TupleDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscDtoCommunal;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscIndividualDto;
 import uk.gov.companieshouse.pscfiling.api.model.dto.PscWithIdentificationDto;
@@ -17,15 +19,11 @@ import uk.gov.companieshouse.pscfiling.api.model.entity.PscWithIdentificationFil
 public interface PscMapper {
 
     default PscCommunal map(final PscDtoCommunal dto) {
-        if (dto instanceof PscIndividualDto pscDto) {
-            return map(pscDto);
-        }
-        else if (dto instanceof PscWithIdentificationDto pscDto) {
-            return map(pscDto);
-        }
-        else {
-            return null;
-        }
+        return switch (dto) {
+            case final PscIndividualDto pscDto -> map(pscDto);
+            case final PscWithIdentificationDto pscDto -> map(pscDto);
+            default -> null;
+        };
     }
 
     @Mapping(target = "createdAt", ignore = true)
@@ -49,22 +47,18 @@ public interface PscMapper {
     PscWithIdentificationFiling map(final PscWithIdentificationDto dto);
 
     default PscDtoCommunal map(final PscCommunal filing) {
-        if (filing instanceof PscIndividualFiling pscFiling) {
-            return map(pscFiling);
-        }
-        else if (filing instanceof PscWithIdentificationFiling pscFiling) {
-            return map(pscFiling);
-        }
-        else {
-            return null;
-        }
+        return switch (filing) {
+            case final PscIndividualFiling pscFiling -> map(pscFiling);
+            case final PscWithIdentificationFiling pscFiling -> map(pscFiling);
+            default -> null;
+        };
     }
 
+    @Mapping(target = "dateOfBirth", source = "dateOfBirth", qualifiedByName = "mapDate3TupleToDto")
     PscIndividualDto map(final PscIndividualFiling filing);
 
     PscWithIdentificationDto map(final PscWithIdentificationFiling filing);
 
-    @Mapping(target = "dateOfBirth", source = "dateOfBirth")
     default String isoDateOfBirth(final Date3Tuple tuple) {
         if (tuple == null) {
             return null;
@@ -76,4 +70,11 @@ public interface PscMapper {
     @Mapping(target = "day", ignore = true)
     Date3Tuple map(final DateOfBirth dob);
 
+    @Named("mapDate3TupleToDto")
+    default Date3TupleDto mapDate3TupleToDto(final Date3Tuple date3Tuple) {
+        if (date3Tuple == null) {
+            return null;
+        }
+        return new Date3TupleDto(date3Tuple.day(), date3Tuple.month(), date3Tuple.year());
+    }
 }

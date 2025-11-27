@@ -19,8 +19,8 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.AttributeName;
 import uk.gov.companieshouse.api.model.filinggenerator.FilingApi;
@@ -38,13 +38,13 @@ import uk.gov.companieshouse.pscfiling.api.service.TransactionService;
 @WebMvcTest(controllers = FilingDataControllerImpl.class)
 @Import(PscFilingConfig.class)
 class FilingDataControllerImplIT extends BaseControllerIT {
-    @MockBean
+    @MockitoBean
     private FilingDataService filingDataService;
-    @MockBean
+    @MockitoBean
     private PscFilingService pscFilingService;
-    @MockBean
+    @MockitoBean
     private Logger logger;
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
     @Autowired
     private MockMvc mockMvc;

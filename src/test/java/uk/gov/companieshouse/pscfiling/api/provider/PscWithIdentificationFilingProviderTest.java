@@ -63,8 +63,8 @@ class PscWithIdentificationFilingProviderTest {
 
     @Test
     void provideWhenWrongFilingId() {
-        final var individual = PscWithIdentificationFiling.builder(filing).id(FILING_ID + "y").build();
-        when(filingService.get(FILING_ID)).thenReturn(Optional.of(individual));
+        final var individualWithBadFilingId = PscWithIdentificationFiling.builder(filing).id(FILING_ID + "y").build();
+        when(filingService.get(FILING_ID)).thenReturn(Optional.of(individualWithBadFilingId));
 
         var result = testProvider.provide(FILING_ID);
 

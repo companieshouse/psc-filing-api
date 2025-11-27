@@ -45,12 +45,22 @@ public class FilingDataServiceImpl implements FilingDataService {
         this.logger = logger;
     }
 
+    /**
+     * <p>Generates the PSC Filing in the required format for filing-resource-handler.</p>
+     * <p>NOTE:  PSC_CESSATION filings only for now; handling other kinds to come later.</p>
+     *
+     * @param filingId          the PSC Filing id
+     * @param pscType           the PSC type
+     * @param transaction       the transaction for the filing
+     * @param passthroughHeader the Http header
+     * @return the generated FilingApi
+     */
     @Override
     public FilingApi generatePscFiling(final String filingId, final PscTypeConstants pscType,
             final Transaction transaction, final String passthroughHeader) {
         final var filing = new FilingApi();
 
-        filing.setKind(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), pscType.getValue())); // TODO: handling other kinds to come later
+        filing.setKind(MessageFormat.format("{0}#{1}", FilingKind.PSC_CESSATION.getValue(), pscType.getValue()));
 
         final var populatedFiling = populateFilingData(filing, filingId, pscType, transaction, passthroughHeader);
 

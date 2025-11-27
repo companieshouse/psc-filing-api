@@ -20,17 +20,17 @@ public class TestBaseService {
 
     //Use to mock out the PscTypeConstants enum class
     @SuppressWarnings("unchecked")
-    static <PscTypeConstants extends Enum<PscTypeConstants>> PscTypeConstants[] addNewEnumValue() {
-        final EnumSet<PscTypeConstants> enumSet = EnumSet.allOf((Class<PscTypeConstants>) enumPscTypeConstants);
-        final PscTypeConstants[] newValues =
-                (PscTypeConstants[]) Array.newInstance(enumPscTypeConstants, enumSet.size() + 1);
+    static <C extends Enum<C>> C[] addNewEnumValue() {
+        final EnumSet<C> enumSet = EnumSet.allOf((Class<C>) enumPscTypeConstants);
+        final C[] newValues =
+                (C[]) Array.newInstance(enumPscTypeConstants, enumSet.size() + 1);
         int i = 0;
-        for (final PscTypeConstants value : enumSet) {
+        for (final C value : enumSet) {
             newValues[i] = value;
             i++;
         }
 
-        final PscTypeConstants newEnumValue = mock((Class<PscTypeConstants>) enumPscTypeConstants);
+        final C newEnumValue = mock((Class<C>) enumPscTypeConstants);
         newValues[newValues.length - 1] = newEnumValue;
 
         when(newEnumValue.ordinal()).thenReturn(newValues.length - 1);

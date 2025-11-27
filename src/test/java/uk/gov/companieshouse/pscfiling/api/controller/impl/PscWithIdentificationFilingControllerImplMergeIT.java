@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -56,28 +56,29 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         "/transactions/%s/persons-with-significant-control/corporate-entity/%s", TRANS_ID,
         FILING_ID);
     private static final URI SELF_URI = URI.create(RESOURCE_URI_STR);
+    private static final URI BAD_SELF_URI = URI.create("/path/to/other_or_bad");
     private static final URI VALIDATION_URI = URI.create(RESOURCE_URI_STR + "/validation_status");
     private static final String CORPORATE_NAME = "corporate name";
     private Identification identification;
     private NaturesOfControlList naturesOfControl;
     private Links links;
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
-    @MockBean
+    @MockitoBean
     private PscDetailsService pscDetailsService;
-    @MockBean
+    @MockitoBean
     private FilingValidationService filingValidationService;
-    @MockBean
+    @MockitoBean
     private PscApi pscDetails;
-    @MockBean
+    @MockitoBean
     private PscFilingRepository filingRepository;
-    @MockBean
+    @MockitoBean
     private PscWithIdentificationFilingRepository withIdentificationFilingRepository;
-    @MockBean
+    @MockitoBean
     private PatchServiceProperties patchServiceProperties;
-    @MockBean
+    @MockitoBean
     private Clock clock;
-    @MockBean
+    @MockitoBean
     private Logger logger;
 
     @Mock
@@ -443,14 +444,13 @@ class PscWithIdentificationFilingControllerImplMergeIT extends BaseControllerIT 
         "Not Found response")
     void updateFilingWhenTransactionIdMismatchThen404() throws Exception {
         final var body = "{ }";
-        final URI BAD_SELF_URI = URI.create("/path/to/other_or_bad");
-        final var links = new Links(BAD_SELF_URI, VALIDATION_URI);
+        final var badLinks = new Links(BAD_SELF_URI, VALIDATION_URI);
         final var filing = PscIndividualFiling.builder()
             .id(FILING_ID)
             .referenceEtag(ETAG)
             .referencePscId(PSC_ID)
             .registerEntryDate(REGISTER_ENTRY_DATE)
-            .links(links)
+            .links(badLinks)
             .build();
 
         when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));

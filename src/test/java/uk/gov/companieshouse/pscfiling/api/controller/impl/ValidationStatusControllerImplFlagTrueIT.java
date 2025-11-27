@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.pscfiling.api.config.IntegrationTestConfig;
@@ -27,13 +27,13 @@ import uk.gov.companieshouse.pscfiling.api.service.impl.FilingValidationServiceI
         properties = {"feature.flag.transactions.closable=true"})
 @ContextConfiguration(classes = {IntegrationTestConfig.class, FilingValidationServiceImpl.class})
 class ValidationStatusControllerImplFlagTrueIT extends BaseControllerIT {
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
-    @MockBean
+    @MockitoBean
     private PscFilingService pscFilingService;
-    @MockBean
+    @MockitoBean
     private PscDetailsService pscDetailsService;
-    @MockBean
+    @MockitoBean
     private Logger logger;
     @Autowired
     private MockMvc mockMvc;
