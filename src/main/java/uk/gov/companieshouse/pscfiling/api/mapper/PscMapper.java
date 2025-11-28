@@ -59,7 +59,7 @@ public interface PscMapper {
 
     PscWithIdentificationDto map(final PscWithIdentificationFiling filing);
 
-    default String isoDateOfBirth(final Date3Tuple tuple) {
+    default String formatDateOfBirthAsIsoString(final Date3Tuple tuple) {
         if (tuple == null) {
             return null;
         }
