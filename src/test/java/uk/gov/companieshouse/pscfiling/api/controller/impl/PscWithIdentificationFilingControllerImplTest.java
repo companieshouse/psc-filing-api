@@ -185,7 +185,7 @@ class PscWithIdentificationFilingControllerImplTest {
     }
 
     private Map<String, Resource> createResources() {
-        final Map<String, Resource> resourceMap = new HashMap<>();
+        final Map<String, Resource> newResourceMap = new HashMap<>();
         final var resource = new Resource();
         final var self = REQUEST_URI + "/" + FILING_ID;
         final var linksMap = Map.of("resource", self, VALIDATION_STATUS,
@@ -194,9 +194,9 @@ class PscWithIdentificationFilingControllerImplTest {
         resource.setKind("psc-filing");
         resource.setLinks(linksMap);
         resource.setUpdatedAt(FIRST_INSTANT.atZone(ZoneId.systemDefault()).toLocalDateTime());
-        resourceMap.put(self, resource);
+        newResourceMap.put(self, resource);
 
-        return resourceMap;
+        return newResourceMap;
     }
 
     @Test

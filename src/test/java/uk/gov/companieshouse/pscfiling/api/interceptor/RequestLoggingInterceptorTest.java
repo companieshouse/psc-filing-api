@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RequestLoggingInterceptorTest {
-    private final static String TEST_REQUEST_PATH = "/";
+    private static final String TEST_REQUEST_PATH = "/";
 
     @Mock
     private Object handler;

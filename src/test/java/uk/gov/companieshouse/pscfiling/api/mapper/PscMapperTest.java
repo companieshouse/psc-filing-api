@@ -246,17 +246,17 @@ class PscMapperTest {
     }
 
     @Test
-    void isoDateOfBirth() {
+    void formatDateOfBirthAsIsoStringWhenNonNull() {
         final var tuple = new Date3Tuple(dob1.day(), dob1.month(), dob1.year());
 
-        final var isoDateOfBirth = testMapper.isoDateOfBirth(tuple);
+        final var isoDateOfBirth = testMapper.formatDateOfBirthAsIsoString(tuple);
 
         assertThat(isoDateOfBirth, is("1970-09-12"));
     }
 
     @Test
-    void nullIsoDateOfBirth() {
-        final var isoDateOfBirth = testMapper.isoDateOfBirth(null);
+    void formatDateOfBirthAsIsoStringWhenNull() {
+        final var isoDateOfBirth = testMapper.formatDateOfBirthAsIsoString(null);
 
         assertThat(isoDateOfBirth, is(nullValue()));
     }

@@ -49,14 +49,7 @@ class PscFilingServiceImplTest extends TestBaseService {
     }
 
     @Test
-    void saveStringStringIndividual() {
-        testService.save(filing);
-
-        verify(individualFilingRepository).save(filing);
-    }
-
-    @Test
-    void saveStringIndividual() {
+    void savePscIndividualFiling() {
         testService.save(filing);
 
         verify(individualFilingRepository).save(filing);
@@ -64,38 +57,21 @@ class PscFilingServiceImplTest extends TestBaseService {
 
 
     @Test
-    void saveWithIdentification() {
+    void savePscWithIdentificationFiling() {
         testService.save(identificationFiling);
 
         verify(withIdentificationFilingRepository).save(identificationFiling);
     }
-    @Test
-    void getStringStringWhenFound() {
-        final var filing = PscIndividualFiling.builder()
-                .build();
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
-        final var pscIndividualFiling = testService.get(FILING_ID);
-
-        assertThat(pscIndividualFiling.isPresent(), is(true));
-    }
 
     @Test
     void getStringWhenFound() {
-        final var filing = PscIndividualFiling.builder()
+        final var newFiling = PscIndividualFiling.builder()
                 .build();
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(filing));
+        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.of(newFiling));
 
         final var pscIndividualFiling = testService.get(FILING_ID);
 
         assertThat(pscIndividualFiling.isPresent(), is(true));
-    }
-
-    @Test
-    void getStringStringWhenNotFound() {
-        when(filingRepository.findById(FILING_ID)).thenReturn(Optional.empty());
-        final var pscIndividualFiling = testService.get(FILING_ID);
-
-        assertThat(pscIndividualFiling.isPresent(), is(false));
     }
 
     @Test

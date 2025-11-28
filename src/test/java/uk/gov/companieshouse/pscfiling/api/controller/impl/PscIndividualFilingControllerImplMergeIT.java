@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.error.ApiError;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
@@ -58,23 +58,23 @@ class PscIndividualFilingControllerImplMergeIT extends BaseControllerIT {
     private NameElements nameElements;
     private NaturesOfControlList naturesOfControl;
     private Links links;
-    @MockBean
+    @MockitoBean
     private TransactionService transactionService;
-    @MockBean
+    @MockitoBean
     private PscDetailsService pscDetailsService;
-    @MockBean
+    @MockitoBean
     private FilingValidationService filingValidationService;
-    @MockBean
+    @MockitoBean
     private PscApi pscDetails;
-    @MockBean
+    @MockitoBean
     private PscFilingRepository filingRepository;
-    @MockBean
+    @MockitoBean
     private PscIndividualFilingRepository individualFilingRepository;
-    @MockBean
+    @MockitoBean
     private PatchServiceProperties patchServiceProperties;
-    @MockBean
+    @MockitoBean
     private Clock clock;
-    @MockBean
+    @MockitoBean
     private Logger logger;
 
     @Mock
